@@ -30,15 +30,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.zesta.app.R
-import com.zesta.app.ui.theme.ZestaBackground
-import com.zesta.app.ui.theme.ZestaBlack
-import com.zesta.app.ui.theme.ZestaTextPrimary
-import com.zesta.app.ui.theme.ZestaWhite
+import com.zesta.app.ui.theme.AzulFinGradienteZesta
+import com.zesta.app.ui.theme.AzulInicioGradienteZesta
+import com.zesta.app.ui.theme.BlancoZesta
+import com.zesta.app.ui.theme.BordeBotonZesta
+import com.zesta.app.ui.theme.BordeCirculoZesta
+import com.zesta.app.ui.theme.BordeClaroZesta
+import com.zesta.app.ui.theme.BordeIconoZesta
+import com.zesta.app.ui.theme.BordeIlustracionCarritoZesta
+import com.zesta.app.ui.theme.FondoBarraInferiorZesta
+import com.zesta.app.ui.theme.FondoCirculoZesta
+import com.zesta.app.ui.theme.FondoIlustracionCarritoZesta
+import com.zesta.app.ui.theme.FondoPlaceholderZesta
+import com.zesta.app.ui.theme.FondoZesta
+import com.zesta.app.ui.theme.NegroZesta
+import com.zesta.app.ui.theme.TextoPrincipalZesta
+import com.zesta.app.ui.theme.TextoSecundarioZesta
 
 @Composable
 fun CartScreen(
@@ -51,7 +62,7 @@ fun CartScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(ZestaBackground)
+            .background(FondoZesta)
     ) {
         Column(
             modifier = Modifier
@@ -59,9 +70,9 @@ fun CartScreen(
                 .padding(horizontal = 20.dp, vertical = 20.dp)
         ) {
             Text(
-                text = stringResource(R.string.cart_title),
+                text = stringResource(R.string.carrito_titulo),
                 style = MaterialTheme.typography.headlineMedium,
-                color = ZestaTextPrimary,
+                color = TextoPrincipalZesta,
                 fontWeight = FontWeight.Normal
             )
 
@@ -102,14 +113,14 @@ private fun EmptyCartContent(
             modifier = Modifier
                 .size(82.dp)
                 .clip(CircleShape)
-                .background(Color(0xFFF3F3F3))
-                .border(1.dp, Color(0xFFE0E0E0), CircleShape),
+                .background(FondoIlustracionCarritoZesta)
+                .border(1.dp, BordeIlustracionCarritoZesta, CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Outlined.ShoppingCart,
-                contentDescription = stringResource(R.string.cd_cart_illustration),
-                tint = ZestaBlack,
+                contentDescription = stringResource(R.string.accesibilidad_ilustracion_carrito_vacio),
+                tint = NegroZesta,
                 modifier = Modifier.size(42.dp)
             )
         }
@@ -117,31 +128,31 @@ private fun EmptyCartContent(
         Spacer(modifier = Modifier.height(22.dp))
 
         Text(
-            text = stringResource(R.string.cart_empty_title),
+            text = stringResource(R.string.carrito_vacio_titulo),
             style = MaterialTheme.typography.headlineSmall,
-            color = ZestaTextPrimary,
+            color = TextoPrincipalZesta,
             fontWeight = FontWeight.Normal
         )
 
         Spacer(modifier = Modifier.height(12.dp))
 
         Text(
-            text = stringResource(R.string.cart_empty_description),
+            text = stringResource(R.string.carrito_vacio_descripcion),
             style = MaterialTheme.typography.bodyLarge,
-            color = Color(0xFF7A7A7A)
+            color = TextoSecundarioZesta
         )
 
         Spacer(modifier = Modifier.height(34.dp))
 
         BlueActionButton(
-            text = stringResource(R.string.cart_start_shopping),
+            text = stringResource(R.string.carrito_empezar_comprar),
             onClick = onStartShoppingClick
         )
 
         Spacer(modifier = Modifier.height(14.dp))
 
         BlueActionButton(
-            text = stringResource(R.string.cart_test_purchase),
+            text = stringResource(R.string.carrito_prueba_compra),
             onClick = onTestPurchaseClick
         )
     }
@@ -157,10 +168,10 @@ private fun BlueActionButton(
             .clip(RoundedCornerShape(28.dp))
             .background(
                 brush = Brush.verticalGradient(
-                    colors = listOf(Color(0xFF1C36FF), Color(0xFF140394))
+                    colors = listOf(AzulInicioGradienteZesta, AzulFinGradienteZesta)
                 )
             )
-            .border(2.dp, Color(0xFF2D2D2D), RoundedCornerShape(28.dp))
+            .border(2.dp, BordeBotonZesta, RoundedCornerShape(28.dp))
             .clickable { onClick() }
             .padding(horizontal = 22.dp, vertical = 12.dp),
         contentAlignment = Alignment.Center
@@ -168,7 +179,7 @@ private fun BlueActionButton(
         Text(
             text = text,
             style = MaterialTheme.typography.bodyLarge,
-            color = ZestaWhite,
+            color = BlancoZesta,
             fontWeight = FontWeight.SemiBold
         )
     }
@@ -186,8 +197,8 @@ private fun CartBottomBar(
             .fillMaxWidth()
             .height(68.dp)
             .clip(RoundedCornerShape(34.dp))
-            .background(Color(0xFFF4F4F4))
-            .border(1.dp, Color(0xFFD2D2D2), RoundedCornerShape(34.dp))
+            .background(FondoBarraInferiorZesta)
+            .border(1.dp, BordeClaroZesta, RoundedCornerShape(34.dp))
             .padding(horizontal = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
@@ -196,15 +207,15 @@ private fun CartBottomBar(
             modifier = Modifier
                 .size(46.dp)
                 .clip(CircleShape)
-                .background(ZestaWhite)
-                .border(1.dp, Color(0xFFD6D6D6), CircleShape)
+                .background(BlancoZesta)
+                .border(1.dp, BordeIconoZesta, CircleShape)
                 .clickable { onHomeClick() },
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Outlined.Home,
-                contentDescription = stringResource(R.string.cd_home),
-                tint = ZestaBlack,
+                contentDescription = stringResource(R.string.accesibilidad_ir_inicio),
+                tint = NegroZesta,
                 modifier = Modifier.size(30.dp)
             )
         }
@@ -212,24 +223,24 @@ private fun CartBottomBar(
         Row(
             modifier = Modifier
                 .clip(RoundedCornerShape(28.dp))
-                .background(Color(0xFFEDEDED))
+                .background(FondoPlaceholderZesta)
                 .clickable { onSearchClick() }
                 .padding(horizontal = 16.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 imageVector = Icons.Outlined.Search,
-                contentDescription = stringResource(R.string.cd_search),
-                tint = ZestaBlack,
+                contentDescription = stringResource(R.string.accesibilidad_ir_buscar),
+                tint = NegroZesta,
                 modifier = Modifier.size(32.dp)
             )
 
             Spacer(modifier = Modifier.width(8.dp))
 
             Text(
-                text = stringResource(R.string.nav_search),
+                text = stringResource(R.string.navegacion_buscar),
                 style = MaterialTheme.typography.bodyLarge,
-                color = ZestaTextPrimary
+                color = TextoPrincipalZesta
             )
         }
 
@@ -237,14 +248,14 @@ private fun CartBottomBar(
             modifier = Modifier
                 .size(46.dp)
                 .clip(CircleShape)
-                .background(ZestaWhite)
-                .border(1.dp, Color(0xFFD6D6D6), CircleShape),
+                .background(BlancoZesta)
+                .border(1.dp, BordeIconoZesta, CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Outlined.ShoppingCart,
-                contentDescription = stringResource(R.string.cd_cart),
-                tint = ZestaBlack,
+                contentDescription = stringResource(R.string.accesibilidad_ir_carrito),
+                tint = NegroZesta,
                 modifier = Modifier.size(28.dp)
             )
         }
@@ -253,15 +264,15 @@ private fun CartBottomBar(
             modifier = Modifier
                 .size(46.dp)
                 .clip(CircleShape)
-                .background(ZestaWhite)
-                .border(1.dp, Color(0xFFD6D6D6), CircleShape)
+                .background(BlancoZesta)
+                .border(1.dp, BordeIconoZesta, CircleShape)
                 .clickable { onProfileClick() },
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Outlined.Person,
-                contentDescription = stringResource(R.string.cd_profile),
-                tint = ZestaBlack,
+                contentDescription = stringResource(R.string.accesibilidad_ir_perfil),
+                tint = NegroZesta,
                 modifier = Modifier.size(28.dp)
             )
         }

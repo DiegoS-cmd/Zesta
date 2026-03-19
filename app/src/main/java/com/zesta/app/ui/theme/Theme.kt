@@ -5,12 +5,12 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 
 private val ZestaColorScheme = lightColorScheme(
-    background = ZestaBackground,
-    surface = ZestaBackground,
-    primary = ZestaBlueStart,
-    onPrimary = ZestaWhite,
-    onBackground = ZestaTextPrimary,
-    onSurface = ZestaTextPrimary
+    background = FondoZesta,
+    surface = FondoZesta,
+    primary = AzulInicioGradienteZesta,
+    onPrimary = BlancoZesta,
+    onBackground = TextoPrincipalZesta,
+    onSurface = TextoPrincipalZesta
 )
 
 @Composable

@@ -8,7 +8,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -40,21 +39,27 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.zesta.app.R
-import com.zesta.app.ui.theme.ZestaBackground
-import com.zesta.app.ui.theme.ZestaBlack
-import com.zesta.app.ui.theme.ZestaTextPrimary
-import com.zesta.app.ui.theme.ZestaWhite
+import com.zesta.app.ui.theme.BlancoZesta
+import com.zesta.app.ui.theme.BordeCategoriaZesta
+import com.zesta.app.ui.theme.BordeClaroZesta
+import com.zesta.app.ui.theme.BordeIconoZesta
+import com.zesta.app.ui.theme.FondoBarraInferiorZesta
+import com.zesta.app.ui.theme.FondoSeleccionadoZesta
+import com.zesta.app.ui.theme.FondoTarjetaRestauranteZesta
+import com.zesta.app.ui.theme.FondoZesta
+import com.zesta.app.ui.theme.NegroZesta
+import com.zesta.app.ui.theme.TextoPrincipalZesta
+import com.zesta.app.ui.theme.TextoSecundarioZesta
 
 data class SearchCategoryItemUi(
-    @param:StringRes val titleRes: Int,
-    @param:DrawableRes val imageRes: Int
+    @StringRes val titleRes: Int,
+    @DrawableRes val imageRes: Int
 )
 
 @Composable
@@ -66,23 +71,23 @@ fun SearchScreen(
     var query by remember { mutableStateOf("") }
 
     val recentSearches = listOf(
-        R.string.search_recent_burgers,
-        R.string.search_recent_sushi
+        R.string.busqueda_reciente_hamburguesas,
+        R.string.busqueda_reciente_sushi
     )
 
     val categories = listOf(
-        SearchCategoryItemUi(R.string.category_breakfast, R.drawable.desayuno),
-        SearchCategoryItemUi(R.string.category_pizzas, R.drawable.pizzas),
-        SearchCategoryItemUi(R.string.category_burgers, R.drawable.hamburguesas),
-        SearchCategoryItemUi(R.string.category_bakery, R.drawable.panaderia),
-        SearchCategoryItemUi(R.string.category_asian, R.drawable.china),
-        SearchCategoryItemUi(R.string.category_mexican, R.drawable.mexicana)
+        SearchCategoryItemUi(R.string.categoria_desayuno, R.drawable.desayuno),
+        SearchCategoryItemUi(R.string.categoria_pizzas, R.drawable.pizzas),
+        SearchCategoryItemUi(R.string.categoria_hamburguesas, R.drawable.hamburguesas),
+        SearchCategoryItemUi(R.string.categoria_panaderia, R.drawable.panaderia),
+        SearchCategoryItemUi(R.string.categoria_asiatica, R.drawable.china),
+        SearchCategoryItemUi(R.string.categoria_mexicana, R.drawable.mexicana)
     )
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(ZestaBackground)
+            .background(FondoZesta)
     ) {
         LazyColumn(
             modifier = Modifier
@@ -100,9 +105,9 @@ fun SearchScreen(
 
             item {
                 Text(
-                    text = stringResource(R.string.search_recent_title),
+                    text = stringResource(R.string.busqueda_titulo_recientes),
                     style = MaterialTheme.typography.titleLarge,
-                    color = ZestaTextPrimary,
+                    color = TextoPrincipalZesta,
                     fontWeight = FontWeight.Normal
                 )
             }
@@ -118,9 +123,9 @@ fun SearchScreen(
 
             item {
                 Text(
-                    text = stringResource(R.string.search_main_categories_title),
+                    text = stringResource(R.string.busqueda_titulo_categorias_principales),
                     style = MaterialTheme.typography.titleLarge,
-                    color = ZestaTextPrimary,
+                    color = TextoPrincipalZesta,
                     fontWeight = FontWeight.Normal
                 )
             }
@@ -157,23 +162,23 @@ private fun SearchField(
         shape = RoundedCornerShape(30.dp),
         placeholder = {
             Text(
-                text = stringResource(R.string.search_placeholder),
-                color = Color(0xFF8F8F8F)
+                text = stringResource(R.string.busqueda_placeholder),
+                color = TextoSecundarioZesta
             )
         },
         leadingIcon = {
             Icon(
                 imageVector = Icons.Outlined.Search,
-                contentDescription = stringResource(R.string.cd_search),
-                tint = ZestaBlack
+                contentDescription = stringResource(R.string.accesibilidad_ir_buscar),
+                tint = NegroZesta
             )
         },
         colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = Color(0xFFF1F1F1),
-            unfocusedContainerColor = Color(0xFFF1F1F1),
-            focusedBorderColor = Color.Transparent,
-            unfocusedBorderColor = Color.Transparent,
-            cursorColor = ZestaBlack
+            focusedContainerColor = FondoTarjetaRestauranteZesta,
+            unfocusedContainerColor = FondoTarjetaRestauranteZesta,
+            focusedBorderColor = FondoTarjetaRestauranteZesta,
+            unfocusedBorderColor = FondoTarjetaRestauranteZesta,
+            cursorColor = NegroZesta
         )
     )
 }
@@ -205,7 +210,7 @@ private fun SearchChip(
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(24.dp))
-            .background(Color(0xFFF1F1F1))
+            .background(FondoTarjetaRestauranteZesta)
             .clickable { onClick() }
             .padding(horizontal = 20.dp, vertical = 12.dp),
         contentAlignment = Alignment.Center
@@ -213,7 +218,7 @@ private fun SearchChip(
         Text(
             text = text,
             style = MaterialTheme.typography.bodyLarge,
-            color = ZestaTextPrimary
+            color = TextoPrincipalZesta
         )
     }
 }
@@ -232,11 +237,11 @@ private fun SearchCategoryRow(
     ) {
         Image(
             painter = painterResource(id = imageRes),
-            contentDescription = stringResource(R.string.cd_category_image, title),
+            contentDescription = stringResource(R.string.accesibilidad_imagen_categoria, title),
             modifier = Modifier
                 .size(62.dp)
                 .clip(CircleShape)
-                .border(2.dp, Color(0xFFE49B32), CircleShape),
+                .border(2.dp, BordeCategoriaZesta, CircleShape),
             contentScale = ContentScale.Crop
         )
 
@@ -245,7 +250,7 @@ private fun SearchCategoryRow(
         Text(
             text = title,
             style = MaterialTheme.typography.titleMedium,
-            color = ZestaTextPrimary
+            color = TextoPrincipalZesta
         )
     }
 }
@@ -262,33 +267,49 @@ private fun SearchBottomBar(
             .fillMaxWidth()
             .height(68.dp)
             .clip(RoundedCornerShape(34.dp))
-            .background(Color(0xFFF4F4F4))
-            .border(1.dp, Color(0xFFD2D2D2), RoundedCornerShape(34.dp))
+            .background(FondoBarraInferiorZesta)
+            .border(1.dp, BordeClaroZesta, RoundedCornerShape(34.dp))
             .padding(horizontal = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
+        Box(
+            modifier = Modifier
+                .size(46.dp)
+                .clip(CircleShape)
+                .background(BlancoZesta)
+                .border(1.dp, BordeIconoZesta, CircleShape)
+                .clickable { onHomeClick() },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Home,
+                contentDescription = stringResource(R.string.accesibilidad_ir_inicio),
+                tint = NegroZesta,
+                modifier = Modifier.size(30.dp)
+            )
+        }
+
         Row(
             modifier = Modifier
                 .clip(RoundedCornerShape(28.dp))
-                .background(Color(0xFFEDEDED))
-                .clickable { onHomeClick() }
+                .background(FondoSeleccionadoZesta)
                 .padding(horizontal = 16.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = Icons.Outlined.Home,
-                contentDescription = stringResource(R.string.cd_home),
-                tint = ZestaBlack,
+                imageVector = Icons.Outlined.Search,
+                contentDescription = stringResource(R.string.accesibilidad_ir_buscar),
+                tint = NegroZesta,
                 modifier = Modifier.size(32.dp)
             )
 
             Spacer(modifier = Modifier.width(8.dp))
 
             Text(
-                text = stringResource(R.string.nav_home),
+                text = stringResource(R.string.navegacion_buscar),
                 style = MaterialTheme.typography.bodyLarge,
-                color = ZestaTextPrimary
+                color = TextoPrincipalZesta
             )
         }
 
@@ -296,31 +317,15 @@ private fun SearchBottomBar(
             modifier = Modifier
                 .size(46.dp)
                 .clip(CircleShape)
-                .background(ZestaWhite)
-                .border(1.dp, Color(0xFFD6D6D6), CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.Search,
-                contentDescription = stringResource(R.string.cd_search),
-                tint = ZestaBlack,
-                modifier = Modifier.size(30.dp)
-            )
-        }
-
-        Box(
-            modifier = Modifier
-                .size(46.dp)
-                .clip(CircleShape)
-                .background(ZestaWhite)
-                .border(1.dp, Color(0xFFD6D6D6), CircleShape)
+                .background(BlancoZesta)
+                .border(1.dp, BordeIconoZesta, CircleShape)
                 .clickable { onCartClick() },
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Outlined.ShoppingCart,
-                contentDescription = stringResource(R.string.cd_cart),
-                tint = ZestaBlack,
+                contentDescription = stringResource(R.string.accesibilidad_ir_carrito),
+                tint = NegroZesta,
                 modifier = Modifier.size(28.dp)
             )
         }
@@ -329,15 +334,15 @@ private fun SearchBottomBar(
             modifier = Modifier
                 .size(46.dp)
                 .clip(CircleShape)
-                .background(ZestaWhite)
-                .border(1.dp, Color(0xFFD6D6D6), CircleShape)
+                .background(BlancoZesta)
+                .border(1.dp, BordeIconoZesta, CircleShape)
                 .clickable { onProfileClick() },
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Outlined.Person,
-                contentDescription = stringResource(R.string.cd_profile),
-                tint = ZestaBlack,
+                contentDescription = stringResource(R.string.accesibilidad_ir_perfil),
+                tint = NegroZesta,
                 modifier = Modifier.size(28.dp)
             )
         }

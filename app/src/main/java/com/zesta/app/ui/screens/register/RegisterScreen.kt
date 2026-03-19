@@ -17,10 +17,6 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -31,27 +27,32 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.zesta.app.R
 import com.zesta.app.ui.components.PrimaryGradientButton
+import com.zesta.app.ui.theme.FondoPlaceholderZesta
+import com.zesta.app.ui.theme.FondoZesta
 import com.zesta.app.ui.theme.LinkTextStyle
 import com.zesta.app.ui.theme.PlaceholderShape
-import com.zesta.app.ui.theme.ZestaBackground
-import com.zesta.app.ui.theme.ZestaPlaceholder
-import com.zesta.app.ui.theme.ZestaTextPrimary
+import com.zesta.app.ui.theme.TextoPrincipalZesta
 
 @Composable
 fun RegisterScreen(
-    onRegisterSuccess: () -> Unit,
+    fullName: String,
+    email: String,
+    password: String,
+    phone: String,
+    address: String,
+    errorMessage: String?,
+    onFullNameChange: (String) -> Unit,
+    onEmailChange: (String) -> Unit,
+    onPasswordChange: (String) -> Unit,
+    onPhoneChange: (String) -> Unit,
+    onAddressChange: (String) -> Unit,
+    onRegisterClick: () -> Unit,
     onBack: () -> Unit
 ) {
-    var fullName by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var phone by remember { mutableStateOf("") }
-    var address by remember { mutableStateOf("") }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(ZestaBackground)
+            .background(FondoZesta)
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 28.dp, vertical = 28.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -61,7 +62,7 @@ fun RegisterScreen(
 
         Image(
             painter = painterResource(id = R.drawable.logo_zesta),
-            contentDescription = stringResource(R.string.login_logo_description),
+            contentDescription = stringResource(R.string.inicio_sesion_descripcion_logo),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(220.dp),
@@ -72,23 +73,23 @@ fun RegisterScreen(
 
         OutlinedTextField(
             value = fullName,
-            onValueChange = { fullName = it },
+            onValueChange = onFullNameChange,
             modifier = Modifier.fillMaxWidth(),
             placeholder = {
                 Text(
-                    text = stringResource(R.string.register_full_name),
+                    text = stringResource(R.string.registro_nombre_completo),
                     style = MaterialTheme.typography.bodyMedium
                 )
             },
             shape = PlaceholderShape,
             singleLine = true,
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = ZestaPlaceholder,
-                unfocusedContainerColor = ZestaPlaceholder,
-                disabledContainerColor = ZestaPlaceholder,
-                focusedBorderColor = ZestaPlaceholder,
-                unfocusedBorderColor = ZestaPlaceholder,
-                cursorColor = ZestaTextPrimary
+                focusedContainerColor = FondoPlaceholderZesta,
+                unfocusedContainerColor = FondoPlaceholderZesta,
+                disabledContainerColor = FondoPlaceholderZesta,
+                focusedBorderColor = FondoPlaceholderZesta,
+                unfocusedBorderColor = FondoPlaceholderZesta,
+                cursorColor = TextoPrincipalZesta
             )
         )
 
@@ -96,23 +97,23 @@ fun RegisterScreen(
 
         OutlinedTextField(
             value = email,
-            onValueChange = { email = it },
+            onValueChange = onEmailChange,
             modifier = Modifier.fillMaxWidth(),
             placeholder = {
                 Text(
-                    text = stringResource(R.string.register_email),
+                    text = stringResource(R.string.registro_email),
                     style = MaterialTheme.typography.bodyMedium
                 )
             },
             shape = PlaceholderShape,
             singleLine = true,
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = ZestaPlaceholder,
-                unfocusedContainerColor = ZestaPlaceholder,
-                disabledContainerColor = ZestaPlaceholder,
-                focusedBorderColor = ZestaPlaceholder,
-                unfocusedBorderColor = ZestaPlaceholder,
-                cursorColor = ZestaTextPrimary
+                focusedContainerColor = FondoPlaceholderZesta,
+                unfocusedContainerColor = FondoPlaceholderZesta,
+                disabledContainerColor = FondoPlaceholderZesta,
+                focusedBorderColor = FondoPlaceholderZesta,
+                unfocusedBorderColor = FondoPlaceholderZesta,
+                cursorColor = TextoPrincipalZesta
             )
         )
 
@@ -120,11 +121,11 @@ fun RegisterScreen(
 
         OutlinedTextField(
             value = password,
-            onValueChange = { password = it },
+            onValueChange = onPasswordChange,
             modifier = Modifier.fillMaxWidth(),
             placeholder = {
                 Text(
-                    text = stringResource(R.string.register_password),
+                    text = stringResource(R.string.registro_contrasena),
                     style = MaterialTheme.typography.bodyMedium
                 )
             },
@@ -132,12 +133,12 @@ fun RegisterScreen(
             singleLine = true,
             visualTransformation = PasswordVisualTransformation(),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = ZestaPlaceholder,
-                unfocusedContainerColor = ZestaPlaceholder,
-                disabledContainerColor = ZestaPlaceholder,
-                focusedBorderColor = ZestaPlaceholder,
-                unfocusedBorderColor = ZestaPlaceholder,
-                cursorColor = ZestaTextPrimary
+                focusedContainerColor = FondoPlaceholderZesta,
+                unfocusedContainerColor = FondoPlaceholderZesta,
+                disabledContainerColor = FondoPlaceholderZesta,
+                focusedBorderColor = FondoPlaceholderZesta,
+                unfocusedBorderColor = FondoPlaceholderZesta,
+                cursorColor = TextoPrincipalZesta
             )
         )
 
@@ -145,23 +146,23 @@ fun RegisterScreen(
 
         OutlinedTextField(
             value = phone,
-            onValueChange = { phone = it },
+            onValueChange = onPhoneChange,
             modifier = Modifier.fillMaxWidth(),
             placeholder = {
                 Text(
-                    text = stringResource(R.string.register_phone),
+                    text = stringResource(R.string.registro_telefono),
                     style = MaterialTheme.typography.bodyMedium
                 )
             },
             shape = PlaceholderShape,
             singleLine = true,
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = ZestaPlaceholder,
-                unfocusedContainerColor = ZestaPlaceholder,
-                disabledContainerColor = ZestaPlaceholder,
-                focusedBorderColor = ZestaPlaceholder,
-                unfocusedBorderColor = ZestaPlaceholder,
-                cursorColor = ZestaTextPrimary
+                focusedContainerColor = FondoPlaceholderZesta,
+                unfocusedContainerColor = FondoPlaceholderZesta,
+                disabledContainerColor = FondoPlaceholderZesta,
+                focusedBorderColor = FondoPlaceholderZesta,
+                unfocusedBorderColor = FondoPlaceholderZesta,
+                cursorColor = TextoPrincipalZesta
             )
         )
 
@@ -169,38 +170,47 @@ fun RegisterScreen(
 
         OutlinedTextField(
             value = address,
-            onValueChange = { address = it },
+            onValueChange = onAddressChange,
             modifier = Modifier.fillMaxWidth(),
             placeholder = {
                 Text(
-                    text = stringResource(R.string.register_address),
+                    text = stringResource(R.string.registro_direccion),
                     style = MaterialTheme.typography.bodyMedium
                 )
             },
             shape = PlaceholderShape,
             singleLine = true,
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = ZestaPlaceholder,
-                unfocusedContainerColor = ZestaPlaceholder,
-                disabledContainerColor = ZestaPlaceholder,
-                focusedBorderColor = ZestaPlaceholder,
-                unfocusedBorderColor = ZestaPlaceholder,
-                cursorColor = ZestaTextPrimary
+                focusedContainerColor = FondoPlaceholderZesta,
+                unfocusedContainerColor = FondoPlaceholderZesta,
+                disabledContainerColor = FondoPlaceholderZesta,
+                focusedBorderColor = FondoPlaceholderZesta,
+                unfocusedBorderColor = FondoPlaceholderZesta,
+                cursorColor = TextoPrincipalZesta
             )
         )
+
+        if (!errorMessage.isNullOrBlank()) {
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = errorMessage,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
 
         Spacer(modifier = Modifier.height(26.dp))
 
         PrimaryGradientButton(
-            text = stringResource(R.string.register_create_account),
-            onClick = onRegisterSuccess
+            text = stringResource(R.string.registro_crear_cuenta),
+            onClick = onRegisterClick
         )
 
         Spacer(modifier = Modifier.height(10.dp))
 
         TextButton(onClick = onBack) {
             Text(
-                text = stringResource(R.string.register_have_account),
+                text = stringResource(R.string.registro_ya_tengo_cuenta),
                 style = LinkTextStyle,
                 fontSize = 16.sp
             )

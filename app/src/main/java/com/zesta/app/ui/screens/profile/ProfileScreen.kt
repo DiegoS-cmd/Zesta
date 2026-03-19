@@ -32,19 +32,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.zesta.app.R
-import com.zesta.app.ui.theme.ZestaBackground
-import com.zesta.app.ui.theme.ZestaBlack
-import com.zesta.app.ui.theme.ZestaTextPrimary
-import com.zesta.app.ui.theme.ZestaWhite
+import com.zesta.app.ui.theme.AzulAvatarZesta
+import com.zesta.app.ui.theme.BlancoZesta
+import com.zesta.app.ui.theme.BordeIconoZesta
+import com.zesta.app.ui.theme.BordeClaroZesta
+import com.zesta.app.ui.theme.FondoBarraInferiorZesta
+import com.zesta.app.ui.theme.FondoSeleccionadoZesta
+import com.zesta.app.ui.theme.FondoZesta
+import com.zesta.app.ui.theme.IndigoAvatarZesta
+import com.zesta.app.ui.theme.NaranjaZesta
+import com.zesta.app.ui.theme.NegroZesta
+import com.zesta.app.ui.theme.RosaAvatarZesta
+import com.zesta.app.ui.theme.TextoOpcionZesta
+import com.zesta.app.ui.theme.TextoPrincipalZesta
 
 @Composable
 fun ProfileScreen(
     userName: String = "",
+    isGuest: Boolean = false,
     onHomeClick: () -> Unit,
     onSearchClick: () -> Unit,
     onCartClick: () -> Unit,
@@ -54,18 +63,20 @@ fun ProfileScreen(
     onPrivacyClick: () -> Unit,
     onAccessibilityClick: () -> Unit,
     onManageAccountClick: () -> Unit,
-    onAboutClick: () -> Unit
+    onAboutClick: () -> Unit,
+    onLoginClick: () -> Unit,
+    onRegisterClick: () -> Unit
 ) {
-    val displayName = if (userName.isBlank()) {
-        stringResource(R.string.profile_name_placeholder)
-    } else {
-        userName
+    val displayName = when {
+        isGuest -> stringResource(R.string.perfil_nombre_invitado)
+        userName.isBlank() -> stringResource(R.string.perfil_nombre_placeholder)
+        else -> userName
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(ZestaBackground)
+            .background(FondoZesta)
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -74,8 +85,11 @@ fun ProfileScreen(
             item {
                 ProfileHeader(
                     displayName = displayName,
+                    isGuest = isGuest,
                     onFavoritesClick = onFavoritesClick,
-                    onOrderHistoryClick = onOrderHistoryClick
+                    onOrderHistoryClick = onOrderHistoryClick,
+                    onLoginClick = onLoginClick,
+                    onRegisterClick = onRegisterClick
                 )
             }
 
@@ -105,8 +119,11 @@ fun ProfileScreen(
 @Composable
 private fun ProfileHeader(
     displayName: String,
+    isGuest: Boolean,
     onFavoritesClick: () -> Unit,
-    onOrderHistoryClick: () -> Unit
+    onOrderHistoryClick: () -> Unit,
+    onLoginClick: () -> Unit,
+    onRegisterClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -115,9 +132,9 @@ private fun ProfileHeader(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = stringResource(R.string.profile_title),
+            text = stringResource(R.string.perfil_titulo),
             style = MaterialTheme.typography.headlineMedium,
-            color = ZestaTextPrimary,
+            color = TextoPrincipalZesta,
             fontWeight = FontWeight.Normal
         )
 
@@ -130,7 +147,7 @@ private fun ProfileHeader(
         Text(
             text = displayName,
             style = MaterialTheme.typography.headlineMedium,
-            color = ZestaTextPrimary,
+            color = TextoPrincipalZesta,
             fontWeight = FontWeight.Normal
         )
 
@@ -140,14 +157,44 @@ private fun ProfileHeader(
             horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             ProfileQuickActionCard(
-                text = stringResource(R.string.profile_favorites),
+                text = stringResource(R.string.perfil_favoritos),
                 onClick = onFavoritesClick
             )
 
             ProfileQuickActionCard(
-                text = stringResource(R.string.profile_order_history),
+                text = stringResource(R.string.perfil_historial_pedidos),
                 onClick = onOrderHistoryClick
             )
+        }
+
+        if (isGuest) {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = stringResource(R.string.perfil_mensaje_invitado),
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextoPrincipalZesta
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.inicio_sesion_entrar),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = TextoPrincipalZesta,
+                    modifier = Modifier.clickable { onLoginClick() }
+                )
+
+                Text(
+                    text = stringResource(R.string.inicio_sesion_registrarse),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = TextoPrincipalZesta,
+                    modifier = Modifier.clickable { onRegisterClick() }
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(14.dp))
@@ -163,9 +210,9 @@ private fun ProfileAvatar() {
             .background(
                 brush = Brush.linearGradient(
                     colors = listOf(
-                        Color(0xFF47D1FF),
-                        Color(0xFF7B8CFF),
-                        Color(0xFFD95BFF)
+                        AzulAvatarZesta,
+                        IndigoAvatarZesta,
+                        RosaAvatarZesta
                     )
                 )
             ),
@@ -173,8 +220,8 @@ private fun ProfileAvatar() {
     ) {
         Icon(
             imageVector = Icons.Outlined.Person,
-            contentDescription = stringResource(R.string.cd_profile_avatar),
-            tint = ZestaWhite,
+            contentDescription = stringResource(R.string.accesibilidad_avatar_perfil),
+            tint = BlancoZesta,
             modifier = Modifier.size(74.dp)
         )
     }
@@ -190,14 +237,14 @@ private fun ProfileQuickActionCard(
             .width(130.dp)
             .height(110.dp)
             .clip(RoundedCornerShape(28.dp))
-            .background(Color(0xFFFF9800))
+            .background(NaranjaZesta)
             .clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = text,
             style = MaterialTheme.typography.titleMedium,
-            color = Color(0xFF5A4A3A),
+            color = TextoOpcionZesta,
             fontWeight = FontWeight.Normal
         )
     }
@@ -214,39 +261,39 @@ private fun ProfileOptionsSection(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFFFF9800))
+            .background(NaranjaZesta)
             .padding(horizontal = 28.dp, vertical = 22.dp)
     ) {
         ProfileOptionItem(
-            text = stringResource(R.string.profile_help),
+            text = stringResource(R.string.perfil_ayuda),
             onClick = onHelpClick
         )
 
         Spacer(modifier = Modifier.height(10.dp))
 
         ProfileOptionItem(
-            text = stringResource(R.string.profile_privacy),
+            text = stringResource(R.string.perfil_privacidad),
             onClick = onPrivacyClick
         )
 
         Spacer(modifier = Modifier.height(10.dp))
 
         ProfileOptionItem(
-            text = stringResource(R.string.profile_accessibility),
+            text = stringResource(R.string.perfil_accesibilidad),
             onClick = onAccessibilityClick
         )
 
         Spacer(modifier = Modifier.height(10.dp))
 
         ProfileOptionItem(
-            text = stringResource(R.string.profile_manage_account),
+            text = stringResource(R.string.perfil_gestionar_cuenta),
             onClick = onManageAccountClick
         )
 
         Spacer(modifier = Modifier.height(10.dp))
 
         ProfileOptionItem(
-            text = stringResource(R.string.profile_about),
+            text = stringResource(R.string.perfil_acerca_de),
             onClick = onAboutClick
         )
 
@@ -262,7 +309,7 @@ private fun ProfileOptionItem(
     Text(
         text = text,
         style = MaterialTheme.typography.headlineSmall,
-        color = Color(0xFF5A4A3A),
+        color = TextoOpcionZesta,
         fontWeight = FontWeight.Normal,
         modifier = Modifier.clickable { onClick() }
     )
@@ -280,8 +327,8 @@ private fun ProfileBottomBar(
             .fillMaxWidth()
             .height(68.dp)
             .clip(RoundedCornerShape(34.dp))
-            .background(Color(0xFFF4F4F4))
-            .border(1.dp, Color(0xFFD2D2D2), RoundedCornerShape(34.dp))
+            .background(FondoBarraInferiorZesta)
+            .border(1.dp, BordeClaroZesta, RoundedCornerShape(34.dp))
             .padding(horizontal = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
@@ -290,15 +337,15 @@ private fun ProfileBottomBar(
             modifier = Modifier
                 .size(46.dp)
                 .clip(CircleShape)
-                .background(ZestaWhite)
-                .border(1.dp, Color(0xFFD6D6D6), CircleShape)
+                .background(BlancoZesta)
+                .border(1.dp, BordeIconoZesta, CircleShape)
                 .clickable { onHomeClick() },
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Outlined.Home,
-                contentDescription = stringResource(R.string.cd_home),
-                tint = ZestaBlack,
+                contentDescription = stringResource(R.string.accesibilidad_ir_inicio),
+                tint = NegroZesta,
                 modifier = Modifier.size(30.dp)
             )
         }
@@ -306,24 +353,24 @@ private fun ProfileBottomBar(
         Row(
             modifier = Modifier
                 .clip(RoundedCornerShape(28.dp))
-                .background(Color(0xFFEDEDED))
+                .background(FondoSeleccionadoZesta)
                 .clickable { onSearchClick() }
                 .padding(horizontal = 16.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 imageVector = Icons.Outlined.Search,
-                contentDescription = stringResource(R.string.cd_search),
-                tint = ZestaBlack,
+                contentDescription = stringResource(R.string.accesibilidad_ir_buscar),
+                tint = NegroZesta,
                 modifier = Modifier.size(32.dp)
             )
 
             Spacer(modifier = Modifier.width(8.dp))
 
             Text(
-                text = stringResource(R.string.nav_search),
+                text = stringResource(R.string.navegacion_buscar),
                 style = MaterialTheme.typography.bodyLarge,
-                color = ZestaTextPrimary
+                color = TextoPrincipalZesta
             )
         }
 
@@ -331,15 +378,15 @@ private fun ProfileBottomBar(
             modifier = Modifier
                 .size(46.dp)
                 .clip(CircleShape)
-                .background(ZestaWhite)
-                .border(1.dp, Color(0xFFD6D6D6), CircleShape)
+                .background(BlancoZesta)
+                .border(1.dp, BordeIconoZesta, CircleShape)
                 .clickable { onCartClick() },
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Outlined.ShoppingCart,
-                contentDescription = stringResource(R.string.cd_cart),
-                tint = ZestaBlack,
+                contentDescription = stringResource(R.string.accesibilidad_ir_carrito),
+                tint = NegroZesta,
                 modifier = Modifier.size(28.dp)
             )
         }
@@ -348,14 +395,14 @@ private fun ProfileBottomBar(
             modifier = Modifier
                 .size(46.dp)
                 .clip(CircleShape)
-                .background(Color(0xFFEDEDED))
-                .border(1.dp, Color(0xFFD6D6D6), CircleShape),
+                .background(FondoSeleccionadoZesta)
+                .border(1.dp, BordeIconoZesta, CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Outlined.Person,
-                contentDescription = stringResource(R.string.cd_profile),
-                tint = ZestaBlack,
+                contentDescription = stringResource(R.string.accesibilidad_ir_perfil),
+                tint = NegroZesta,
                 modifier = Modifier.size(28.dp)
             )
         }

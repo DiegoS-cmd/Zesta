@@ -18,10 +18,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -37,7 +37,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -46,11 +45,16 @@ import androidx.compose.ui.unit.dp
 import com.zesta.app.R
 import com.zesta.app.data.restaurant.Restaurant
 import com.zesta.app.data.restaurant.RestaurantRepository
-import com.zesta.app.ui.theme.ZestaBackground
-import com.zesta.app.ui.theme.ZestaBlack
-import com.zesta.app.ui.theme.ZestaOffer
-import com.zesta.app.ui.theme.ZestaReview
-import com.zesta.app.ui.theme.ZestaTextPrimary
+import com.zesta.app.ui.theme.BordeCategoriaZesta
+import com.zesta.app.ui.theme.BordeCirculoZesta
+import com.zesta.app.ui.theme.BlancoZesta
+import com.zesta.app.ui.theme.FondoOfertaZesta
+import com.zesta.app.ui.theme.FondoTarjetaRestauranteZesta
+import com.zesta.app.ui.theme.FondoZesta
+import com.zesta.app.ui.theme.NaranjaZesta
+import com.zesta.app.ui.theme.NegroZesta
+import com.zesta.app.ui.theme.TextoPrincipalZesta
+import com.zesta.app.ui.theme.TextoResenaZesta
 
 data class CategoryItem(
     val name: String,
@@ -65,12 +69,12 @@ fun HomeScreen(
     onRestaurantClick: (Int) -> Unit
 ) {
     val categories = listOf(
-        CategoryItem(stringResource(R.string.category_breakfast), R.drawable.desayuno),
-        CategoryItem(stringResource(R.string.category_pizzas), R.drawable.pizzas),
-        CategoryItem(stringResource(R.string.category_burgers), R.drawable.hamburguesas),
-        CategoryItem(stringResource(R.string.category_bakery), R.drawable.panaderia),
-        CategoryItem(stringResource(R.string.category_asian), R.drawable.china),
-        CategoryItem(stringResource(R.string.category_mexican), R.drawable.mexicana)
+        CategoryItem(stringResource(R.string.categoria_desayuno), R.drawable.desayuno),
+        CategoryItem(stringResource(R.string.categoria_pizzas), R.drawable.pizzas),
+        CategoryItem(stringResource(R.string.categoria_hamburguesas), R.drawable.hamburguesas),
+        CategoryItem(stringResource(R.string.categoria_panaderia), R.drawable.panaderia),
+        CategoryItem(stringResource(R.string.categoria_asiatica), R.drawable.china),
+        CategoryItem(stringResource(R.string.categoria_mexicana), R.drawable.mexicana)
     )
 
     val featuredRestaurants = RestaurantRepository.getFeaturedRestaurants()
@@ -80,7 +84,7 @@ fun HomeScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(ZestaBackground)
+            .background(FondoZesta)
     ) {
         LazyColumn(
             modifier = Modifier
@@ -89,18 +93,13 @@ fun HomeScreen(
             contentPadding = PaddingValues(top = 16.dp, bottom = 100.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            item {
-                HomeTopBar()
-            }
-
-            item {
-                CategoryRow(categories = categories)
-            }
+            item { HomeTopBar() }
+            item { CategoryRow(categories) }
 
             item {
                 SectionHeader(
-                    title = stringResource(R.string.home_featured),
-                    subtitle = stringResource(R.string.home_sponsored)
+                    title = stringResource(R.string.inicio_destacado),
+                    subtitle = stringResource(R.string.inicio_patrocinado)
                 )
             }
 
@@ -112,9 +111,7 @@ fun HomeScreen(
             }
 
             item {
-                SectionHeader(
-                    title = stringResource(R.string.home_promotions)
-                )
+                SectionHeader(title = stringResource(R.string.inicio_promociones))
             }
 
             item {
@@ -125,9 +122,7 @@ fun HomeScreen(
             }
 
             item {
-                SectionHeader(
-                    title = stringResource(R.string.home_explore)
-                )
+                SectionHeader(title = stringResource(R.string.inicio_explorar))
             }
 
             item {
@@ -159,15 +154,15 @@ private fun HomeTopBar() {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = stringResource(R.string.home_address),
+            text = stringResource(R.string.inicio_direccion),
             style = MaterialTheme.typography.titleLarge,
-            color = ZestaTextPrimary
+            color = TextoPrincipalZesta
         )
 
         Icon(
             imageVector = Icons.Outlined.Notifications,
-            contentDescription = stringResource(R.string.cd_notifications),
-            tint = ZestaBlack,
+            contentDescription = stringResource(R.string.accesibilidad_notificaciones),
+            tint = NegroZesta,
             modifier = Modifier.size(32.dp)
         )
     }
@@ -175,20 +170,19 @@ private fun HomeTopBar() {
 
 @Composable
 private fun CategoryRow(categories: List<CategoryItem>) {
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(14.dp)
-    ) {
+    LazyRow(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
         items(categories) { category ->
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Image(
-                    painter = painterResource(id = category.imageRes),
-                    contentDescription = category.name,
+                    painter = painterResource(category.imageRes),
+                    contentDescription = stringResource(
+                        R.string.accesibilidad_imagen_categoria,
+                        category.name
+                    ),
                     modifier = Modifier
                         .size(68.dp)
                         .clip(CircleShape)
-                        .border(1.dp, Color(0xFFD3D3D3), CircleShape),
+                        .border(1.dp, BordeCategoriaZesta, CircleShape),
                     contentScale = ContentScale.Crop
                 )
 
@@ -197,7 +191,7 @@ private fun CategoryRow(categories: List<CategoryItem>) {
                 Text(
                     text = category.name,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = ZestaTextPrimary
+                    color = TextoPrincipalZesta
                 )
             }
         }
@@ -213,14 +207,14 @@ private fun SectionHeader(
         Text(
             text = title,
             style = MaterialTheme.typography.titleLarge,
-            color = ZestaTextPrimary
+            color = TextoPrincipalZesta
         )
 
-        if (subtitle != null) {
+        subtitle?.let {
             Text(
-                text = subtitle,
+                text = it,
                 style = MaterialTheme.typography.bodyMedium,
-                color = ZestaReview
+                color = TextoResenaZesta
             )
         }
     }
@@ -231,13 +225,8 @@ private fun RestaurantRow(
     restaurants: List<Restaurant>,
     onRestaurantClick: (Int) -> Unit
 ) {
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        items(
-            items = restaurants,
-            key = { restaurant -> restaurant.id }
-        ) { restaurant ->
+    LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+        items(restaurants, key = { it.id }) { restaurant ->
             RestaurantCard(
                 restaurant = restaurant,
                 onClick = { onRestaurantClick(restaurant.id) }
@@ -251,6 +240,22 @@ private fun RestaurantCard(
     restaurant: Restaurant,
     onClick: () -> Unit
 ) {
+    val restaurantName = stringResource(restaurant.nameRes)
+    val deliveryText = if (restaurant.hasFreeDelivery) {
+        stringResource(R.string.restaurante_envio_gratis, restaurant.deliveryTimeMinutes)
+    } else {
+        stringResource(
+            R.string.restaurante_envio_pago,
+            restaurant.deliveryFee ?: 0.0,
+            restaurant.deliveryTimeMinutes
+        )
+    }
+    val ratingText = stringResource(
+        R.string.restaurante_valoracion,
+        restaurant.ratingValue,
+        restaurant.ratingCount
+    )
+
     Column(
         modifier = Modifier
             .width(185.dp)
@@ -261,30 +266,30 @@ private fun RestaurantCard(
                 .fillMaxWidth()
                 .height(112.dp)
                 .clip(RoundedCornerShape(18.dp))
-                .background(Color(0xFFF1F1F1))
+                .background(FondoTarjetaRestauranteZesta)
                 .padding(8.dp)
         ) {
             Image(
-                painter = painterResource(id = restaurant.imageRes),
-                contentDescription = restaurant.name,
+                painter = painterResource(restaurant.imageRes),
+                contentDescription = restaurantName,
                 modifier = Modifier
                     .fillMaxSize()
                     .clip(RoundedCornerShape(15.dp)),
                 contentScale = ContentScale.Crop
             )
 
-            if (restaurant.promoText != null) {
+            restaurant.promoTextRes?.let { promoRes ->
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopCenter)
                         .padding(top = 6.dp, start = 6.dp, end = 6.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(ZestaOffer)
+                        .background(FondoOfertaZesta)
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = restaurant.promoText,
-                        color = Color.White,
+                        text = stringResource(promoRes),
+                        color = BlancoZesta,
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -294,22 +299,22 @@ private fun RestaurantCard(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = restaurant.name,
+            text = restaurantName,
             style = MaterialTheme.typography.bodyLarge,
-            color = ZestaTextPrimary,
+            color = TextoPrincipalZesta,
             fontWeight = FontWeight.Normal
         )
 
         Text(
-            text = restaurant.deliveryInfo,
+            text = deliveryText,
             style = MaterialTheme.typography.bodyMedium,
-            color = ZestaTextPrimary
+            color = TextoPrincipalZesta
         )
 
         Text(
-            text = restaurant.rating,
+            text = ratingText,
             style = MaterialTheme.typography.bodyMedium,
-            color = ZestaReview
+            color = TextoResenaZesta
         )
     }
 }
@@ -319,6 +324,22 @@ private fun ExploreRestaurantCard(
     restaurant: Restaurant,
     onClick: () -> Unit
 ) {
+    val restaurantName = stringResource(restaurant.nameRes)
+    val deliveryText = if (restaurant.hasFreeDelivery) {
+        stringResource(R.string.restaurante_envio_gratis, restaurant.deliveryTimeMinutes)
+    } else {
+        stringResource(
+            R.string.restaurante_envio_pago,
+            restaurant.deliveryFee ?: 0.0,
+            restaurant.deliveryTimeMinutes
+        )
+    }
+    val ratingText = stringResource(
+        R.string.restaurante_valoracion,
+        restaurant.ratingValue,
+        restaurant.ratingCount
+    )
+
     Column(
         modifier = Modifier
             .width(190.dp)
@@ -329,29 +350,29 @@ private fun ExploreRestaurantCard(
                 .fillMaxWidth()
                 .height(125.dp)
                 .clip(RoundedCornerShape(20.dp))
-                .background(Color(0xFFF1F1F1))
+                .background(FondoTarjetaRestauranteZesta)
         ) {
             Image(
-                painter = painterResource(id = restaurant.imageRes),
-                contentDescription = restaurant.name,
+                painter = painterResource(restaurant.imageRes),
+                contentDescription = restaurantName,
                 modifier = Modifier
                     .fillMaxSize()
                     .clip(RoundedCornerShape(20.dp)),
                 contentScale = ContentScale.Crop
             )
 
-            if (restaurant.promoText != null) {
+            restaurant.promoTextRes?.let { promoRes ->
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopStart)
                         .padding(8.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(Color.Red)
+                        .background(NaranjaZesta)
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = restaurant.promoText,
-                        color = Color.White,
+                        text = stringResource(promoRes),
+                        color = BlancoZesta,
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
@@ -361,21 +382,21 @@ private fun ExploreRestaurantCard(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = restaurant.name,
+            text = restaurantName,
             style = MaterialTheme.typography.titleMedium,
-            color = ZestaTextPrimary
+            color = TextoPrincipalZesta
         )
 
         Text(
-            text = restaurant.deliveryInfo,
+            text = deliveryText,
             style = MaterialTheme.typography.bodyMedium,
-            color = ZestaTextPrimary
+            color = TextoPrincipalZesta
         )
 
         Text(
-            text = restaurant.rating,
+            text = ratingText,
             style = MaterialTheme.typography.bodyMedium,
-            color = ZestaReview
+            color = TextoResenaZesta
         )
     }
 }
@@ -394,10 +415,7 @@ private fun ExploreRestaurantGrid(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalArrangement = Arrangement.spacedBy(18.dp)
     ) {
-        items(
-            items = restaurants,
-            key = { restaurant -> restaurant.id }
-        ) { restaurant ->
+        items(restaurants, key = { it.id }) { restaurant ->
             ExploreRestaurantCard(
                 restaurant = restaurant,
                 onClick = { onRestaurantClick(restaurant.id) }
@@ -418,16 +436,16 @@ private fun BottomHomeBar(
             .fillMaxWidth()
             .height(64.dp)
             .clip(RoundedCornerShape(30.dp))
-            .background(Color(0xFFF1F1F1))
-            .border(1.dp, Color(0xFFD0D0D0), RoundedCornerShape(30.dp))
+            .background(FondoTarjetaRestauranteZesta)
+            .border(1.dp, BordeCirculoZesta, RoundedCornerShape(30.dp))
             .padding(horizontal = 16.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
             imageVector = Icons.Outlined.Home,
-            contentDescription = stringResource(R.string.nav_home),
-            tint = ZestaBlack,
+            contentDescription = stringResource(R.string.navegacion_inicio),
+            tint = NegroZesta,
             modifier = Modifier.size(34.dp)
         )
 
@@ -437,24 +455,24 @@ private fun BottomHomeBar(
         ) {
             Icon(
                 imageVector = Icons.Outlined.Search,
-                contentDescription = stringResource(R.string.home_search),
-                tint = ZestaBlack,
+                contentDescription = stringResource(R.string.inicio_buscar),
+                tint = NegroZesta,
                 modifier = Modifier.size(34.dp)
             )
 
             Spacer(modifier = Modifier.width(8.dp))
 
             Text(
-                text = stringResource(R.string.home_search),
+                text = stringResource(R.string.inicio_buscar),
                 style = MaterialTheme.typography.bodyLarge,
-                color = ZestaTextPrimary
+                color = TextoPrincipalZesta
             )
         }
 
         Icon(
             imageVector = Icons.Outlined.ShoppingCart,
-            contentDescription = stringResource(R.string.nav_cart),
-            tint = ZestaBlack,
+            contentDescription = stringResource(R.string.navegacion_carrito),
+            tint = NegroZesta,
             modifier = Modifier
                 .size(34.dp)
                 .clickable { onCartClick() }
@@ -462,8 +480,8 @@ private fun BottomHomeBar(
 
         Icon(
             imageVector = Icons.Outlined.Person,
-            contentDescription = stringResource(R.string.nav_profile),
-            tint = ZestaBlack,
+            contentDescription = stringResource(R.string.navegacion_perfil),
+            tint = NegroZesta,
             modifier = Modifier
                 .size(34.dp)
                 .clickable { onProfileClick() }

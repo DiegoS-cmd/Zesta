@@ -34,7 +34,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -42,15 +41,23 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.zesta.app.R
-import com.zesta.app.data.restaurant.ProductItem
+import com.zesta.app.data.restaurant.Product
 import com.zesta.app.data.restaurant.Restaurant
 import com.zesta.app.data.restaurant.RestaurantRepository
-import com.zesta.app.ui.theme.ZestaBackground
-import com.zesta.app.ui.theme.ZestaBlack
-import com.zesta.app.ui.theme.ZestaPlaceholder
-import com.zesta.app.ui.theme.ZestaReview
-import com.zesta.app.ui.theme.ZestaTextPrimary
-import com.zesta.app.ui.theme.ZestaWhite
+import com.zesta.app.ui.theme.BlancoZesta
+import com.zesta.app.ui.theme.BordeCirculoZesta
+import com.zesta.app.ui.theme.BordeDoradoZesta
+import com.zesta.app.ui.theme.BordeIconoZesta
+import com.zesta.app.ui.theme.FondoBotonMasZesta
+import com.zesta.app.ui.theme.FondoCirculoZesta
+import com.zesta.app.ui.theme.FondoPlaceholderZesta
+import com.zesta.app.ui.theme.FondoZesta
+import com.zesta.app.ui.theme.NegroZesta
+import com.zesta.app.ui.theme.TextoPrincipalZesta
+import com.zesta.app.ui.theme.TextoResenaZesta
+import com.zesta.app.ui.theme.AzulFinGradienteZesta
+import com.zesta.app.ui.theme.NegroZesta as InicioGradiente
+import com.zesta.app.ui.theme.ColorUbicacionZesta
 
 @Composable
 fun RestaurantDetailScreen(
@@ -64,7 +71,7 @@ fun RestaurantDetailScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(ZestaBackground)
+            .background(FondoZesta)
     ) {
         LazyColumn(
             modifier = Modifier
@@ -72,29 +79,25 @@ fun RestaurantDetailScreen(
                 .padding(horizontal = 16.dp),
             contentPadding = PaddingValues(top = 16.dp, bottom = 110.dp)
         ) {
-            item {
-                RestaurantTopBar(onBack = onBack)
-            }
+            item { RestaurantTopBar(onBack) }
 
             item {
                 Spacer(modifier = Modifier.height(8.dp))
-                RestaurantHeader(restaurant = restaurant)
+                RestaurantHeader(restaurant)
             }
 
             item {
                 Spacer(modifier = Modifier.height(20.dp))
                 Text(
-                    text = stringResource(R.string.restaurant_promotions),
+                    text = stringResource(R.string.restaurante_promociones),
                     style = MaterialTheme.typography.titleLarge,
-                    color = ZestaTextPrimary
+                    color = TextoPrincipalZesta
                 )
             }
 
             item {
                 Spacer(modifier = Modifier.height(14.dp))
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(14.dp)
-                ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                     restaurant.products.take(2).forEach { product ->
                         ProductPromoCard(
                             product = product,
@@ -107,9 +110,9 @@ fun RestaurantDetailScreen(
             item {
                 Spacer(modifier = Modifier.height(18.dp))
                 Text(
-                    text = stringResource(R.string.restaurant_explore_menu),
+                    text = stringResource(R.string.restaurante_explorar_menu),
                     style = MaterialTheme.typography.titleLarge,
-                    color = ZestaTextPrimary
+                    color = TextoPrincipalZesta
                 )
             }
         }
@@ -124,9 +127,7 @@ fun RestaurantDetailScreen(
 }
 
 @Composable
-private fun RestaurantTopBar(
-    onBack: () -> Unit
-) {
+private fun RestaurantTopBar(onBack: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -134,22 +135,20 @@ private fun RestaurantTopBar(
     ) {
         CircleIconButton(
             icon = Icons.Outlined.ArrowBack,
-            contentDescription = "Volver",
+            contentDescription = stringResource(R.string.accesibilidad_volver),
             onClick = onBack
         )
 
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             CircleIconButton(
                 icon = Icons.Outlined.Search,
-                contentDescription = "Buscar",
+                contentDescription = stringResource(R.string.accesibilidad_buscar_accion),
                 onClick = { }
             )
 
             CircleIconButton(
                 icon = Icons.Outlined.FavoriteBorder,
-                contentDescription = "Favorito",
+                contentDescription = stringResource(R.string.accesibilidad_favorito_accion),
                 onClick = { }
             )
         }
@@ -157,16 +156,21 @@ private fun RestaurantTopBar(
 }
 
 @Composable
-private fun RestaurantHeader(
-    restaurant: Restaurant
-) {
+private fun RestaurantHeader(restaurant: Restaurant) {
+    val restaurantName = stringResource(restaurant.nameRes)
+    val ratingText = stringResource(
+        R.string.restaurante_valoracion,
+        restaurant.ratingValue,
+        restaurant.ratingCount
+    )
+
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(
-            painter = painterResource(id = restaurant.imageRes),
-            contentDescription = restaurant.name,
+            painter = painterResource(restaurant.imageRes),
+            contentDescription = restaurantName,
             modifier = Modifier
                 .size(160.dp)
                 .clip(RoundedCornerShape(24.dp)),
@@ -176,50 +180,48 @@ private fun RestaurantHeader(
         Spacer(modifier = Modifier.height(8.dp))
 
         Image(
-            painter = painterResource(id = restaurant.imageRes),
-            contentDescription = restaurant.name,
+            painter = painterResource(restaurant.imageRes),
+            contentDescription = restaurantName,
             modifier = Modifier
                 .size(52.dp)
                 .clip(CircleShape)
-                .border(2.dp, Color(0xFFD7D7D7), CircleShape),
+                .border(2.dp, BordeIconoZesta, CircleShape),
             contentScale = ContentScale.Crop
         )
 
         Spacer(modifier = Modifier.height(10.dp))
 
         Text(
-            text = restaurant.name,
+            text = restaurantName,
             style = MaterialTheme.typography.titleLarge,
-            color = ZestaTextPrimary,
+            color = TextoPrincipalZesta,
             fontWeight = FontWeight.Normal
         )
 
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
-            text = restaurant.rating,
+            text = ratingText,
             style = MaterialTheme.typography.bodyMedium,
-            color = ZestaReview
+            color = TextoResenaZesta
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 imageVector = Icons.Outlined.LocationOn,
-                contentDescription = stringResource(R.string.restaurant_location),
-                tint = Color(0xFFE74C3C),
+                contentDescription = stringResource(R.string.restaurante_ubicacion),
+                tint = ColorUbicacionZesta,
                 modifier = Modifier.size(30.dp)
             )
 
             Spacer(modifier = Modifier.width(6.dp))
 
             Text(
-                text = stringResource(R.string.restaurant_location),
+                text = stringResource(R.string.restaurante_ubicacion),
                 style = MaterialTheme.typography.bodyLarge,
-                color = ZestaTextPrimary
+                color = TextoPrincipalZesta
             )
         }
     }
@@ -227,19 +229,23 @@ private fun RestaurantHeader(
 
 @Composable
 private fun ProductPromoCard(
-    product: ProductItem,
+    product: Product,
     modifier: Modifier = Modifier
 ) {
+    val productName = stringResource(product.nameRes)
+    val productPrice = stringResource(R.string.producto_precio, product.price)
+    val productDescription = stringResource(product.descriptionRes)
+
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(18.dp))
-            .background(ZestaPlaceholder)
+            .background(FondoPlaceholderZesta)
             .padding(10.dp)
     ) {
         Box {
             Image(
-                painter = painterResource(id = product.imageRes),
-                contentDescription = product.name,
+                painter = painterResource(product.imageRes),
+                contentDescription = productName,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(95.dp)
@@ -253,13 +259,13 @@ private fun ProductPromoCard(
                     .offset(x = 10.dp, y = 10.dp)
                     .size(34.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFFE9E9E9))
-                    .border(1.dp, Color(0xFFD0D0D0), CircleShape),
+                    .background(FondoBotonMasZesta)
+                    .border(1.dp, BordeCirculoZesta, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "+",
-                    color = ZestaBlack,
+                    text = stringResource(R.string.producto_simbolo_mas),
+                    color = NegroZesta,
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
@@ -268,21 +274,21 @@ private fun ProductPromoCard(
         Spacer(modifier = Modifier.height(10.dp))
 
         Text(
-            text = product.name,
+            text = productName,
             style = MaterialTheme.typography.bodyLarge,
-            color = ZestaTextPrimary
+            color = TextoPrincipalZesta
         )
 
         Text(
-            text = product.price,
+            text = productPrice,
             style = MaterialTheme.typography.bodyLarge,
-            color = ZestaTextPrimary
+            color = TextoPrincipalZesta
         )
 
         Text(
-            text = product.description,
+            text = productDescription,
             style = MaterialTheme.typography.bodyMedium,
-            color = ZestaReview
+            color = TextoResenaZesta
         )
     }
 }
@@ -298,30 +304,28 @@ private fun ViewCartButton(
             .clip(RoundedCornerShape(30.dp))
             .background(
                 brush = Brush.horizontalGradient(
-                    colors = listOf(ZestaBlack, Color(0xFF111111))
+                    colors = listOf(InicioGradiente, AzulFinGradienteZesta)
                 )
             )
-            .border(2.dp, Color(0xFFB89B3C), RoundedCornerShape(30.dp))
+            .border(2.dp, BordeDoradoZesta, RoundedCornerShape(30.dp))
             .clickable { onClick() }
             .padding(horizontal = 26.dp),
         contentAlignment = Alignment.Center
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 imageVector = Icons.Outlined.ShoppingCart,
-                contentDescription = stringResource(R.string.restaurant_view_cart),
-                tint = ZestaWhite,
+                contentDescription = stringResource(R.string.restaurante_ver_carrito),
+                tint = BlancoZesta,
                 modifier = Modifier.size(26.dp)
             )
 
             Spacer(modifier = Modifier.width(10.dp))
 
             Text(
-                text = stringResource(R.string.restaurant_view_cart),
+                text = stringResource(R.string.restaurante_ver_carrito),
                 style = MaterialTheme.typography.bodyLarge,
-                color = ZestaWhite
+                color = BlancoZesta
             )
         }
     }
@@ -337,15 +341,15 @@ private fun CircleIconButton(
         modifier = Modifier
             .size(46.dp)
             .clip(CircleShape)
-            .background(Color(0xFFF0F0F0))
-            .border(1.dp, Color(0xFFD0D0D0), CircleShape)
+            .background(FondoCirculoZesta)
+            .border(1.dp, BordeCirculoZesta, CircleShape)
             .clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {
         Icon(
             imageVector = icon,
             contentDescription = contentDescription,
-            tint = ZestaBlack,
+            tint = NegroZesta,
             modifier = Modifier.size(28.dp)
         )
     }

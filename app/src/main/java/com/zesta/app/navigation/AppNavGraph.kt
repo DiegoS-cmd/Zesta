@@ -1,45 +1,120 @@
 package com.zesta.app.navigation
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.zesta.app.data.repository.UserPreferencesRepository
 import com.zesta.app.ui.screens.cart.CartScreen
 import com.zesta.app.ui.screens.home.HomeScreen
 import com.zesta.app.ui.screens.login.LoginScreen
+import com.zesta.app.ui.screens.profile.ManageAccountScreen
 import com.zesta.app.ui.screens.profile.ProfileScreen
 import com.zesta.app.ui.screens.register.RegisterScreen
 import com.zesta.app.ui.screens.restaurant.RestaurantDetailScreen
 import com.zesta.app.ui.screens.search.SearchScreen
+import com.zesta.app.ui.theme.FondoZesta
+import com.zesta.app.viewmodel.AuthViewModel
+import com.zesta.app.viewmodel.AuthViewModelFactory
 
 @Composable
 fun AppNavGraph() {
     val navController = rememberNavController()
+    val context = LocalContext.current
+    val repository = UserPreferencesRepository(context)
+    val authViewModel: AuthViewModel = viewModel(
+        factory = AuthViewModelFactory(repository)
+    )
+    val uiState by authViewModel.uiState.collectAsState()
 
     NavHost(
         navController = navController,
-        startDestination = AppRoutes.Login.route
+        startDestination = AppRoutes.Splash.route
     ) {
+        composable(AppRoutes.Splash.route) {
+            LaunchedEffect(uiState.isLoggedIn, uiState.isGuest) {
+                val destination = if (uiState.isLoggedIn || uiState.isGuest) {
+                    AppRoutes.Home.route
+                } else {
+                    AppRoutes.Login.route
+                }
+
+                navController.navigate(destination) {
+                    popUpTo(AppRoutes.Splash.route) { inclusive = true }
+                    launchSingleTop = true
+                }
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(FondoZesta),
+                contentAlignment = Alignment.Center
+            ) {
+            }
+        }
+
         composable(AppRoutes.Login.route) {
             LoginScreen(
-                onLoginSuccess = {
-                    navController.navigate(AppRoutes.Home.route) {
-                        popUpTo(AppRoutes.Login.route) { inclusive = true }
+                email = uiState.email,
+                password = uiState.password,
+                errorMessage = uiState.errorMessage,
+                onEmailChange = authViewModel::onEmailChange,
+                onPasswordChange = authViewModel::onPasswordChange,
+                onLoginClick = {
+                    authViewModel.login {
+                        navController.navigate(AppRoutes.Home.route) {
+                            popUpTo(AppRoutes.Login.route) { inclusive = true }
+                            launchSingleTop = true
+                        }
                     }
                 },
                 onGoRegister = {
                     navController.navigate(AppRoutes.Register.route)
+                },
+                onContinueAsGuestClick = {
+                    authViewModel.continueAsGuest {
+                        navController.navigate(AppRoutes.Home.route) {
+                            popUpTo(AppRoutes.Login.route) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    }
                 }
             )
         }
 
         composable(AppRoutes.Register.route) {
             RegisterScreen(
-                onRegisterSuccess = {
-                    navController.navigate(AppRoutes.Home.route) {
-                        popUpTo(AppRoutes.Login.route) { inclusive = true }
+                fullName = uiState.fullName,
+                email = uiState.email,
+                password = uiState.password,
+                phone = uiState.phone,
+                address = uiState.address,
+                errorMessage = uiState.errorMessage,
+                onFullNameChange = authViewModel::onFullNameChange,
+                onEmailChange = authViewModel::onEmailChange,
+                onPasswordChange = authViewModel::onPasswordChange,
+                onPhoneChange = authViewModel::onPhoneChange,
+                onAddressChange = authViewModel::onAddressChange,
+                onRegisterClick = {
+                    authViewModel.register {
+                        navController.navigate(AppRoutes.Home.route) {
+                            popUpTo(AppRoutes.Register.route) { inclusive = true }
+                            popUpTo(AppRoutes.Login.route) { inclusive = true }
+                            launchSingleTop = true
+                        }
                     }
                 },
                 onBack = {
@@ -79,7 +154,6 @@ fun AppNavGraph() {
             )
         }
 
-
         composable(AppRoutes.Cart.route) {
             CartScreen(
                 onHomeClick = {
@@ -100,10 +174,10 @@ fun AppNavGraph() {
             )
         }
 
-
         composable(AppRoutes.Profile.route) {
             ProfileScreen(
-                userName = "",
+                userName = uiState.userName,
+                isGuest = uiState.isGuest,
                 onHomeClick = {
                     navController.navigate(AppRoutes.Home.route)
                 },
@@ -118,11 +192,41 @@ fun AppNavGraph() {
                 onHelpClick = { },
                 onPrivacyClick = { },
                 onAccessibilityClick = { },
-                onManageAccountClick = { },
-                onAboutClick = { }
+                onManageAccountClick = {
+                    navController.navigate(AppRoutes.ManageAccount.route)
+                },
+                onAboutClick = { },
+                onLoginClick = {
+                    navController.navigate(AppRoutes.Login.route)
+                },
+                onRegisterClick = {
+                    navController.navigate(AppRoutes.Register.route)
+                }
             )
         }
 
+        composable(AppRoutes.ManageAccount.route) {
+            ManageAccountScreen(
+                isGuest = uiState.isGuest,
+                userName = uiState.userName,
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onLoginClick = {
+                    navController.navigate(AppRoutes.Login.route)
+                },
+                onRegisterClick = {
+                    navController.navigate(AppRoutes.Register.route)
+                },
+                onLogoutClick = {
+                    authViewModel.logout()
+                    navController.navigate(AppRoutes.Login.route) {
+                        popUpTo(AppRoutes.Home.route) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
 
         composable(
             route = AppRoutes.RestaurantDetail.route,

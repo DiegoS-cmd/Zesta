@@ -17,31 +17,31 @@ val Typography = Typography(
         fontFamily = ZestaTitleFont,
         fontWeight = FontWeight.Normal,
         fontSize = 22.sp,
-        color = ZestaTextPrimary
+        color = TextoPrincipalZesta
     ),
     titleLarge = TextStyle(
         fontFamily = ZestaTitleFont,
         fontWeight = FontWeight.Normal,
         fontSize = 26.sp,
-        color = ZestaTextPrimary
+        color = TextoPrincipalZesta
     ),
     bodyLarge = TextStyle(
         fontFamily = ZestaBodyFont,
         fontWeight = FontWeight.Normal,
         fontSize = 18.sp,
-        color = ZestaTextPrimary
+        color = TextoPrincipalZesta
     ),
     bodyMedium = TextStyle(
         fontFamily = ZestaBodyFont,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
-        color = ZestaTextPrimary
+        color = TextoPrincipalZesta
     ),
     labelLarge = TextStyle(
         fontFamily = ZestaBodyFont,
         fontWeight = FontWeight.Normal,
         fontSize = 20.sp,
-        color = ZestaWhite
+        color = TextoPrincipalZesta
     )
 )
 
@@ -49,7 +49,7 @@ val LinkTextStyle = TextStyle(
     fontFamily = ZestaLinkFont,
     fontWeight = FontWeight.Normal,
     fontSize = 16.sp,
-    color = ZestaTextPrimary,
+    color = TextoPrincipalZesta,
     textDecoration = TextDecoration.Underline
 )
 
@@ -57,5 +57,5 @@ val DescriptionTextStyle = TextStyle(
     fontFamily = ZestaDescriptionFont,
     fontWeight = FontWeight.Normal,
     fontSize = 14.sp,
-    color = ZestaTextPrimary
+    color = TextoPrincipalZesta
 )
