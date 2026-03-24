@@ -8,6 +8,9 @@ val TextoPrincipalZesta = Color(0xFF595757)
 val FondoPlaceholderZesta = Color(0xFFEDEDED)
 val BlancoZesta = Color(0xFFFFFFFF)
 val NegroZesta = Color(0xFF000000)
+val NaranjaSeleccionZesta = Color(0xFFFF8A00)
+val FondoSeleccionNaranjaZesta = Color(0xFFFFE2BF)
+
 
 val FondoOfertaZesta = Color(0xFFFA0303)
 val TextoResenaZesta = Color(0xFFADABAB)

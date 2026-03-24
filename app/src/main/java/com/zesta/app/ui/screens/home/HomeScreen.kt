@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -25,11 +26,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -45,8 +42,9 @@ import androidx.compose.ui.unit.dp
 import com.zesta.app.R
 import com.zesta.app.data.restaurant.Restaurant
 import com.zesta.app.data.restaurant.RestaurantRepository
+import com.zesta.app.navigation.AppRoutes
+import com.zesta.app.ui.components.ZestaBottomNavBar
 import com.zesta.app.ui.theme.BordeCategoriaZesta
-import com.zesta.app.ui.theme.BordeCirculoZesta
 import com.zesta.app.ui.theme.BlancoZesta
 import com.zesta.app.ui.theme.FondoOfertaZesta
 import com.zesta.app.ui.theme.FondoTarjetaRestauranteZesta
@@ -133,10 +131,13 @@ fun HomeScreen(
             }
         }
 
-        BottomHomeBar(
+        ZestaBottomNavBar(
+            selectedRoute = AppRoutes.Home.route,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
+                .navigationBarsPadding()
                 .padding(horizontal = 14.dp, vertical = 14.dp),
+            onHomeClick = { },
             onSearchClick = onSearchClick,
             onCartClick = onCartClick,
             onProfileClick = onProfileClick
@@ -421,70 +422,5 @@ private fun ExploreRestaurantGrid(
                 onClick = { onRestaurantClick(restaurant.id) }
             )
         }
-    }
-}
-
-@Composable
-private fun BottomHomeBar(
-    modifier: Modifier = Modifier,
-    onSearchClick: () -> Unit,
-    onCartClick: () -> Unit,
-    onProfileClick: () -> Unit
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(64.dp)
-            .clip(RoundedCornerShape(30.dp))
-            .background(FondoTarjetaRestauranteZesta)
-            .border(1.dp, BordeCirculoZesta, RoundedCornerShape(30.dp))
-            .padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = Icons.Outlined.Home,
-            contentDescription = stringResource(R.string.navegacion_inicio),
-            tint = NegroZesta,
-            modifier = Modifier.size(34.dp)
-        )
-
-        Row(
-            modifier = Modifier.clickable { onSearchClick() },
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.Search,
-                contentDescription = stringResource(R.string.inicio_buscar),
-                tint = NegroZesta,
-                modifier = Modifier.size(34.dp)
-            )
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Text(
-                text = stringResource(R.string.inicio_buscar),
-                style = MaterialTheme.typography.bodyLarge,
-                color = TextoPrincipalZesta
-            )
-        }
-
-        Icon(
-            imageVector = Icons.Outlined.ShoppingCart,
-            contentDescription = stringResource(R.string.navegacion_carrito),
-            tint = NegroZesta,
-            modifier = Modifier
-                .size(34.dp)
-                .clickable { onCartClick() }
-        )
-
-        Icon(
-            imageVector = Icons.Outlined.Person,
-            contentDescription = stringResource(R.string.navegacion_perfil),
-            tint = NegroZesta,
-            modifier = Modifier
-                .size(34.dp)
-                .clickable { onProfileClick() }
-        )
     }
 }

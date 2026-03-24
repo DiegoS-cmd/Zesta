@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.zesta.app.data.model.User
+import com.zesta.app.data.repository.AuthRepository
 import com.zesta.app.data.repository.UserPreferencesRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,44 +19,54 @@ data class AuthUiState(
     val address: String = "",
     val isLoggedIn: Boolean = false,
     val isGuest: Boolean = false,
+    val currentUser: User? = null,
     val userName: String = "",
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val isLoading: Boolean = false
 )
 
 class AuthViewModel(
-    private val repository: UserPreferencesRepository
+    private val authRepository: AuthRepository,
+    private val preferencesRepository: UserPreferencesRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
     init {
-        observeSession()
-        observeGuest()
-        observeUser()
+        observeGuestMode()
+        restoreSessionIfNeeded()
     }
 
-    private fun observeSession() {
+    private fun observeGuestMode() {
         viewModelScope.launch {
-            repository.isLoggedInFlow.collect { loggedIn ->
-                _uiState.value = _uiState.value.copy(isLoggedIn = loggedIn)
+            preferencesRepository.isGuestFlow.collect { isGuest ->
+                _uiState.value = _uiState.value.copy(isGuest = isGuest)
             }
         }
     }
 
-    private fun observeGuest() {
-        viewModelScope.launch {
-            repository.isGuestFlow.collect { guest ->
-                _uiState.value = _uiState.value.copy(isGuest = guest)
-            }
-        }
-    }
+    private fun restoreSessionIfNeeded() {
+        if (!authRepository.isLoggedIn()) return
 
-    private fun observeUser() {
         viewModelScope.launch {
-            repository.userFlow.collect { user ->
-                _uiState.value = _uiState.value.copy(
-                    userName = user?.fullName.orEmpty()
+            val result = authRepository.getCurrentUser()
+
+            _uiState.value = if (result.isSuccess) {
+                val user = result.getOrNull()
+                _uiState.value.copy(
+                    isLoggedIn = true,
+                    isGuest = false,
+                    currentUser = user,
+                    userName = user?.nombre.orEmpty(),
+                    errorMessage = null
+                )
+            } else {
+                _uiState.value.copy(
+                    isLoggedIn = false,
+                    currentUser = null,
+                    userName = "",
+                    errorMessage = null
                 )
             }
         }
@@ -84,27 +95,43 @@ class AuthViewModel(
     fun register(onSuccess: () -> Unit) {
         val state = _uiState.value
 
-        if (
-            state.fullName.isBlank() ||
-            state.email.isBlank() ||
-            state.password.isBlank()
-        ) {
+        if (state.fullName.isBlank() || state.email.isBlank() || state.password.isBlank()) {
             _uiState.value = state.copy(errorMessage = "Completa los campos obligatorios")
             return
         }
 
         viewModelScope.launch {
-            repository.registerUser(
-                User(
-                    fullName = state.fullName.trim(),
-                    email = state.email.trim(),
-                    password = state.password,
-                    phone = state.phone.trim(),
-                    address = state.address.trim()
-                )
+            _uiState.value = state.copy(isLoading = true, errorMessage = null)
+
+            val result = authRepository.register(
+                nombre = state.fullName.trim(),
+                email = state.email.trim(),
+                password = state.password,
+                telefono = state.phone.trim(),
+                direccion = state.address.trim()
             )
-            clearForm()
-            onSuccess()
+
+            if (result.isSuccess) {
+                val user = result.getOrNull()
+
+                preferencesRepository.clearGuestMode()
+
+                _uiState.value = AuthUiState(
+                    isLoggedIn = true,
+                    isGuest = false,
+                    currentUser = user,
+                    userName = user?.nombre.orEmpty(),
+                    errorMessage = null,
+                    isLoading = false
+                )
+
+                onSuccess()
+            } else {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    errorMessage = result.exceptionOrNull()?.message ?: "No se pudo registrar el usuario"
+                )
+            }
         }
     }
 
@@ -117,17 +144,36 @@ class AuthViewModel(
         }
 
         viewModelScope.launch {
-            val success = repository.login(
+            _uiState.value = state.copy(isLoading = true, errorMessage = null)
+
+            val result = authRepository.login(
                 email = state.email.trim(),
                 password = state.password
             )
 
-            if (success) {
-                _uiState.value = _uiState.value.copy(errorMessage = null)
+            if (result.isSuccess) {
+                val user = result.getOrNull()
+
+                preferencesRepository.clearGuestMode()
+
+                _uiState.value = _uiState.value.copy(
+                    isLoggedIn = true,
+                    isGuest = false,
+                    currentUser = user,
+                    userName = user?.nombre.orEmpty(),
+                    password = "",
+                    errorMessage = null,
+                    isLoading = false
+                )
+
                 onSuccess()
             } else {
                 _uiState.value = _uiState.value.copy(
-                    errorMessage = "Credenciales incorrectas"
+                    isLoading = false,
+                    isLoggedIn = false,
+                    currentUser = null,
+                    userName = "",
+                    errorMessage = result.exceptionOrNull()?.message ?: "Credenciales incorrectas"
                 )
             }
         }
@@ -135,37 +181,38 @@ class AuthViewModel(
 
     fun continueAsGuest(onSuccess: () -> Unit) {
         viewModelScope.launch {
-            repository.continueAsGuest()
-            _uiState.value = _uiState.value.copy(errorMessage = null)
+            preferencesRepository.continueAsGuest()
+
+            _uiState.value = _uiState.value.copy(
+                isLoggedIn = false,
+                isGuest = true,
+                currentUser = null,
+                userName = "",
+                errorMessage = null
+            )
+
             onSuccess()
         }
     }
 
     fun logout() {
         viewModelScope.launch {
-            repository.logout()
+            authRepository.logout()
+            preferencesRepository.clearGuestMode()
+            _uiState.value = AuthUiState()
         }
-    }
-
-    private fun clearForm() {
-        _uiState.value = _uiState.value.copy(
-            fullName = "",
-            email = "",
-            password = "",
-            phone = "",
-            address = "",
-            errorMessage = null
-        )
     }
 }
 
 class AuthViewModelFactory(
-    private val repository: UserPreferencesRepository
+    private val authRepository: AuthRepository,
+    private val preferencesRepository: UserPreferencesRepository
 ) : ViewModelProvider.Factory {
+
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(AuthViewModel::class.java)) {
-            return AuthViewModel(repository) as T
+            return AuthViewModel(authRepository, preferencesRepository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

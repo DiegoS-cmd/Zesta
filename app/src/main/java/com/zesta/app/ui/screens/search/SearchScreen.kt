@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -22,10 +23,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -45,12 +43,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.zesta.app.R
-import com.zesta.app.ui.theme.BlancoZesta
+import com.zesta.app.navigation.AppRoutes
+import com.zesta.app.ui.components.ZestaBottomNavBar
 import com.zesta.app.ui.theme.BordeCategoriaZesta
-import com.zesta.app.ui.theme.BordeClaroZesta
-import com.zesta.app.ui.theme.BordeIconoZesta
-import com.zesta.app.ui.theme.FondoBarraInferiorZesta
-import com.zesta.app.ui.theme.FondoSeleccionadoZesta
 import com.zesta.app.ui.theme.FondoTarjetaRestauranteZesta
 import com.zesta.app.ui.theme.FondoZesta
 import com.zesta.app.ui.theme.NegroZesta
@@ -138,11 +133,14 @@ fun SearchScreen(
             }
         }
 
-        SearchBottomBar(
+        ZestaBottomNavBar(
+            selectedRoute = AppRoutes.Search.route,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
+                .navigationBarsPadding()
                 .padding(horizontal = 12.dp, vertical = 14.dp),
             onHomeClick = onHomeClick,
+            onSearchClick = { },
             onCartClick = onCartClick,
             onProfileClick = onProfileClick
         )
@@ -252,99 +250,5 @@ private fun SearchCategoryRow(
             style = MaterialTheme.typography.titleMedium,
             color = TextoPrincipalZesta
         )
-    }
-}
-
-@Composable
-private fun SearchBottomBar(
-    modifier: Modifier = Modifier,
-    onHomeClick: () -> Unit,
-    onCartClick: () -> Unit,
-    onProfileClick: () -> Unit
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(68.dp)
-            .clip(RoundedCornerShape(34.dp))
-            .background(FondoBarraInferiorZesta)
-            .border(1.dp, BordeClaroZesta, RoundedCornerShape(34.dp))
-            .padding(horizontal = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Box(
-            modifier = Modifier
-                .size(46.dp)
-                .clip(CircleShape)
-                .background(BlancoZesta)
-                .border(1.dp, BordeIconoZesta, CircleShape)
-                .clickable { onHomeClick() },
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.Home,
-                contentDescription = stringResource(R.string.accesibilidad_ir_inicio),
-                tint = NegroZesta,
-                modifier = Modifier.size(30.dp)
-            )
-        }
-
-        Row(
-            modifier = Modifier
-                .clip(RoundedCornerShape(28.dp))
-                .background(FondoSeleccionadoZesta)
-                .padding(horizontal = 16.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.Search,
-                contentDescription = stringResource(R.string.accesibilidad_ir_buscar),
-                tint = NegroZesta,
-                modifier = Modifier.size(32.dp)
-            )
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Text(
-                text = stringResource(R.string.navegacion_buscar),
-                style = MaterialTheme.typography.bodyLarge,
-                color = TextoPrincipalZesta
-            )
-        }
-
-        Box(
-            modifier = Modifier
-                .size(46.dp)
-                .clip(CircleShape)
-                .background(BlancoZesta)
-                .border(1.dp, BordeIconoZesta, CircleShape)
-                .clickable { onCartClick() },
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.ShoppingCart,
-                contentDescription = stringResource(R.string.accesibilidad_ir_carrito),
-                tint = NegroZesta,
-                modifier = Modifier.size(28.dp)
-            )
-        }
-
-        Box(
-            modifier = Modifier
-                .size(46.dp)
-                .clip(CircleShape)
-                .background(BlancoZesta)
-                .border(1.dp, BordeIconoZesta, CircleShape)
-                .clickable { onProfileClick() },
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.Person,
-                contentDescription = stringResource(R.string.accesibilidad_ir_perfil),
-                tint = NegroZesta,
-                modifier = Modifier.size(28.dp)
-            )
-        }
     }
 }

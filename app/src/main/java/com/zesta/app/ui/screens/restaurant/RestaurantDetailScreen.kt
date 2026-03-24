@@ -13,15 +13,18 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Search
@@ -30,24 +33,32 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.zesta.app.R
+import com.zesta.app.data.model.CartItem
+import com.zesta.app.data.repository.CartRepository
 import com.zesta.app.data.restaurant.Product
 import com.zesta.app.data.restaurant.Restaurant
 import com.zesta.app.data.restaurant.RestaurantRepository
+import com.zesta.app.ui.theme.AzulFinGradienteZesta
 import com.zesta.app.ui.theme.BlancoZesta
 import com.zesta.app.ui.theme.BordeCirculoZesta
 import com.zesta.app.ui.theme.BordeDoradoZesta
 import com.zesta.app.ui.theme.BordeIconoZesta
+import com.zesta.app.ui.theme.ColorUbicacionZesta
 import com.zesta.app.ui.theme.FondoBotonMasZesta
 import com.zesta.app.ui.theme.FondoCirculoZesta
 import com.zesta.app.ui.theme.FondoPlaceholderZesta
@@ -55,9 +66,9 @@ import com.zesta.app.ui.theme.FondoZesta
 import com.zesta.app.ui.theme.NegroZesta
 import com.zesta.app.ui.theme.TextoPrincipalZesta
 import com.zesta.app.ui.theme.TextoResenaZesta
-import com.zesta.app.ui.theme.AzulFinGradienteZesta
 import com.zesta.app.ui.theme.NegroZesta as InicioGradiente
-import com.zesta.app.ui.theme.ColorUbicacionZesta
+import com.zesta.app.viewmodel.CartViewModel
+import com.zesta.app.viewmodel.CartViewModelFactory
 
 @Composable
 fun RestaurantDetailScreen(
@@ -65,8 +76,21 @@ fun RestaurantDetailScreen(
     onBack: () -> Unit,
     onGoToCart: () -> Unit
 ) {
+    val context = LocalContext.current
+
+    val cartViewModel: CartViewModel = viewModel(
+        factory = CartViewModelFactory(repository = CartRepository())
+    )
+
+    val uiState by cartViewModel.uiState.collectAsState()
+
     val restaurant = RestaurantRepository.getRestaurantById(restaurantId)
         ?: RestaurantRepository.getAllRestaurants().first()
+
+    val restaurantName = context.getString(restaurant.nameRes)
+    val restaurantImageName = context.resources.getResourceEntryName(restaurant.imageRes)
+
+    val currentRestaurantCart = uiState.carts.firstOrNull { it.cart.restaurantId == restaurant.id }
 
     Box(
         modifier = Modifier
@@ -77,17 +101,14 @@ fun RestaurantDetailScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 16.dp),
-            contentPadding = PaddingValues(top = 16.dp, bottom = 110.dp)
+            contentPadding = PaddingValues(top = 16.dp, bottom = 100.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            item { RestaurantTopBar(onBack) }
+            item { RestaurantTopBar(onBack = onBack) }
+
+            item { RestaurantHeader(restaurant = restaurant) }
 
             item {
-                Spacer(modifier = Modifier.height(8.dp))
-                RestaurantHeader(restaurant)
-            }
-
-            item {
-                Spacer(modifier = Modifier.height(20.dp))
                 Text(
                     text = stringResource(R.string.restaurante_promociones),
                     style = MaterialTheme.typography.titleLarge,
@@ -96,23 +117,74 @@ fun RestaurantDetailScreen(
             }
 
             item {
-                Spacer(modifier = Modifier.height(14.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                     restaurant.products.take(2).forEach { product ->
+                        val cartItem = currentRestaurantCart
+                            ?.items
+                            ?.firstOrNull { it.productId == product.id.toString() }
+
                         ProductPromoCard(
                             product = product,
-                            modifier = Modifier.weight(1f)
+                            quantity = cartItem?.cantidad ?: 0,
+                            modifier = Modifier.weight(1f),
+                            onAddToCart = {
+                                cartViewModel.addItem(
+                                    restaurantId = restaurant.id,
+                                    restaurantName = restaurantName,
+                                    restaurantImageResName = restaurantImageName,
+                                    item = product.toCartItem(
+                                        restaurantId = restaurant.id,
+                                        productName = context.getString(product.nameRes)
+                                    )
+                                )
+                            },
+                            onDecrease = {
+                                cartItem?.let {
+                                    if (it.cantidad == 1) cartViewModel.removeItem(restaurant.id, it)
+                                    else cartViewModel.decreaseQuantity(restaurant.id, it)
+                                }
+                            }
                         )
                     }
                 }
             }
 
             item {
-                Spacer(modifier = Modifier.height(18.dp))
                 Text(
                     text = stringResource(R.string.restaurante_explorar_menu),
                     style = MaterialTheme.typography.titleLarge,
                     color = TextoPrincipalZesta
+                )
+            }
+
+            items(
+                items = restaurant.products.drop(2),
+                key = { product -> product.id }
+            ) { product ->
+                val cartItem = currentRestaurantCart
+                    ?.items
+                    ?.firstOrNull { it.productId == product.id.toString() }
+
+                MenuProductCard(
+                    product = product,
+                    quantity = cartItem?.cantidad ?: 0,
+                    onAddToCart = {
+                        cartViewModel.addItem(
+                            restaurantId = restaurant.id,
+                            restaurantName = restaurantName,
+                            restaurantImageResName = restaurantImageName,
+                            item = product.toCartItem(
+                                restaurantId = restaurant.id,
+                                productName = context.getString(product.nameRes)
+                            )
+                        )
+                    },
+                    onDecrease = {
+                        cartItem?.let {
+                            if (it.cantidad == 1) cartViewModel.removeItem(restaurant.id, it)
+                            else cartViewModel.decreaseQuantity(restaurant.id, it)
+                        }
+                    }
                 )
             }
         }
@@ -120,10 +192,25 @@ fun RestaurantDetailScreen(
         ViewCartButton(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 18.dp),
+                .navigationBarsPadding()
+                .padding(horizontal = 12.dp, vertical = 14.dp),
             onClick = onGoToCart
         )
     }
+}
+
+private fun Product.toCartItem(
+    restaurantId: Int,
+    productName: String
+): CartItem {
+    return CartItem(
+        productId = id.toString(),
+        restaurantId = restaurantId,
+        nombre = productName,
+        precio = price,
+        cantidad = 1,
+        imageRes = imageRes
+    )
 }
 
 @Composable
@@ -134,18 +221,16 @@ private fun RestaurantTopBar(onBack: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         CircleIconButton(
-            icon = Icons.Outlined.ArrowBack,
+            icon = Icons.AutoMirrored.Outlined.ArrowBack,
             contentDescription = stringResource(R.string.accesibilidad_volver),
             onClick = onBack
         )
-
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             CircleIconButton(
                 icon = Icons.Outlined.Search,
                 contentDescription = stringResource(R.string.accesibilidad_buscar_accion),
                 onClick = { }
             )
-
             CircleIconButton(
                 icon = Icons.Outlined.FavoriteBorder,
                 contentDescription = stringResource(R.string.accesibilidad_favorito_accion),
@@ -176,9 +261,7 @@ private fun RestaurantHeader(restaurant: Restaurant) {
                 .clip(RoundedCornerShape(24.dp)),
             contentScale = ContentScale.Fit
         )
-
         Spacer(modifier = Modifier.height(8.dp))
-
         Image(
             painter = painterResource(restaurant.imageRes),
             contentDescription = restaurantName,
@@ -188,26 +271,20 @@ private fun RestaurantHeader(restaurant: Restaurant) {
                 .border(2.dp, BordeIconoZesta, CircleShape),
             contentScale = ContentScale.Crop
         )
-
         Spacer(modifier = Modifier.height(10.dp))
-
         Text(
             text = restaurantName,
             style = MaterialTheme.typography.titleLarge,
             color = TextoPrincipalZesta,
             fontWeight = FontWeight.Normal
         )
-
         Spacer(modifier = Modifier.height(4.dp))
-
         Text(
             text = ratingText,
             style = MaterialTheme.typography.bodyMedium,
             color = TextoResenaZesta
         )
-
         Spacer(modifier = Modifier.height(8.dp))
-
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 imageVector = Icons.Outlined.LocationOn,
@@ -215,9 +292,7 @@ private fun RestaurantHeader(restaurant: Restaurant) {
                 tint = ColorUbicacionZesta,
                 modifier = Modifier.size(30.dp)
             )
-
             Spacer(modifier = Modifier.width(6.dp))
-
             Text(
                 text = stringResource(R.string.restaurante_ubicacion),
                 style = MaterialTheme.typography.bodyLarge,
@@ -228,8 +303,90 @@ private fun RestaurantHeader(restaurant: Restaurant) {
 }
 
 @Composable
+private fun QuantitySelector(
+    quantity: Int,
+    onAdd: () -> Unit,
+    onDecrease: () -> Unit,
+    size: Int = 34
+) {
+    if (quantity == 0) {
+        Box(
+            modifier = Modifier
+                .size(size.dp)
+                .clip(CircleShape)
+                .background(FondoBotonMasZesta)
+                .border(1.dp, BordeCirculoZesta, CircleShape)
+                .clickable { onAdd() },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = stringResource(R.string.producto_simbolo_mas),
+                color = NegroZesta,
+                style = MaterialTheme.typography.bodyLarge
+            )
+        }
+    } else {
+        Row(
+            modifier = Modifier
+                .clip(RoundedCornerShape(30.dp))
+                .background(FondoBotonMasZesta)
+                .border(1.dp, BordeCirculoZesta, RoundedCornerShape(30.dp))
+                .padding(horizontal = 8.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(24.dp)
+                    .clip(CircleShape)
+                    .clickable { onDecrease() },
+                contentAlignment = Alignment.Center
+            ) {
+                if (quantity == 1) {
+                    Icon(
+                        imageVector = Icons.Outlined.Delete,
+                        contentDescription = null,
+                        tint = NegroZesta,
+                        modifier = Modifier.size(18.dp)
+                    )
+                } else {
+                    Text(
+                        text = "-",
+                        color = NegroZesta,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            }
+
+            Text(
+                text = quantity.toString(),
+                color = NegroZesta,
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            Box(
+                modifier = Modifier
+                    .size(24.dp)
+                    .clip(CircleShape)
+                    .clickable { onAdd() },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = stringResource(R.string.producto_simbolo_mas),
+                    color = NegroZesta,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun ProductPromoCard(
     product: Product,
+    quantity: Int,
+    onAddToCart: () -> Unit,
+    onDecrease: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val productName = stringResource(product.nameRes)
@@ -252,43 +409,68 @@ private fun ProductPromoCard(
                     .clip(RoundedCornerShape(16.dp)),
                 contentScale = ContentScale.Crop
             )
-
             Box(
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
                     .offset(x = 10.dp, y = 10.dp)
-                    .size(34.dp)
-                    .clip(CircleShape)
-                    .background(FondoBotonMasZesta)
-                    .border(1.dp, BordeCirculoZesta, CircleShape),
-                contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = stringResource(R.string.producto_simbolo_mas),
-                    color = NegroZesta,
-                    style = MaterialTheme.typography.bodyLarge
+                QuantitySelector(
+                    quantity = quantity,
+                    onAdd = onAddToCart,
+                    onDecrease = onDecrease,
+                    size = 34
                 )
             }
         }
 
         Spacer(modifier = Modifier.height(10.dp))
+        Text(text = productName, style = MaterialTheme.typography.bodyLarge, color = TextoPrincipalZesta)
+        Text(text = productPrice, style = MaterialTheme.typography.bodyLarge, color = TextoPrincipalZesta)
+        Text(text = productDescription, style = MaterialTheme.typography.bodyMedium, color = TextoResenaZesta)
+    }
+}
 
-        Text(
-            text = productName,
-            style = MaterialTheme.typography.bodyLarge,
-            color = TextoPrincipalZesta
+@Composable
+private fun MenuProductCard(
+    product: Product,
+    quantity: Int,
+    onAddToCart: () -> Unit,
+    onDecrease: () -> Unit
+) {
+    val productName = stringResource(product.nameRes)
+    val productPrice = stringResource(R.string.producto_precio, product.price)
+    val productDescription = stringResource(product.descriptionRes)
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(18.dp))
+            .background(FondoPlaceholderZesta)
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Image(
+            painter = painterResource(product.imageRes),
+            contentDescription = productName,
+            modifier = Modifier
+                .size(78.dp)
+                .clip(RoundedCornerShape(16.dp)),
+            contentScale = ContentScale.Crop
         )
-
-        Text(
-            text = productPrice,
-            style = MaterialTheme.typography.bodyLarge,
-            color = TextoPrincipalZesta
-        )
-
-        Text(
-            text = productDescription,
-            style = MaterialTheme.typography.bodyMedium,
-            color = TextoResenaZesta
+        Spacer(modifier = Modifier.width(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = productName, style = MaterialTheme.typography.bodyLarge, color = TextoPrincipalZesta)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(text = productPrice, style = MaterialTheme.typography.bodyLarge, color = TextoPrincipalZesta)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(text = productDescription, style = MaterialTheme.typography.bodyMedium, color = TextoResenaZesta)
+        }
+        Spacer(modifier = Modifier.width(10.dp))
+        QuantitySelector(
+            quantity = quantity,
+            onAdd = onAddToCart,
+            onDecrease = onDecrease,
+            size = 38
         )
     }
 }
@@ -319,9 +501,7 @@ private fun ViewCartButton(
                 tint = BlancoZesta,
                 modifier = Modifier.size(26.dp)
             )
-
             Spacer(modifier = Modifier.width(10.dp))
-
             Text(
                 text = stringResource(R.string.restaurante_ver_carrito),
                 style = MaterialTheme.typography.bodyLarge,
