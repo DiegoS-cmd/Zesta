@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    val ZestaOrange = Color(0xFFFF9800)
+    val ZestaOptionText = Color(0xFF5A4A3A)
+    val ZestaLightSurface = Color(0xFFF4F4F4)
+    val ZestaLightBorder = Color(0xFFD2D2D2)
+    val ZestaIconBorder = Color(0xFFD6D6D6)
+    val ZestaSelectedBackground = Color(0xFFEDEDE)
+    val ZestaAvatarBlue = Color(0xFF47D1FF)
+    val ZestaAvatarIndigo = Color(0xFF7B8CFF)
+    val ZestaAvatarPink = Color(0xFFD95BFF)
+
+</resources>

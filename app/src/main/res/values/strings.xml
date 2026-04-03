@@ -1,0 +1,222 @@
+<resources>
+
+    <string name="nombre_app">Zesta</string>
+
+    <!-- Inicio de sesión -->
+    <string name="inicio_sesion_bienvenida">Bienvenido a Zesta</string>
+    <string name="inicio_sesion_email">Email</string>
+    <string name="inicio_sesion_contrasena">Contraseña</string>
+    <string name="inicio_sesion_entrar">Iniciar sesión</string>
+    <string name="inicio_sesion_registrarse">Registrarse</string>
+    <string name="inicio_sesion_olvide_contrasena">Olvidé mi contraseña</string>
+    <string name="inicio_sesion_continuar_invitado">Continuar como invitado</string>
+    <string name="inicio_sesion_descripcion_logo">Logo de Zesta</string>
+
+    <!-- Registro -->
+    <string name="registro_nombre_completo">Nombre completo</string>
+    <string name="registro_email">Email</string>
+    <string name="registro_contrasena">Contraseña</string>
+    <string name="registro_telefono">Teléfono</string>
+    <string name="registro_direccion">Dirección</string>
+    <string name="registro_crear_cuenta">Crear cuenta</string>
+    <string name="registro_ya_tengo_cuenta">Ya tengo una cuenta</string>
+
+    <!-- Inicio -->
+    <string name="inicio_direccion">Dirección</string>
+    <string name="inicio_destacado">Destacado en Zesta</string>
+    <string name="inicio_patrocinado">Patrocinado</string>
+    <string name="inicio_promociones">Promociones</string>
+    <string name="inicio_buscar">Buscar</string>
+    <string name="inicio_explorar">Explorar</string>
+
+    <!-- Categorías -->
+    <string name="categoria_desayuno">Desayuno</string>
+    <string name="categoria_pizzas">Pizzas</string>
+    <string name="categoria_hamburguesas">Hamburguesas</string>
+    <string name="categoria_panaderia">Panadería</string>
+    <string name="categoria_asiatica">Asiática</string>
+    <string name="categoria_mexicana">Mexicana</string>
+
+    <!-- Búsqueda -->
+    <string name="busqueda_placeholder">Buscar en Zesta</string>
+    <string name="busqueda_titulo_recientes">Búsquedas recientes</string>
+    <string name="busqueda_titulo_categorias_principales">Categorías principales</string>
+    <string name="busqueda_reciente_hamburguesas">Hamburguesas</string>
+    <string name="busqueda_reciente_sushi">Sushi</string>
+
+    <!-- Navegación -->
+    <string name="navegacion_inicio">Inicio</string>
+    <string name="navegacion_buscar">Buscar</string>
+    <string name="navegacion_carrito">Carrito</string>
+    <string name="navegacion_perfil">Perfil</string>
+
+    <!-- Accesibilidad -->
+    <string name="accesibilidad_ir_inicio">Ir a inicio</string>
+    <string name="accesibilidad_ir_buscar">Ir a buscar</string>
+    <string name="accesibilidad_ir_carrito">Ir al carrito</string>
+    <string name="accesibilidad_ir_perfil">Ir al perfil</string>
+    <string name="accesibilidad_imagen_categoria">Imagen de %1$s</string>
+    <string name="accesibilidad_notificaciones">Notificaciones</string>
+    <string name="accesibilidad_avatar_perfil">Avatar de perfil</string>
+    <string name="accesibilidad_ilustracion_carrito_vacio">Ilustración de carrito vacío</string>
+    <string name="accesibilidad_volver">Volver</string>
+    <string name="accesibilidad_buscar_accion">Buscar</string>
+    <string name="accesibilidad_favorito_accion">Favorito</string>
+    <string name="accesibilidad_anadir_producto">Añadir producto</string>
+
+    <!-- Carrito -->
+    <string name="carrito_titulo">Carrito</string>
+    <string name="carrito_vacio_titulo">Añade artículos para crear un carrito</string>
+    <string name="carrito_vacio_descripcion">Cuando añadas artículos, tu carrito aparecerá aquí</string>
+    <string name="carrito_empezar_comprar">Empieza a comprar</string>
+    <string name="carrito_prueba_compra">Prueba de compra</string>
+
+    <!-- Perfil -->
+    <string name="perfil_titulo">Perfil</string>
+    <string name="perfil_nombre_placeholder">Tu nombre</string>
+    <string name="perfil_nombre_invitado">Invitado</string>
+    <string name="perfil_mensaje_invitado">Has entrado como invitado. Inicia sesión o crea una cuenta para guardar tus datos.</string>
+    <string name="perfil_favoritos">Favoritos</string>
+    <string name="perfil_historial_pedidos">Historial de pedidos</string>
+    <string name="perfil_ayuda">Ayuda</string>
+    <string name="perfil_privacidad">Privacidad</string>
+    <string name="perfil_accesibilidad">Accesibilidad</string>
+    <string name="perfil_gestionar_cuenta">Gestionar cuenta</string>
+    <string name="perfil_acerca_de">Acerca de</string>
+    <string name="perfil_cerrar_sesion">Cerrar sesión</string>
+    <string name="perfil_cancelar">Cancelar</string>
+
+    <!-- Gestionar cuenta -->
+    <string name="gestionar_cuenta_descripcion_invitado">Has entrado como invitado. Desde aquí puedes iniciar sesión o crear una cuenta.</string>
+    <string name="gestionar_cuenta_descripcion_usuario">Desde aquí puedes gestionar tu sesión actual.</string>
+    <string name="gestionar_cuenta_volver_perfil">Volver al perfil</string>
+
+    <!-- Restaurante -->
+    <string name="restaurante_ubicacion">Ubicación</string>
+    <string name="restaurante_promociones">Promociones</string>
+    <string name="restaurante_explorar_menu">Explora el menú</string>
+    <string name="restaurante_ver_carrito">Ver carrito</string>
+    <string name="restaurante_envio_gratis">Sin gastos de envío - %1$d min</string>
+    <string name="restaurante_envio_pago">Gastos de envío a %1$.2f€ - %2$d min</string>
+    <string name="restaurante_valoracion">%1$.1f (%2$s)</string>
+    <string name="restaurante_numero_valoraciones">%1$d+</string>
+
+
+    <!-- Nombres de restaurantes -->
+    <string name="restaurante_nombre_burger_king">Burger King</string>
+    <string name="restaurante_nombre_dominos">Domino\'s Pizza</string>
+    <string name="restaurante_nombre_wingstop">Wingstop</string>
+
+    <!-- Productos -->
+    <string name="producto_whopper">Whopper</string>
+    <string name="producto_chili_cheese">Chili Cheese</string>
+    <string name="producto_pizza_carbonara">Pizza Carbonara</string>
+    <string name="producto_pizza_pepperoni">Pizza Pepperoni</string>
+    <string name="producto_alitas_bbq">Alitas BBQ</string>
+    <string name="producto_combo_wings">Combo Wings</string>
+    <string name="producto_descripcion_generica">Descripción</string>
+    <string name="producto_precio">%1$.2f€</string>
+    <string name="producto_simbolo_mas">+</string>
+    <string name="producto_patatas_cajun">Patatas Cajún</string>
+
+    <!-- Promociones -->
+    <string name="promocion_compra_una_llevate_otra">Compra 1 y consigue 1 gratis</string>
+
+    <!--  Restaurantes  -->
+    <string name="restaurante_nombre_mcdonalds">McDonald\'s</string>
+    <string name="restaurante_nombre_kfc">KFC</string>
+    <string name="restaurante_nombre_subway">Subway</string>
+    <string name="restaurante_nombre_telepizza">Telepizza</string>
+    <string name="restaurante_nombre_papajohns">Papa John\'s</string>
+    <string name="restaurante_nombre_tacobell">Taco Bell</string>
+    <string name="restaurante_nombre_dunkin">Dunkin\'</string>
+    <string name="restaurante_nombre_starbucks">Starbucks</string>
+    <string name="restaurante_nombre_fiveguys">Five Guys</string>
+    <string name="restaurante_nombre_fosters">Foster\'s Hollywood</string>
+    <string name="restaurante_nombre_ginos">Gino\'s</string>
+    <string name="restaurante_nombre_vips">VIPS</string>
+    <string name="restaurante_nombre_montaditos">100 Montaditos</string>
+    <string name="restaurante_nombre_goiko">Goiko</string>
+    <string name="restaurante_nombre_sushishop">Sushi Shop</string>
+
+    <!-- Productos McDonald's -->
+    <string name="producto_big_mac">Big Mac</string>
+    <string name="producto_mcnuggets">McNuggets x10</string>
+    <string name="producto_mcflurry">McFlurry Oreo</string>
+
+    <!-- Productos KFC -->
+    <string name="producto_bucket_kfc">Bucket Original 8 piezas</string>
+    <string name="producto_twister_kfc">Twister</string>
+    <string name="producto_alitas_kfc">Alitas crujientes x6</string>
+
+    <!-- Productos Subway -->
+    <string name="producto_sub_italiano">Sub Italiano BMT</string>
+    <string name="producto_sub_pollo">Sub Pollo Teriyaki</string>
+    <string name="producto_sub_veggie">Sub Veggie Delite</string>
+
+    <!-- Productos Telepizza -->
+    <string name="producto_pizza_barbacoa">Pizza Barbacoa</string>
+    <string name="producto_pizza_4quesos">Pizza 4 Quesos</string>
+    <string name="producto_pasta_carbonara">Pasta Carbonara</string>
+
+    <!-- Productos Papa John's -->
+    <string name="producto_pizza_garden">Garden Fresh</string>
+    <string name="producto_pizza_hawaiana">Hawaiana</string>
+    <string name="producto_papas_ajo">Papas con ajo</string>
+
+    <!-- Productos Taco Bell -->
+    <string name="producto_crunchwrap">Crunchwrap Supreme</string>
+    <string name="producto_nachos_bell">Nachos BellGrande</string>
+    <string name="producto_quesarito">Quesarito</string>
+
+    <!-- Productos Dunkin' -->
+    <string name="producto_donut_clasico">Donut Glaseado</string>
+    <string name="producto_cafe_americano">Café Americano</string>
+    <string name="producto_bagel_jamon">Bagel con Jamón</string>
+
+    <!-- Productos Starbucks -->
+    <string name="producto_frappuccino">Frappuccino Caramelo</string>
+    <string name="producto_latte">Caffè Latte</string>
+    <string name="producto_croissant">Croissant de Mantequilla</string>
+
+    <!-- Productos Five Guys -->
+    <string name="producto_burger_fiveguys">Hamburguesa Five Guys</string>
+    <string name="producto_hotdog_fiveguys">Hot Dog</string>
+    <string name="producto_patatas_fiveguys">Patatas Cajún</string>
+
+    <!-- Productos Foster's -->
+    <string name="producto_costillas_fosters">Costillas BBQ</string>
+    <string name="producto_burger_fosters">Burger Clásica</string>
+    <string name="producto_nachos_fosters">Nachos con Queso</string>
+
+    <!-- Productos Gino's -->
+    <string name="producto_pizza_ginos">Pizza Especial Gino\'s</string>
+    <string name="producto_pasta_ginos">Pasta Boloñesa</string>
+    <string name="producto_tiramisú">Tiramisú</string>
+
+    <!-- Productos VIPS -->
+    <string name="producto_club_sandwich">Club Sandwich</string>
+    <string name="producto_pancakes_vips">Pancakes con Arándanos</string>
+    <string name="producto_cheesecake_vips">Cheesecake</string>
+
+    <!-- Productos 100 Montaditos -->
+    <string name="producto_montadito_lomo">Montadito de Lomo</string>
+    <string name="producto_montadito_tortilla">Montadito de Tortilla</string>
+    <string name="producto_combo_montaditos">Combo 8 Montaditos</string>
+
+    <!-- Productos Goiko -->
+    <string name="producto_burger_goiko">Burger Angus</string>
+    <string name="producto_smash_goiko">Smash Burger</string>
+    <string name="producto_patatas_goiko">Patatas Bravas</string>
+
+    <!-- Productos Sushi Shop -->
+    <string name="producto_california_roll">California Roll x8</string>
+    <string name="producto_salmon_nigiri">Salmón Nigiri x4</string>
+    <string name="producto_combo_sushi">Combo Sushi 16 piezas</string>
+
+    <!-- Promociones nuevas -->
+    <string name="promocion_2x1">2x1 en selección</string>
+    <string name="promocion_envio_gratis">Envío gratis hoy</string>
+    <string name="promocion_descuento_20">20% de descuento</string>
+
+</resources>

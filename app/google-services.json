@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "216901028902",
+    "project_id": "zesta-42227",
+    "storage_bucket": "zesta-42227.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:216901028902:android:ab61786c76af9ead8e6ae7",
+        "android_client_info": {
+          "package_name": "com.zesta.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAD9fnU1Mu0ZuerGnvzsSfkaRytLgSoSbk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

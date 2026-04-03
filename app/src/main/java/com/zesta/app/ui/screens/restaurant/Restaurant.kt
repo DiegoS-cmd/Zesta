@@ -1,0 +1,17 @@
+package com.zesta.app.data.restaurant
+
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
+
+data class Restaurant(
+    val id: Int,
+    @StringRes val nameRes: Int,
+    val hasFreeDelivery: Boolean,
+    val deliveryFee: Double?,
+    val deliveryTimeMinutes: Int,
+    val ratingValue: Double,
+    val ratingCount: Int,
+    @DrawableRes val imageRes: Int,
+    @StringRes val promoTextRes: Int? = null,
+    val products: List<Product>
+)
