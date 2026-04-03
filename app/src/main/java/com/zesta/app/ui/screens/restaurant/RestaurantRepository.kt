@@ -6,8 +6,6 @@ object RestaurantRepository {
 
     private val allRestaurants = listOf(
 
-        // ── RESTAURANTES ORIGINALES ──────────────────────────────────────
-
         Restaurant(
             id = 1,
             nameRes = R.string.restaurante_nombre_burger_king,
@@ -71,8 +69,6 @@ object RestaurantRepository {
                     descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.wingstop)
             )
         ),
-
-        // ── RESTAURANTES NUEVOS ──────────────────────────────────────────
 
         Restaurant(
             id = 4,
@@ -304,7 +300,7 @@ object RestaurantRepository {
                     descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.ginos),
                 Product(id = 54, nameRes = R.string.producto_pasta_ginos, price = 10.50,
                     descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.ginos),
-                Product(id = 55, nameRes = R.string.producto_tiramisú, price = 5.95,
+                Product(id = 55, nameRes = R.string.producto_tiramisu, price = 5.95,
                     descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.ginos),
                 Product(id = 56, nameRes = R.string.producto_pizza_4quesos, price = 12.50,
                     descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.ginos)
@@ -398,17 +394,16 @@ object RestaurantRepository {
         )
     )
 
+    fun getExploreRestaurants(): List<Restaurant> {
+        val excludedIds = getFeaturedRestaurants().map { it.id }
+        return allRestaurants.filter { it.id !in excludedIds }
+    }
 
     fun getAllRestaurants(): List<Restaurant> = allRestaurants
 
     fun getRestaurantById(id: Int): Restaurant? = allRestaurants.find { it.id == id }
 
-    fun getFeaturedRestaurants(): List<Restaurant> = allRestaurants.take(5)
-
-    fun getExploreRestaurants(): List<Restaurant> {
-        val excludedIds = getFeaturedRestaurants().map { it.id }
-        return allRestaurants.filter { it.id !in excludedIds }
-    }
+    fun getFeaturedRestaurants(): List<Restaurant> = allRestaurants.take(3)
 
     fun getPromoRestaurants(): List<Restaurant> = allRestaurants.filter { it.promoTextRes != null }
 

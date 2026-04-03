@@ -48,7 +48,6 @@ class AuthViewModel(
     }
 
     private fun restoreSessionIfNeeded() {
-
         if (!authRepository.isLoggedIn()) {
             _uiState.value = _uiState.value.copy(isSessionChecked = true)
             return
@@ -120,9 +119,7 @@ class AuthViewModel(
 
             if (result.isSuccess) {
                 val user = result.getOrNull()
-
                 preferencesRepository.clearGuestMode()
-
                 _uiState.value = AuthUiState(
                     isLoggedIn = true,
                     isGuest = false,
@@ -131,7 +128,6 @@ class AuthViewModel(
                     errorMessage = null,
                     isLoading = false
                 )
-
                 onSuccess()
             } else {
                 _uiState.value = _uiState.value.copy(
@@ -160,9 +156,7 @@ class AuthViewModel(
 
             if (result.isSuccess) {
                 val user = result.getOrNull()
-
                 preferencesRepository.clearGuestMode()
-
                 _uiState.value = _uiState.value.copy(
                     isLoggedIn = true,
                     isGuest = false,
@@ -172,7 +166,6 @@ class AuthViewModel(
                     errorMessage = null,
                     isLoading = false
                 )
-
                 onSuccess()
             } else {
                 _uiState.value = _uiState.value.copy(
@@ -189,7 +182,6 @@ class AuthViewModel(
     fun continueAsGuest(onSuccess: () -> Unit) {
         viewModelScope.launch {
             preferencesRepository.continueAsGuest()
-
             _uiState.value = _uiState.value.copy(
                 isLoggedIn = false,
                 isGuest = true,
@@ -197,7 +189,6 @@ class AuthViewModel(
                 userName = "",
                 errorMessage = null
             )
-
             onSuccess()
         }
     }

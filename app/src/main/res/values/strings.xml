@@ -117,10 +117,13 @@
     <string name="producto_descripcion_generica">Descripción</string>
     <string name="producto_precio">%1$.2f€</string>
     <string name="producto_simbolo_mas">+</string>
+
     <string name="producto_patatas_cajun">Patatas Cajún</string>
+
 
     <!-- Promociones -->
     <string name="promocion_compra_una_llevate_otra">Compra 1 y consigue 1 gratis</string>
+
 
     <!--  Restaurantes  -->
     <string name="restaurante_nombre_mcdonalds">McDonald\'s</string>
@@ -218,5 +221,6 @@
     <string name="promocion_2x1">2x1 en selección</string>
     <string name="promocion_envio_gratis">Envío gratis hoy</string>
     <string name="promocion_descuento_20">20% de descuento</string>
+    <string name="producto_tiramisu" />
 
 </resources>

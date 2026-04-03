@@ -73,9 +73,7 @@ fun AppNavGraph() {
             ) {}
         }
 
-
-
-            composable(AppRoutes.Login.route) {
+        composable(AppRoutes.Login.route) {
             LoginScreen(
                 email = uiState.email,
                 password = uiState.password,
@@ -134,15 +132,9 @@ fun AppNavGraph() {
 
         composable(AppRoutes.Home.route) {
             HomeScreen(
-                onSearchClick = {
-                    navController.navigate(AppRoutes.Search.route)
-                },
-                onCartClick = {
-                    navController.navigate(AppRoutes.Cart.route)
-                },
-                onProfileClick = {
-                    navController.navigate(AppRoutes.Profile.route)
-                },
+                onSearchClick = { navController.navigate(AppRoutes.Search.route) },
+                onCartClick = { navController.navigate(AppRoutes.Cart.route) },
+                onProfileClick = { navController.navigate(AppRoutes.Profile.route) },
                 onRestaurantClick = { restaurantId ->
                     navController.navigate(AppRoutes.RestaurantDetail.createRoute(restaurantId))
                 }
@@ -151,111 +143,12 @@ fun AppNavGraph() {
 
         composable(AppRoutes.Search.route) {
             SearchScreen(
-                onHomeClick = {
-                    navController.navigate(AppRoutes.Home.route)
-                },
-                onCartClick = {
-                    navController.navigate(AppRoutes.Cart.route)
-                },
-                onProfileClick = {
-                    navController.navigate(AppRoutes.Profile.route)
-                }
+                onHomeClick = { navController.navigate(AppRoutes.Home.route) },
+                onCartClick = { navController.navigate(AppRoutes.Cart.route) },
+                onProfileClick = { navController.navigate(AppRoutes.Profile.route) }
             )
         }
 
-        composable(AppRoutes.Cart.route) {
-            CartScreen(
-                onHomeClick = {
-                    navController.navigate(AppRoutes.Home.route)
-                },
-                onSearchClick = {
-                    navController.navigate(AppRoutes.Search.route)
-                },
-                onProfileClick = {
-                    navController.navigate(AppRoutes.Profile.route)
-                },
-                onCartClick = {
-                    navController.navigate(AppRoutes.Cart.route)
-                },
-                onCartDetailClick = {
-                    navController.navigate(AppRoutes.CartDetail.route)
-                },
-                onStartShoppingClick = {
-                    navController.navigate(AppRoutes.Home.route)
-                }
-            )
-        }
-
-        composable(AppRoutes.Profile.route) {
-            ProfileScreen(
-                userName = uiState.userName,
-                isGuest = uiState.isGuest,
-                onHomeClick = {
-                    navController.navigate(AppRoutes.Home.route)
-                },
-                onSearchClick = {
-                    navController.navigate(AppRoutes.Search.route)
-                },
-                onCartClick = {
-                    navController.navigate(AppRoutes.Cart.route)
-                },
-                onFavoritesClick = { },
-                onOrderHistoryClick = { },
-                onHelpClick = { },
-                onPrivacyClick = { },
-                onAccessibilityClick = { },
-                onManageAccountClick = {
-                    navController.navigate(AppRoutes.ManageAccount.route)
-                },
-                onAboutClick = { },
-                onLoginClick = {
-                    navController.navigate(AppRoutes.Login.route)
-                },
-                onRegisterClick = {
-                    navController.navigate(AppRoutes.Register.route)
-                }
-            )
-        }
-
-        composable(AppRoutes.ManageAccount.route) {
-            ManageAccountScreen(
-                isGuest = uiState.isGuest,
-                userName = uiState.userName,
-                onBackClick = {
-                    navController.popBackStack()
-                },
-                onLoginClick = {
-                    navController.navigate(AppRoutes.Login.route)
-                },
-                onRegisterClick = {
-                    navController.navigate(AppRoutes.Register.route)
-                },
-                onLogoutClick = {
-                    authViewModel.logout()
-                    navController.navigate(AppRoutes.Login.route) {
-                        popUpTo(AppRoutes.Home.route) { inclusive = true }
-                        launchSingleTop = true
-                    }
-                }
-            )
-        }
-
-        composable(
-            route = AppRoutes.RestaurantDetail.route,
-            arguments = listOf(
-                navArgument("restaurantId") {
-                    type = NavType.IntType
-                }
-            )
-        ) { backStackEntry ->
-            val restaurantId = backStackEntry.arguments?.getInt("restaurantId") ?: 0
-
-            RestaurantDetailScreen(
-                restaurantId = restaurantId,
-                onBack = { navController.popBackStack() },
-                onGoToCart = { navController.navigate(AppRoutes.Cart.route) }
-            )
-        }
         composable(AppRoutes.Cart.route) {
             CartScreen(
                 onHomeClick = { navController.navigate(AppRoutes.Home.route) },
@@ -269,11 +162,57 @@ fun AppNavGraph() {
             )
         }
 
+        composable(AppRoutes.Profile.route) {
+            ProfileScreen(
+                userName = uiState.userName,
+                isGuest = uiState.isGuest,
+                onHomeClick = { navController.navigate(AppRoutes.Home.route) },
+                onSearchClick = { navController.navigate(AppRoutes.Search.route) },
+                onCartClick = { navController.navigate(AppRoutes.Cart.route) },
+                onFavoritesClick = { },
+                onOrderHistoryClick = { },
+                onHelpClick = { },
+                onPrivacyClick = { },
+                onAccessibilityClick = { },
+                onManageAccountClick = { navController.navigate(AppRoutes.ManageAccount.route) },
+                onAboutClick = { },
+                onLoginClick = { navController.navigate(AppRoutes.Login.route) },
+                onRegisterClick = { navController.navigate(AppRoutes.Register.route) }
+            )
+        }
+
+        composable(AppRoutes.ManageAccount.route) {
+            ManageAccountScreen(
+                isGuest = uiState.isGuest,
+                userName = uiState.userName,
+                onBackClick = { navController.popBackStack() },
+                onLoginClick = { navController.navigate(AppRoutes.Login.route) },
+                onRegisterClick = { navController.navigate(AppRoutes.Register.route) },
+                onLogoutClick = {
+                    authViewModel.logout()
+                    navController.navigate(AppRoutes.Login.route) {
+                        popUpTo(AppRoutes.Home.route) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
+
+        composable(
+            route = AppRoutes.RestaurantDetail.route,
+            arguments = listOf(navArgument("restaurantId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val restaurantId = backStackEntry.arguments?.getInt("restaurantId") ?: 0
+            RestaurantDetailScreen(
+                restaurantId = restaurantId,
+                onBack = { navController.popBackStack() },
+                onGoToCart = { navController.navigate(AppRoutes.Cart.route) }
+            )
+        }
+
         composable(
             route = AppRoutes.CartDetail.route,
-            arguments = listOf(
-                navArgument("restaurantId") { type = NavType.IntType }
-            )
+            arguments = listOf(navArgument("restaurantId") { type = NavType.IntType })
         ) { backStackEntry ->
             val restaurantId = backStackEntry.arguments?.getInt("restaurantId") ?: 0
             CartDetailScreen(
@@ -282,5 +221,4 @@ fun AppNavGraph() {
             )
         }
     }
-
 }
