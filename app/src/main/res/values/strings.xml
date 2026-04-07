@@ -22,12 +22,20 @@
     <string name="registro_ya_tengo_cuenta">Ya tengo una cuenta</string>
 
     <!-- Inicio -->
-    <string name="inicio_direccion">Dirección</string>
+    <string name="inicio_direccion">Añadir Dirección</string>
     <string name="inicio_destacado">Destacado en Zesta</string>
     <string name="inicio_patrocinado">Patrocinado</string>
     <string name="inicio_promociones">Promociones</string>
     <string name="inicio_buscar">Buscar</string>
     <string name="inicio_explorar">Explorar</string>
+    <string name="inicio_sheet_titulo">Direccion de entrega</string>
+    <string name="inicio_sheet_guardadas">Direcciones guardadas</string>
+    <string name="inicio_sheet_anadir">Añadir nueva direccion</string>
+    <string name="inicio_sheet_guardar">Guardar</string>
+    <string name="inicio_sheet_cancelar">Cancelar</string>
+    <string name="inicio_sheet_maximo">Maximo 3 direcciones guardadas</string>
+
+
 
     <!-- Categorías -->
     <string name="categoria_desayuno">Desayuno</string>
@@ -36,6 +44,9 @@
     <string name="categoria_panaderia">Panadería</string>
     <string name="categoria_asiatica">Asiática</string>
     <string name="categoria_mexicana">Mexicana</string>
+    <string name="categoria_americana">Americana</string>
+    <string name="categoria_sin_resultados">No hay restaurantes en esta categoría</string>
+
 
     <!-- Búsqueda -->
     <string name="busqueda_placeholder">Buscar en Zesta</string>
@@ -43,6 +54,10 @@
     <string name="busqueda_titulo_categorias_principales">Categorías principales</string>
     <string name="busqueda_reciente_hamburguesas">Hamburguesas</string>
     <string name="busqueda_reciente_sushi">Sushi</string>
+    <string name="busqueda_resultados">%d restaurantes encontrados</string>
+    <string name="accesibilidad_limpiar_busqueda">Limpiar búsqueda</string>
+
+
 
     <!-- Navegación -->
     <string name="navegacion_inicio">Inicio</string>
@@ -63,6 +78,9 @@
     <string name="accesibilidad_buscar_accion">Buscar</string>
     <string name="accesibilidad_favorito_accion">Favorito</string>
     <string name="accesibilidad_anadir_producto">Añadir producto</string>
+    <string name="inicio_sheet_ubicacion_actual">Usar ubicacion actual</string>
+    <string name="inicio_sheet_localizando">Obteniendo ubicacion…</string>
+
 
     <!-- Carrito -->
     <string name="carrito_titulo">Carrito</string>
@@ -70,6 +88,31 @@
     <string name="carrito_vacio_descripcion">Cuando añadas artículos, tu carrito aparecerá aquí</string>
     <string name="carrito_empezar_comprar">Empieza a comprar</string>
     <string name="carrito_prueba_compra">Prueba de compra</string>
+
+    <!-- CartDetailScreen — validación de perfil -->
+    <string name="carrito_datos_incompletos_titulo">Datos necesarios</string>
+    <string name="carrito_datos_incompletos_descripcion">Para realizar un pedido necesitamos tu teléfono y dirección de entrega.</string>
+    <string name="carrito_campo_telefono">Teléfono</string>
+    <string name="carrito_campo_direccion">Dirección de entrega</string>
+    <string name="carrito_error_telefono">Introduce un teléfono válido de 9 dígitos</string>
+    <string name="carrito_error_direccion">La dirección no puede estar vacía</string>
+    <string name="carrito_guardar_y_pagar">Guardar y pagar</string>
+    <string name="carrito_guardando">Guardando…</string>
+    <string name="carrito_cancelar">Cancelar</string>
+    <string name="carrito_total">Total</string>
+    <string name="carrito_pagar">Pagar</string>
+    <string name="carrito_precio_formato">%.2f €</string>
+    <string name="gestionar_cuenta_datos_entrega">Datos de entrega</string>
+    <string name="gestionar_cuenta_guardar">Guardar cambios</string>
+    <string name="gestionar_cuenta_guardado_ok">✓ Datos guardados correctamente</string>
+    <string name="carrito_invitado_no_puede_pagar">Inicia sesión para realizar pedidos</string>
+    <string name="carrito_ir_perfil">Ir al perfil</string>
+    <string name="carrito_ir_gestionar">Completar datos</string>
+
+
+    <!-- Carrito — dialog invitado -->
+    <string name="carrito_invitado_titulo">Inicia sesión para continuar</string>
+    <string name="carrito_invitado_descripcion">Los pedidos solo están disponibles para usuarios registrados.</string>
 
     <!-- Perfil -->
     <string name="perfil_titulo">Perfil</string>
@@ -85,11 +128,19 @@
     <string name="perfil_acerca_de">Acerca de</string>
     <string name="perfil_cerrar_sesion">Cerrar sesión</string>
     <string name="perfil_cancelar">Cancelar</string>
+    <string name="gestionar_cuenta_foto_titulo">Foto de perfil</string>
+    <string name="gestionar_cuenta_foto_camara">Hacer foto</string>
+    <string name="gestionar_cuenta_foto_galeria">Elegir de la galeria</string>
+
 
     <!-- Gestionar cuenta -->
     <string name="gestionar_cuenta_descripcion_invitado">Has entrado como invitado. Desde aquí puedes iniciar sesión o crear una cuenta.</string>
     <string name="gestionar_cuenta_descripcion_usuario">Desde aquí puedes gestionar tu sesión actual.</string>
     <string name="gestionar_cuenta_volver_perfil">Volver al perfil</string>
+    <string name="gestionar_cuenta_guardar_telefono">Guardar teléfono</string>
+    <string name="gestionar_cuenta_guardar_direccion">Guardar dirección</string>
+    <string name="gestionar_cuenta_eliminar">Eliminar</string>
+
 
     <!-- Restaurante -->
     <string name="restaurante_ubicacion">Ubicación</string>
@@ -193,7 +244,7 @@
     <string name="producto_nachos_fosters">Nachos con Queso</string>
 
     <!-- Productos Gino's -->
-    <string name="producto_pizza_ginos">Pizza Especial Gino\'s</string>
+    <string name="producto_pizza_ginos">Pizza 4 Quesos</string>
     <string name="producto_pasta_ginos">Pasta Boloñesa</string>
     <string name="producto_tiramisú">Tiramisú</string>
 

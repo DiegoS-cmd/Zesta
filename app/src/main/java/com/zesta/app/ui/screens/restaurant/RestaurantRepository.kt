@@ -15,6 +15,7 @@ object RestaurantRepository {
             ratingValue = 4.4,
             ratingCount = 170,
             imageRes = R.drawable.bk,
+            categories = listOf("Hamburguesas"),
             products = listOf(
                 Product(id = 1, nameRes = R.string.producto_whopper, price = 8.25,
                     descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.whopper),
@@ -36,6 +37,7 @@ object RestaurantRepository {
             ratingValue = 4.2,
             ratingCount = 320,
             imageRes = R.drawable.dominos,
+            categories = listOf("Pizzas"),
             products = listOf(
                 Product(id = 5, nameRes = R.string.producto_pizza_carbonara, price = 12.95,
                     descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.dominos),
@@ -58,6 +60,7 @@ object RestaurantRepository {
             ratingCount = 70,
             imageRes = R.drawable.wingstop,
             promoTextRes = R.string.promocion_compra_una_llevate_otra,
+            categories = listOf("Hamburguesas", "Americana"),
             products = listOf(
                 Product(id = 9, nameRes = R.string.producto_alitas_bbq, price = 9.95,
                     descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.wingstop),
@@ -80,6 +83,7 @@ object RestaurantRepository {
             ratingCount = 512,
             imageRes = R.drawable.mcdonalds,
             promoTextRes = R.string.promocion_2x1,
+            categories = listOf("Hamburguesas"),
             products = listOf(
                 Product(id = 13, nameRes = R.string.producto_big_mac, price = 7.50,
                     descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.mcdonalds),
@@ -101,6 +105,7 @@ object RestaurantRepository {
             ratingValue = 4.3,
             ratingCount = 248,
             imageRes = R.drawable.kfc,
+            categories = listOf("Hamburguesas", "Americana"),
             products = listOf(
                 Product(id = 17, nameRes = R.string.producto_bucket_kfc, price = 14.95,
                     descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.kfc),
@@ -123,6 +128,7 @@ object RestaurantRepository {
             ratingCount = 189,
             imageRes = R.drawable.subway,
             promoTextRes = R.string.promocion_envio_gratis,
+            categories = listOf("Panadera"),
             products = listOf(
                 Product(id = 21, nameRes = R.string.producto_sub_italiano, price = 7.95,
                     descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.subway),
@@ -144,6 +150,7 @@ object RestaurantRepository {
             ratingValue = 3.9,
             ratingCount = 410,
             imageRes = R.drawable.telepizza,
+            categories = listOf("Pizzas"),
             products = listOf(
                 Product(id = 25, nameRes = R.string.producto_pizza_barbacoa, price = 11.95,
                     descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.telepizza),
@@ -166,6 +173,7 @@ object RestaurantRepository {
             ratingCount = 155,
             imageRes = R.drawable.papajohns,
             promoTextRes = R.string.promocion_descuento_20,
+            categories = listOf("Pizzas"),
             products = listOf(
                 Product(id = 29, nameRes = R.string.producto_pizza_garden, price = 12.95,
                     descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.papajohns),
@@ -187,6 +195,7 @@ object RestaurantRepository {
             ratingValue = 4.5,
             ratingCount = 93,
             imageRes = R.drawable.tacobell,
+            categories = listOf("Mexicana"),
             products = listOf(
                 Product(id = 33, nameRes = R.string.producto_crunchwrap, price = 5.95,
                     descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.tacobell),
@@ -209,6 +218,7 @@ object RestaurantRepository {
             ratingCount = 207,
             imageRes = R.drawable.dunkin,
             promoTextRes = R.string.promocion_envio_gratis,
+            categories = listOf("Desayuno", "Panadería"),
             products = listOf(
                 Product(id = 37, nameRes = R.string.producto_donut_clasico, price = 2.50,
                     descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.dunkin),
@@ -230,6 +240,7 @@ object RestaurantRepository {
             ratingValue = 4.6,
             ratingCount = 341,
             imageRes = R.drawable.starbucks,
+            categories = listOf("Desayuno", "Panadería"),
             products = listOf(
                 Product(id = 41, nameRes = R.string.producto_frappuccino, price = 6.50,
                     descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.starbucks),
@@ -252,6 +263,7 @@ object RestaurantRepository {
             ratingCount = 118,
             imageRes = R.drawable.fiveguys,
             promoTextRes = R.string.promocion_2x1,
+            categories = listOf("Hamburguesas"),
             products = listOf(
                 Product(id = 45, nameRes = R.string.producto_burger_fiveguys, price = 12.95,
                     descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.fiveguys),
@@ -273,6 +285,7 @@ object RestaurantRepository {
             ratingValue = 4.3,
             ratingCount = 86,
             imageRes = R.drawable.fosters,
+            categories = listOf("Hamburguesas", "Americana"),
             products = listOf(
                 Product(id = 49, nameRes = R.string.producto_costillas_fosters, price = 16.95,
                     descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.fosters),
@@ -295,6 +308,7 @@ object RestaurantRepository {
             ratingCount = 143,
             imageRes = R.drawable.ginos,
             promoTextRes = R.string.promocion_descuento_20,
+            categories = listOf("Pizzas"),
             products = listOf(
                 Product(id = 53, nameRes = R.string.producto_pizza_ginos, price = 13.95,
                     descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.ginos),
@@ -316,6 +330,7 @@ object RestaurantRepository {
             ratingValue = 4.2,
             ratingCount = 201,
             imageRes = R.drawable.vips,
+            categories = listOf("Desayuno", "Americana"),
             products = listOf(
                 Product(id = 57, nameRes = R.string.producto_club_sandwich, price = 10.95,
                     descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.vips),
@@ -338,6 +353,7 @@ object RestaurantRepository {
             ratingCount = 377,
             imageRes = R.drawable.montaditos,
             promoTextRes = R.string.promocion_2x1,
+            categories = listOf("Panadería"),
             products = listOf(
                 Product(id = 61, nameRes = R.string.producto_montadito_lomo, price = 1.50,
                     descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.montaditos),
@@ -359,6 +375,7 @@ object RestaurantRepository {
             ratingValue = 4.7,
             ratingCount = 132,
             imageRes = R.drawable.goiko,
+            categories = listOf("Hamburguesas"),
             products = listOf(
                 Product(id = 65, nameRes = R.string.producto_burger_goiko, price = 13.95,
                     descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.goiko),
@@ -381,6 +398,7 @@ object RestaurantRepository {
             ratingCount = 89,
             imageRes = R.drawable.sushishop,
             promoTextRes = R.string.promocion_envio_gratis,
+            categories = listOf("Asiatica"),
             products = listOf(
                 Product(id = 69, nameRes = R.string.producto_california_roll, price = 9.95,
                     descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.sushishop),
@@ -393,6 +411,13 @@ object RestaurantRepository {
             )
         )
     )
+
+    fun getByCategory(category: String): List<Restaurant> =
+        allRestaurants.filter { restaurant ->
+            restaurant.categories.any { cat ->
+                cat.equals(category, ignoreCase = true)
+            }
+        }
 
     fun getExploreRestaurants(): List<Restaurant> {
         val excludedIds = getFeaturedRestaurants().map { it.id }

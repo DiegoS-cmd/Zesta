@@ -66,6 +66,7 @@ import com.zesta.app.ui.theme.FondoZesta
 import com.zesta.app.ui.theme.NegroZesta
 import com.zesta.app.ui.theme.TextoPrincipalZesta
 import com.zesta.app.ui.theme.TextoResenaZesta
+import com.zesta.app.viewmodel.AuthViewModel
 import com.zesta.app.ui.theme.NegroZesta as InicioGradiente
 import com.zesta.app.viewmodel.CartViewModel
 import com.zesta.app.viewmodel.CartViewModelFactory
@@ -74,7 +75,8 @@ import com.zesta.app.viewmodel.CartViewModelFactory
 fun RestaurantDetailScreen(
     restaurantId: Int,
     onBack: () -> Unit,
-    onGoToCart: () -> Unit
+    onGoToCart: () -> Unit,
+    authViewModel: AuthViewModel
 ) {
     val context = LocalContext.current
 

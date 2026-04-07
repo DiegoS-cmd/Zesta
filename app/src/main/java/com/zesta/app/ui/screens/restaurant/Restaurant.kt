@@ -13,5 +13,6 @@ data class Restaurant(
     val ratingCount: Int,
     @DrawableRes val imageRes: Int,
     @StringRes val promoTextRes: Int? = null,
+    val categories: List<String> = emptyList(),
     val products: List<Product>
 )

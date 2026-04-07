@@ -57,6 +57,7 @@ import com.zesta.app.ui.theme.NegroZesta
 import com.zesta.app.ui.theme.TextoPrincipalZesta
 import com.zesta.app.ui.theme.TextoSecundarioZesta
 import com.zesta.app.navigation.AppRoutes
+import com.zesta.app.viewmodel.AuthViewModel
 import com.zesta.app.viewmodel.CartViewModel
 import com.zesta.app.viewmodel.CartViewModelFactory
 
@@ -67,7 +68,8 @@ fun CartScreen(
     onProfileClick: () -> Unit,
     onCartClick: () -> Unit,
     onStartShoppingClick: () -> Unit,
-    onCartDetailClick: (Int) -> Unit
+    onCartDetailClick: (Int) -> Unit,
+    authViewModel: AuthViewModel
 ) {
     val cartViewModel: CartViewModel = viewModel(
         factory = CartViewModelFactory(repository = CartRepository())

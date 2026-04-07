@@ -118,4 +118,136 @@ class AuthRepository(
             else -> "No se pudo iniciar sesión"
         }
     }
+    suspend fun updateProfile(telefono: String, direccion: String): Result<Unit> {
+        return try {
+            val uid = auth.currentUser?.uid
+                ?: return Result.failure(Exception("No hay sesion iniciada"))
+
+            val doc = db.collection("users").document(uid).get().await()
+            val listaActual = doc.get("direcciones") as? List<String> ?: emptyList()
+            val nuevaLista = if (direccion.isNotBlank() && !listaActual.contains(direccion)) {
+                (listaActual + direccion).takeLast(3)
+            } else {
+                listaActual
+            }
+
+            db.collection("users").document(uid)
+                .update(
+                    mapOf(
+                        "telefono" to telefono,
+                        "direccion" to direccion,
+                        "direcciones" to nuevaLista
+                    )
+                ).await()
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(Exception("No se pudieron guardar los datos"))
+        }
+    }
+
+    suspend fun clearProfileField(field: String): Result<Unit> {
+        return try {
+            val uid = auth.currentUser?.uid
+                ?: return Result.failure(Exception("No hay sesion iniciada"))
+
+            if (field == "direccion") {
+                val doc = db.collection("users").document(uid).get().await()
+                val listaActual = doc.get("direcciones") as? List<String> ?: emptyList()
+                val direccionActual = doc.getString("direccion") ?: ""
+                val nuevaLista = listaActual.filter { it != direccionActual }
+                val nuevaActiva = nuevaLista.firstOrNull() ?: ""
+
+                db.collection("users").document(uid)
+                    .update(
+                        mapOf(
+                            "direccion" to nuevaActiva,
+                            "direcciones" to nuevaLista
+                        )
+                    ).await()
+            } else {
+                db.collection("users").document(uid)
+                    .update(field, "")
+                    .await()
+            }
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(Exception("No se pudo eliminar el dato"))
+        }
+    }
+
+    // Añadir una dirección a la lista (máximo 3)
+    suspend fun addDireccion(direccion: String): Result<Unit> {
+        return try {
+            val uid = auth.currentUser?.uid
+                ?: return Result.failure(Exception("No hay sesion iniciada"))
+
+            val doc = db.collection("users").document(uid).get().await()
+            val current = doc.get("direcciones") as? List<String> ?: emptyList()
+
+            if (current.size >= 3) {
+                return Result.failure(Exception("Maximo 3 direcciones"))
+            }
+
+            val updated = current + direccion
+
+            db.collection("users").document(uid)
+                .update(
+                    mapOf(
+                        "direcciones" to updated,
+                        "direccion" to direccion  // activa
+                    )
+                ).await()
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // Cambiar la dirección activa
+    suspend fun setDireccionActiva(direccion: String): Result<Unit> {
+        return try {
+            val uid = auth.currentUser?.uid
+                ?: return Result.failure(Exception("No hay sesion iniciada"))
+
+            db.collection("users").document(uid)
+                .update("direccion", direccion)
+                .await()
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // Eliminar una dirección de la lista
+    suspend fun deleteDireccion(direccion: String): Result<Unit> {
+        return try {
+            val uid = auth.currentUser?.uid
+                ?: return Result.failure(Exception("No hay sesion iniciada"))
+
+            val doc = db.collection("users").document(uid).get().await()
+            val current = doc.get("direcciones") as? List<String> ?: emptyList()
+            val updated = current.filter { it != direccion }
+
+            // Si eliminamos la activa, la activa pasa a ser la primera de la lista o vacío
+            val currentActiva = doc.getString("direccion") ?: ""
+            val nuevaActiva = if (currentActiva == direccion) updated.firstOrNull() ?: "" else currentActiva
+
+            db.collection("users").document(uid)
+                .update(
+                    mapOf(
+                        "direcciones" to updated,
+                        "direccion" to nuevaActiva
+                    )
+                ).await()
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
 }

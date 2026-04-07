@@ -18,6 +18,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.zesta.app.data.repository.AuthRepository
 import com.zesta.app.data.repository.UserPreferencesRepository
+import com.zesta.app.ui.screens.cart.CartDetailScreen
 import com.zesta.app.ui.screens.cart.CartScreen
 import com.zesta.app.ui.screens.home.HomeScreen
 import com.zesta.app.ui.screens.login.LoginScreen
@@ -26,22 +27,22 @@ import com.zesta.app.ui.screens.profile.ProfileScreen
 import com.zesta.app.ui.screens.register.RegisterScreen
 import com.zesta.app.ui.screens.restaurant.RestaurantDetailScreen
 import com.zesta.app.ui.screens.search.SearchScreen
-import com.zesta.app.ui.screens.cart.CartDetailScreen
 import com.zesta.app.ui.theme.FondoZesta
 import com.zesta.app.viewmodel.AuthViewModel
-import com.zesta.app.viewmodel.AuthViewModelFactory
 
 @Composable
 fun AppNavGraph() {
     val navController = rememberNavController()
     val context = LocalContext.current
 
+
     val authViewModel: AuthViewModel = viewModel(
-        factory = AuthViewModelFactory(
+        factory = AuthViewModel.factory(
             authRepository = AuthRepository(),
             preferencesRepository = UserPreferencesRepository(context)
         )
     )
+
 
     val uiState by authViewModel.uiState.collectAsState()
 
@@ -88,9 +89,7 @@ fun AppNavGraph() {
                         }
                     }
                 },
-                onGoRegister = {
-                    navController.navigate(AppRoutes.Register.route)
-                },
+                onGoRegister = { navController.navigate(AppRoutes.Register.route) },
                 onContinueAsGuestClick = {
                     authViewModel.continueAsGuest {
                         navController.navigate(AppRoutes.Home.route) {
@@ -124,14 +123,13 @@ fun AppNavGraph() {
                         }
                     }
                 },
-                onBack = {
-                    navController.popBackStack()
-                }
+                onBack = { navController.popBackStack() }
             )
         }
 
         composable(AppRoutes.Home.route) {
             HomeScreen(
+                authViewModel = authViewModel,
                 onSearchClick = { navController.navigate(AppRoutes.Search.route) },
                 onCartClick = { navController.navigate(AppRoutes.Cart.route) },
                 onProfileClick = { navController.navigate(AppRoutes.Profile.route) },
@@ -141,16 +139,22 @@ fun AppNavGraph() {
             )
         }
 
+
         composable(AppRoutes.Search.route) {
             SearchScreen(
+                authViewModel = authViewModel,
                 onHomeClick = { navController.navigate(AppRoutes.Home.route) },
                 onCartClick = { navController.navigate(AppRoutes.Cart.route) },
-                onProfileClick = { navController.navigate(AppRoutes.Profile.route) }
+                onProfileClick = { navController.navigate(AppRoutes.Profile.route) },
+                onRestaurantClick = { id ->
+                    navController.navigate(AppRoutes.RestaurantDetail.createRoute(id))
+                }
             )
         }
 
         composable(AppRoutes.Cart.route) {
             CartScreen(
+                authViewModel = authViewModel,
                 onHomeClick = { navController.navigate(AppRoutes.Home.route) },
                 onSearchClick = { navController.navigate(AppRoutes.Search.route) },
                 onProfileClick = { navController.navigate(AppRoutes.Profile.route) },
@@ -164,6 +168,7 @@ fun AppNavGraph() {
 
         composable(AppRoutes.Profile.route) {
             ProfileScreen(
+                authViewModel = authViewModel,
                 userName = uiState.userName,
                 isGuest = uiState.isGuest,
                 onHomeClick = { navController.navigate(AppRoutes.Home.route) },
@@ -183,6 +188,7 @@ fun AppNavGraph() {
 
         composable(AppRoutes.ManageAccount.route) {
             ManageAccountScreen(
+                authViewModel = authViewModel,
                 isGuest = uiState.isGuest,
                 userName = uiState.userName,
                 onBackClick = { navController.popBackStack() },
@@ -204,21 +210,39 @@ fun AppNavGraph() {
         ) { backStackEntry ->
             val restaurantId = backStackEntry.arguments?.getInt("restaurantId") ?: 0
             RestaurantDetailScreen(
+                authViewModel = authViewModel,
                 restaurantId = restaurantId,
                 onBack = { navController.popBackStack() },
                 onGoToCart = { navController.navigate(AppRoutes.Cart.route) }
             )
         }
 
+        // ← Una sola vez, con todos los parámetros
         composable(
             route = AppRoutes.CartDetail.route,
             arguments = listOf(navArgument("restaurantId") { type = NavType.IntType })
         ) { backStackEntry ->
             val restaurantId = backStackEntry.arguments?.getInt("restaurantId") ?: 0
             CartDetailScreen(
+                authViewModel = authViewModel,
                 restaurantId = restaurantId,
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                onNavigateToManageAccount = {
+                    navController.navigate(AppRoutes.ManageAccount.route)
+                },
+                onNavigateToProfile = {
+                    navController.navigate(AppRoutes.Profile.route)
+                }
             )
         }
     }
+}
+
+
+@Composable
+fun AuthViewModelFactory(
+    authRepository: AuthRepository,
+    preferencesRepository: UserPreferencesRepository
+) {
+    TODO("Not yet implemented")
 }
