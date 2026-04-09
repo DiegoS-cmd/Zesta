@@ -26,8 +26,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.zesta.app.R
-import com.zesta.app.data.restaurant.Restaurant
-import com.zesta.app.data.restaurant.RestaurantRepository
+import com.zesta.app.ui.screens.restaurant.Restaurant
+import com.zesta.app.data.repository.RestaurantRepository
 import com.zesta.app.navigation.AppRoutes
 import com.zesta.app.ui.components.ZestaBottomNavBar
 import com.zesta.app.ui.theme.*

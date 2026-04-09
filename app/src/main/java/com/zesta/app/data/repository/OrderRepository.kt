@@ -14,7 +14,8 @@ val PROMO_CODES = mapOf(
 
 class OrderRepository(
     private val auth: FirebaseAuth = FirebaseAuth.getInstance(),
-    private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private val db: FirebaseFirestore = FirebaseFirestore.getInstance(),
+    private val cartRepository: CartRepository = CartRepository()
 ) {
     private fun getUserId(): String? = auth.currentUser?.uid
 
@@ -33,6 +34,9 @@ class OrderRepository(
                 .document(orderId)
                 .set(finalOrder)
                 .await()
+
+            cartRepository.clearCartByRestaurant(order.restaurantId)
+
             Result.success(orderId)
         } catch (e: Exception) {
             Result.failure(e)

@@ -1,4 +1,4 @@
-package com.zesta.app.data.restaurant
+package com.zesta.app.ui.screens.restaurant
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
@@ -13,6 +13,7 @@ data class Restaurant(
     val ratingCount: Int,
     @DrawableRes val imageRes: Int,
     @StringRes val promoTextRes: Int? = null,
+    val promoDiscount: Double? = null,
     val categories: List<String> = emptyList(),
     val products: List<Product>
 )

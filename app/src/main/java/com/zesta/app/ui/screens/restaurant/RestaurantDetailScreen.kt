@@ -51,14 +51,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.zesta.app.R
 import com.zesta.app.data.model.CartItem
 import com.zesta.app.data.repository.CartRepository
-import com.zesta.app.data.restaurant.Product
-import com.zesta.app.data.restaurant.Restaurant
-import com.zesta.app.data.restaurant.RestaurantRepository
+import com.zesta.app.data.repository.RestaurantRepository
 import com.zesta.app.ui.theme.AzulFinGradienteZesta
 import com.zesta.app.ui.theme.AzulInicioGradienteZesta
 import com.zesta.app.ui.theme.BlancoZesta
@@ -89,7 +88,7 @@ fun RestaurantDetailScreen(
     onGoToCart: () -> Unit,
     onNavigateToLogin: () -> Unit,
     authViewModel: AuthViewModel
-){
+) {
     val context = LocalContext.current
 
     val cartViewModel: CartViewModel = viewModel(
@@ -224,6 +223,7 @@ fun RestaurantDetailScreen(
             onClick = onGoToCart
         )
     }
+
     guestDialogType?.let { tipo ->
         GuestActionDialog(
             tipo = tipo,
@@ -250,6 +250,230 @@ private fun Product.toCartItem(
     )
 }
 
+// ── Badge de promo reutilizable ───────────────────────────────────────────────
+
+@Composable
+private fun PromoBadge(promoType: PromoType) {
+    if (promoType == PromoType.NONE) return
+    val label = when (promoType) {
+        PromoType.DOS_POR_UNO -> "2x1"
+        PromoType.DESCUENTO_20 -> "-20%"
+        PromoType.DESCUENTO_10 -> "-10%"
+        PromoType.NONE -> return
+    }
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(6.dp))
+            .background(NaranjaZesta)
+            .padding(horizontal = 6.dp, vertical = 2.dp)
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = BlancoZesta,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+// ── Cards ─────────────────────────────────────────────────────────────────────
+
+@Composable
+private fun ProductPromoCard(
+    product: Product,
+    quantity: Int,
+    onAddToCart: () -> Unit,
+    onDecrease: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val productName = stringResource(product.nameRes)
+    val productDescription = stringResource(product.descriptionRes)
+
+    val precioOriginal = product.price
+    val precioMostrado = when (product.promoType) {
+        PromoType.DESCUENTO_20 -> precioOriginal * 0.80
+        PromoType.DESCUENTO_10 -> precioOriginal * 0.90
+        else -> precioOriginal
+    }
+    val hayDescuento = precioMostrado < precioOriginal
+
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(18.dp))
+            .background(FondoPlaceholderZesta)
+            .padding(10.dp)
+    ) {
+        Box {
+            Image(
+                painter = painterResource(product.imageRes),
+                contentDescription = productName,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(95.dp)
+                    .clip(RoundedCornerShape(16.dp)),
+                contentScale = ContentScale.Crop
+            )
+            // Badge sobre imagen (esquina superior izquierda)
+            if (product.promoType != PromoType.NONE) {
+                Box(modifier = Modifier.padding(6.dp)) {
+                    PromoBadge(promoType = product.promoType)
+                }
+            }
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .offset(x = 10.dp, y = 10.dp)
+            ) {
+                QuantitySelector(
+                    quantity = quantity,
+                    onAdd = onAddToCart,
+                    onDecrease = onDecrease,
+                    size = 34
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+        Text(text = productName, style = MaterialTheme.typography.bodyLarge, color = TextoPrincipalZesta)
+
+        if (hayDescuento) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(R.string.producto_precio, precioOriginal),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextoSecundarioZesta,
+                    textDecoration = TextDecoration.LineThrough
+                )
+                Text(
+                    text = stringResource(R.string.producto_precio, precioMostrado),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = NaranjaZesta,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        } else {
+            Text(
+                text = stringResource(R.string.producto_precio, precioOriginal),
+                style = MaterialTheme.typography.bodyLarge,
+                color = TextoPrincipalZesta
+            )
+        }
+
+        Text(text = productDescription, style = MaterialTheme.typography.bodyMedium, color = TextoResenaZesta)
+    }
+}
+
+@Composable
+private fun MenuProductCard(
+    product: Product,
+    quantity: Int,
+    onAddToCart: () -> Unit,
+    onDecrease: () -> Unit
+) {
+    val productName = stringResource(product.nameRes)
+    val productDescription = stringResource(product.descriptionRes)
+
+    val precioOriginal = product.price
+    val precioMostrado = when (product.promoType) {
+        PromoType.DESCUENTO_20 -> precioOriginal * 0.80
+        PromoType.DESCUENTO_10 -> precioOriginal * 0.90
+        else -> precioOriginal
+    }
+    val hayDescuento = precioMostrado < precioOriginal
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(18.dp))
+            .background(FondoPlaceholderZesta)
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Image(
+            painter = painterResource(product.imageRes),
+            contentDescription = productName,
+            modifier = Modifier
+                .size(78.dp)
+                .clip(RoundedCornerShape(16.dp)),
+            contentScale = ContentScale.Crop
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            // Nombre + badge en la misma fila
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = productName,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = TextoPrincipalZesta,
+                    modifier = Modifier.weight(1f, fill = false)
+                )
+                PromoBadge(promoType = product.promoType)
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // Precio tachado + nuevo si hay descuento
+            if (hayDescuento) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.producto_precio, precioOriginal),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextoSecundarioZesta,
+                        textDecoration = TextDecoration.LineThrough
+                    )
+                    Text(
+                        text = stringResource(R.string.producto_precio, precioMostrado),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = NaranjaZesta,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            } else {
+                Text(
+                    text = stringResource(R.string.producto_precio, precioOriginal),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = TextoPrincipalZesta
+                )
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = productDescription,
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextoResenaZesta
+            )
+
+            // Nota explicativa para 2x1
+            if (product.promoType == PromoType.DOS_POR_UNO) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Llévate 2 y paga solo 1",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = NaranjaZesta,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
+        Spacer(modifier = Modifier.width(10.dp))
+        QuantitySelector(
+            quantity = quantity,
+            onAdd = onAddToCart,
+            onDecrease = onDecrease,
+            size = 38
+        )
+    }
+}
+
+// ── Resto de composables ──────────────────────────────────────────────────────
+
 @Composable
 private fun RestaurantTopBar(
     onBack: () -> Unit,
@@ -272,7 +496,6 @@ private fun RestaurantTopBar(
                 contentDescription = stringResource(R.string.accesibilidad_buscar_accion),
                 onClick = { }
             )
-            // Botón favorito con estado visual
             Box(
                 modifier = Modifier
                     .size(46.dp)
@@ -410,13 +633,11 @@ private fun QuantitySelector(
                     )
                 }
             }
-
             Text(
                 text = quantity.toString(),
                 color = NegroZesta,
                 style = MaterialTheme.typography.bodyMedium
             )
-
             Box(
                 modifier = Modifier
                     .size(24.dp)
@@ -431,100 +652,6 @@ private fun QuantitySelector(
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun ProductPromoCard(
-    product: Product,
-    quantity: Int,
-    onAddToCart: () -> Unit,
-    onDecrease: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val productName = stringResource(product.nameRes)
-    val productPrice = stringResource(R.string.producto_precio, product.price)
-    val productDescription = stringResource(product.descriptionRes)
-
-    Column(
-        modifier = modifier
-            .clip(RoundedCornerShape(18.dp))
-            .background(FondoPlaceholderZesta)
-            .padding(10.dp)
-    ) {
-        Box {
-            Image(
-                painter = painterResource(product.imageRes),
-                contentDescription = productName,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(95.dp)
-                    .clip(RoundedCornerShape(16.dp)),
-                contentScale = ContentScale.Crop
-            )
-            Box(
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .offset(x = 10.dp, y = 10.dp)
-            ) {
-                QuantitySelector(
-                    quantity = quantity,
-                    onAdd = onAddToCart,
-                    onDecrease = onDecrease,
-                    size = 34
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(10.dp))
-        Text(text = productName, style = MaterialTheme.typography.bodyLarge, color = TextoPrincipalZesta)
-        Text(text = productPrice, style = MaterialTheme.typography.bodyLarge, color = TextoPrincipalZesta)
-        Text(text = productDescription, style = MaterialTheme.typography.bodyMedium, color = TextoResenaZesta)
-    }
-}
-
-@Composable
-private fun MenuProductCard(
-    product: Product,
-    quantity: Int,
-    onAddToCart: () -> Unit,
-    onDecrease: () -> Unit
-) {
-    val productName = stringResource(product.nameRes)
-    val productPrice = stringResource(R.string.producto_precio, product.price)
-    val productDescription = stringResource(product.descriptionRes)
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(18.dp))
-            .background(FondoPlaceholderZesta)
-            .padding(12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Image(
-            painter = painterResource(product.imageRes),
-            contentDescription = productName,
-            modifier = Modifier
-                .size(78.dp)
-                .clip(RoundedCornerShape(16.dp)),
-            contentScale = ContentScale.Crop
-        )
-        Spacer(modifier = Modifier.width(12.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(text = productName, style = MaterialTheme.typography.bodyLarge, color = TextoPrincipalZesta)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(text = productPrice, style = MaterialTheme.typography.bodyLarge, color = TextoPrincipalZesta)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(text = productDescription, style = MaterialTheme.typography.bodyMedium, color = TextoResenaZesta)
-        }
-        Spacer(modifier = Modifier.width(10.dp))
-        QuantitySelector(
-            quantity = quantity,
-            onAdd = onAddToCart,
-            onDecrease = onDecrease,
-            size = 38
-        )
     }
 }
 
@@ -546,7 +673,6 @@ private fun ViewCartButton(
             .clickable { onClick() }
             .padding(horizontal = 26.dp),
         contentAlignment = Alignment.Center
-
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
@@ -562,9 +688,7 @@ private fun ViewCartButton(
                 color = BlancoZesta
             )
         }
-
     }
-
 }
 
 @Composable
@@ -590,6 +714,7 @@ private fun CircleIconButton(
         )
     }
 }
+
 @Composable
 private fun GuestActionDialog(
     tipo: GuestDialogType,
@@ -686,5 +811,5 @@ private fun GuestActionDialog(
         confirmButton = {}
     )
 }
-private enum class GuestDialogType { FAVORITO, CARRITO }
 
+private enum class GuestDialogType { FAVORITO, CARRITO }

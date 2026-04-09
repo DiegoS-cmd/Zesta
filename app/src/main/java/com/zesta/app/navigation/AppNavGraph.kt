@@ -35,7 +35,8 @@ import com.zesta.app.ui.screens.search.SearchScreen
 import com.zesta.app.ui.theme.FondoZesta
 import com.zesta.app.viewmodel.AuthViewModel
 import com.zesta.app.ui.screens.cart.OrderSuccessScreen
-import com.zesta.app.ui.screens.cart.OrderSummaryScreen
+import com.zesta.app.ui.screens.profile.OrderHistoryScreen
+
 @Composable
 fun AppNavGraph() {
     val navController = rememberNavController()
@@ -243,6 +244,7 @@ fun AppNavGraph() {
             )
         }
 
+
         composable(AppRoutes.Profile.route) {
             ProfileScreen(
                 authViewModel = authViewModel,
@@ -252,7 +254,9 @@ fun AppNavGraph() {
                 onSearchClick = { navController.navigate(AppRoutes.Search.route) },
                 onCartClick = { navController.navigate(AppRoutes.Cart.route) },
                 onFavoritesClick = { navController.navigate(AppRoutes.Favorites.route) },
-                onOrderHistoryClick = { },
+                onOrderHistoryClick = {
+                    navController.navigate(AppRoutes.OrderHistory.route)
+                },
                 onHelpClick = { },
                 onPrivacyClick = { },
                 onAccessibilityClick = { },
@@ -287,6 +291,11 @@ fun AppNavGraph() {
                 onRestaurantClick = { restaurantId ->
                     navController.navigate(AppRoutes.RestaurantDetail.createRoute(restaurantId))
                 }
+            )
+        }
+        composable(AppRoutes.OrderHistory.route) {
+            OrderHistoryScreen(
+                onBack = { navController.popBackStack() }
             )
         }
 

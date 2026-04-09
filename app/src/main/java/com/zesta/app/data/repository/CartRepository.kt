@@ -175,4 +175,16 @@ class CartRepository(
             Result.failure(e)
         }
     }
+    suspend fun clearCartByRestaurant(restaurantId: Int): Result<Unit> {
+        val uid = getUserId() ?: return Result.failure(Exception("Usuario no autenticado"))
+        return try {
+            val cartDoc = getCartsCollection(uid).document(restaurantId.toString())
+            val itemsSnapshot = cartDoc.collection("items").get().await()
+            itemsSnapshot.documents.forEach { it.reference.delete().await() }
+            cartDoc.delete().await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

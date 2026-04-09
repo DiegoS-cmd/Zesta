@@ -99,6 +99,7 @@
     <string name="pedido_codigo_aplicado">%1$s aplicado · %2$d%% de descuento</string>
     <string name="pedido_subtotal">Subtotal</string>
     <string name="pedido_descuento">Descuento (%1$d%%)</string>
+    <string name="pedido_codigo_añadir">Añadir</string>
     <string name="pedido_confirmar">Confirmar pedido</string>
     <string name="pedido_exito_titulo">¡Pedido realizado!</string>
     <string name="pedido_exito_descripcion">Tu pedido está en camino. Pronto recibirás tu comida.</string>
@@ -181,6 +182,7 @@
 
     <!-- Productos -->
     <string name="producto_whopper">Whopper</string>
+    <string name="producto_crazy_bacon">Crazy Bacon</string>
     <string name="producto_chili_cheese">Chili Cheese</string>
     <string name="producto_pizza_carbonara">Pizza Carbonara</string>
     <string name="producto_pizza_pepperoni">Pizza Pepperoni</string>

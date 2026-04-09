@@ -1,6 +1,9 @@
-package com.zesta.app.data.restaurant
+package com.zesta.app.data.repository
 
 import com.zesta.app.R
+import com.zesta.app.ui.screens.restaurant.Product
+import com.zesta.app.ui.screens.restaurant.PromoType
+import com.zesta.app.ui.screens.restaurant.Restaurant
 
 object RestaurantRepository {
 
@@ -17,14 +20,38 @@ object RestaurantRepository {
             imageRes = R.drawable.bk,
             categories = listOf("Hamburguesas"),
             products = listOf(
-                Product(id = 1, nameRes = R.string.producto_whopper, price = 8.25,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.whopper, imageKey = "whopper"),
-                Product(id = 2, nameRes = R.string.producto_chili_cheese, price = 10.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.chilicheese, imageKey = "chilicheese"),
-                Product(id = 3, nameRes = R.string.producto_big_mac, price = 7.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.crazybacon, imageKey = "crazybacon"),
-                Product(id = 4, nameRes = R.string.producto_combo_wings, price = 9.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.burgerkingicono, imageKey = "burgerkingicono")
+                Product(
+                    id = 1,
+                    nameRes = R.string.producto_whopper,
+                    price = 8.25,
+                    descriptionRes = R.string.producto_descripcion_generica,
+                    imageRes = R.drawable.whopper,
+                    imageKey = "whopper"
+                ),
+                Product(
+                    id = 2,
+                    nameRes = R.string.producto_chili_cheese,
+                    price = 10.50,
+                    descriptionRes = R.string.producto_descripcion_generica,
+                    imageRes = R.drawable.chilicheese,
+                    imageKey = "chilicheese"
+                ),
+                Product(
+                    id = 3,
+                    nameRes = R.string.producto_big_mac,
+                    price = 7.50,
+                    descriptionRes = R.string.producto_descripcion_generica,
+                    imageRes = R.drawable.crazybacon,
+                    imageKey = "crazybacon"
+                ),
+                Product(
+                    id = 4,
+                    nameRes = R.string.producto_combo_wings,
+                    price = 9.95,
+                    descriptionRes = R.string.producto_descripcion_generica,
+                    imageRes = R.drawable.burgerkingicono,
+                    imageKey = "burgerkingicono"
+                )
             )
         ),
 
@@ -50,6 +77,7 @@ object RestaurantRepository {
             )
         ),
 
+        // Wingstop — promoTextRes = 2x1 → DOS_POR_UNO en los 2 primeros productos
         Restaurant(
             id = 3,
             nameRes = R.string.restaurante_nombre_wingstop,
@@ -63,9 +91,11 @@ object RestaurantRepository {
             categories = listOf("Hamburguesas", "Americana"),
             products = listOf(
                 Product(id = 9, nameRes = R.string.producto_alitas_bbq, price = 9.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.wingstop, imageKey = "wingstop"),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.wingstop, imageKey = "wingstop",
+                    promoType = PromoType.DOS_POR_UNO),
                 Product(id = 10, nameRes = R.string.producto_combo_wings, price = 12.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.wingstop, imageKey = "wingstop"),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.wingstop, imageKey = "wingstop",
+                    promoType = PromoType.DOS_POR_UNO),
                 Product(id = 11, nameRes = R.string.producto_alitas_kfc, price = 7.95,
                     descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.wingstop, imageKey = "wingstop"),
                 Product(id = 12, nameRes = R.string.producto_patatas_cajun, price = 4.50,
@@ -73,6 +103,7 @@ object RestaurantRepository {
             )
         ),
 
+        // McDonalds — promoTextRes = 2x1 → DOS_POR_UNO en los 2 primeros productos
         Restaurant(
             id = 4,
             nameRes = R.string.restaurante_nombre_mcdonalds,
@@ -86,9 +117,11 @@ object RestaurantRepository {
             categories = listOf("Hamburguesas"),
             products = listOf(
                 Product(id = 13, nameRes = R.string.producto_big_mac, price = 7.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.mcdonalds, imageKey = "mcdonalds"),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.mcdonalds, imageKey = "mcdonalds",
+                    promoType = PromoType.DOS_POR_UNO),
                 Product(id = 14, nameRes = R.string.producto_mcnuggets, price = 6.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.mcdonalds, imageKey = "mcdonalds"),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.mcdonalds, imageKey = "mcdonalds",
+                    promoType = PromoType.DOS_POR_UNO),
                 Product(id = 15, nameRes = R.string.producto_mcflurry, price = 3.50,
                     descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.mcdonalds, imageKey = "mcdonalds"),
                 Product(id = 16, nameRes = R.string.producto_whopper, price = 8.25,
@@ -107,8 +140,14 @@ object RestaurantRepository {
             imageRes = R.drawable.kfc,
             categories = listOf("Hamburguesas", "Americana"),
             products = listOf(
-                Product(id = 17, nameRes = R.string.producto_bucket_kfc, price = 14.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.kfc, imageKey = "kfc"),
+                Product(
+                    id = 17,
+                    nameRes = R.string.producto_bucket_kfc,
+                    price = 14.95,
+                    descriptionRes = R.string.producto_descripcion_generica,
+                    imageRes = R.drawable.kfc,
+                    imageKey = "kfc"
+                ),
                 Product(id = 18, nameRes = R.string.producto_twister_kfc, price = 6.50,
                     descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.kfc, imageKey = "kfc"),
                 Product(id = 19, nameRes = R.string.producto_alitas_kfc, price = 8.95,
@@ -118,17 +157,18 @@ object RestaurantRepository {
             )
         ),
 
+        // Subway — promoTextRes = envío gratis (ya aplicado en hasFreeDelivery, sin promoType en productos)
         Restaurant(
             id = 6,
             nameRes = R.string.restaurante_nombre_subway,
             hasFreeDelivery = true,
-            deliveryFee = null,
+            deliveryFee = 2.99,
             deliveryTimeMinutes = 20,
             ratingValue = 4.0,
             ratingCount = 189,
             imageRes = R.drawable.subway,
             promoTextRes = R.string.promocion_envio_gratis,
-            categories = listOf("Panadera"),
+            categories = listOf("Panadería"),
             products = listOf(
                 Product(id = 21, nameRes = R.string.producto_sub_italiano, price = 7.95,
                     descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.subway, imageKey = "subway"),
@@ -163,6 +203,7 @@ object RestaurantRepository {
             )
         ),
 
+        // Papa Johns — promoTextRes = descuento_20 → DESCUENTO_20 en los 2 primeros productos
         Restaurant(
             id = 8,
             nameRes = R.string.restaurante_nombre_papajohns,
@@ -176,9 +217,11 @@ object RestaurantRepository {
             categories = listOf("Pizzas"),
             products = listOf(
                 Product(id = 29, nameRes = R.string.producto_pizza_garden, price = 12.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.papajohns, imageKey = "papajohns"),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.papajohns, imageKey = "papajohns",
+                    promoType = PromoType.DESCUENTO_20),
                 Product(id = 30, nameRes = R.string.producto_pizza_hawaiana, price = 11.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.papajohns, imageKey = "papajohns"),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.papajohns, imageKey = "papajohns",
+                    promoType = PromoType.DESCUENTO_20),
                 Product(id = 31, nameRes = R.string.producto_papas_ajo, price = 4.95,
                     descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.papajohns, imageKey = "papajohns"),
                 Product(id = 32, nameRes = R.string.producto_pizza_pepperoni, price = 13.50,
@@ -208,6 +251,7 @@ object RestaurantRepository {
             )
         ),
 
+        // Dunkin — promoTextRes = envío gratis (ya en hasFreeDelivery)
         Restaurant(
             id = 10,
             nameRes = R.string.restaurante_nombre_dunkin,
@@ -253,6 +297,7 @@ object RestaurantRepository {
             )
         ),
 
+        // Five Guys — promoTextRes = 2x1 → DOS_POR_UNO en los 2 primeros productos
         Restaurant(
             id = 12,
             nameRes = R.string.restaurante_nombre_fiveguys,
@@ -266,9 +311,11 @@ object RestaurantRepository {
             categories = listOf("Hamburguesas"),
             products = listOf(
                 Product(id = 45, nameRes = R.string.producto_burger_fiveguys, price = 12.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.fiveguys, imageKey = "fiveguys"),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.fiveguys, imageKey = "fiveguys",
+                    promoType = PromoType.DOS_POR_UNO),
                 Product(id = 46, nameRes = R.string.producto_hotdog_fiveguys, price = 8.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.fiveguys, imageKey = "fiveguys"),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.fiveguys, imageKey = "fiveguys",
+                    promoType = PromoType.DOS_POR_UNO),
                 Product(id = 47, nameRes = R.string.producto_patatas_fiveguys, price = 5.95,
                     descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.fiveguys, imageKey = "fiveguys"),
                 Product(id = 48, nameRes = R.string.producto_smash_goiko, price = 13.50,
@@ -298,6 +345,7 @@ object RestaurantRepository {
             )
         ),
 
+        // Ginos — promoTextRes = descuento_20 → DESCUENTO_20 en los 2 primeros productos
         Restaurant(
             id = 14,
             nameRes = R.string.restaurante_nombre_ginos,
@@ -311,9 +359,11 @@ object RestaurantRepository {
             categories = listOf("Pizzas"),
             products = listOf(
                 Product(id = 53, nameRes = R.string.producto_pizza_ginos, price = 13.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.ginos, imageKey = "ginos"),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.ginos, imageKey = "ginos",
+                    promoType = PromoType.DESCUENTO_20),
                 Product(id = 54, nameRes = R.string.producto_pasta_ginos, price = 10.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.ginos, imageKey = "ginos"),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.ginos, imageKey = "ginos",
+                    promoType = PromoType.DESCUENTO_20),
                 Product(id = 55, nameRes = R.string.producto_tiramisu, price = 5.95,
                     descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.ginos, imageKey = "ginos"),
                 Product(id = 56, nameRes = R.string.producto_pizza_4quesos, price = 12.50,
@@ -343,6 +393,7 @@ object RestaurantRepository {
             )
         ),
 
+        // Montaditos — promoTextRes = 2x1 → DOS_POR_UNO en los 2 primeros productos
         Restaurant(
             id = 16,
             nameRes = R.string.restaurante_nombre_montaditos,
@@ -356,9 +407,11 @@ object RestaurantRepository {
             categories = listOf("Panadería"),
             products = listOf(
                 Product(id = 61, nameRes = R.string.producto_montadito_lomo, price = 1.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.montaditos, imageKey = "montaditos"),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.montaditos, imageKey = "montaditos",
+                    promoType = PromoType.DOS_POR_UNO),
                 Product(id = 62, nameRes = R.string.producto_montadito_tortilla, price = 1.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.montaditos, imageKey = "montaditos"),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.montaditos, imageKey = "montaditos",
+                    promoType = PromoType.DOS_POR_UNO),
                 Product(id = 63, nameRes = R.string.producto_combo_montaditos, price = 9.95,
                     descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.montaditos, imageKey = "montaditos"),
                 Product(id = 64, nameRes = R.string.producto_papas_ajo, price = 3.95,
@@ -388,6 +441,7 @@ object RestaurantRepository {
             )
         ),
 
+        // Sushi Shop — promoTextRes = envío gratis (ya en hasFreeDelivery)
         Restaurant(
             id = 18,
             nameRes = R.string.restaurante_nombre_sushishop,
@@ -411,7 +465,6 @@ object RestaurantRepository {
             )
         )
     )
-
 
     fun getByCategory(category: String): List<Restaurant> =
         allRestaurants.filter { restaurant ->

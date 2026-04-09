@@ -1,6 +1,12 @@
 package com.zesta.app.ui.screens.cart
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -22,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -34,14 +41,19 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.zesta.app.R
+import com.zesta.app.data.model.CartItem
 import com.zesta.app.data.model.Order
 import com.zesta.app.data.repository.CartRepository
 import com.zesta.app.data.repository.OrderRepository
+import com.zesta.app.data.repository.PROMO_CODES
+import com.zesta.app.data.repository.RestaurantRepository
+import com.zesta.app.ui.screens.restaurant.PromoType
 import com.zesta.app.ui.theme.*
 import com.zesta.app.viewmodel.AuthViewModel
 import com.zesta.app.viewmodel.CartViewModel
 import com.zesta.app.viewmodel.CartViewModelFactory
 import kotlinx.coroutines.launch
+import kotlin.compareTo
 
 @Composable
 fun OrderSummaryScreen(
@@ -65,31 +77,52 @@ fun OrderSummaryScreen(
     val restaurantName = cartGroup?.cart?.restaurantName ?: ""
     val restaurantImageName = cartGroup?.cart?.restaurantImageResName ?: ""
 
-    val subtotal = items.sumOf { it.precio * it.cantidad }
+    // Restaurante para leer deliveryFee y promos por producto
+    val restaurant = remember(restaurantId) {
+        RestaurantRepository.getRestaurantById(restaurantId)
+    }
 
-    var promoInput by remember { mutableStateOf("") }
+    // Precios con promo de producto aplicada
+    val subtotal = remember(items, restaurant) {
+        items.sumOf { cartItem ->
+            val product = restaurant?.products?.firstOrNull { it.id.toString() == cartItem.productId }
+            calcularPrecioConPromo(cartItem, product?.promoType ?: PromoType.NONE)
+        }
+    }
+
+    // Costes fijos
+    val deliveryFee = if (restaurant?.hasFreeDelivery == true) 0.0 else (restaurant?.deliveryFee ?: 0.0)
+    val serviceFee = 2.50
+
+    // Promo manual (código)
     var promoApplied by remember { mutableStateOf("") }
     var discount by remember { mutableStateOf(0.0) }
     var promoError by remember { mutableStateOf(false) }
+    var showPromoDialog by remember { mutableStateOf(false) }
     var isPlacingOrder by remember { mutableStateOf(false) }
 
     val discountAmount = subtotal * discount
-    val total = subtotal - discountAmount
+    val total = subtotal + deliveryFee + serviceFee - discountAmount
 
     val address = authState.currentUser?.direccion.orEmpty()
 
-    fun applyPromo() {
-        keyboardController?.hide()
-        val result = orderRepository.validatePromoCode(promoInput)
-        if (result != null) {
-            discount = result
-            promoApplied = promoInput.uppercase().trim()
-            promoError = false
-        } else {
-            promoError = true
-            discount = 0.0
-            promoApplied = ""
-        }
+    if (showPromoDialog) {
+        PromoCodeDialog(
+            onDismiss = { showPromoDialog = false },
+            onApply = { code ->
+                val result = orderRepository.validatePromoCode(code)
+                if (result != null) {
+                    discount = result
+                    promoApplied = code.uppercase().trim()
+                    promoError = false
+                    showPromoDialog = false
+                } else {
+                    promoError = true
+                }
+            },
+            hasError = promoError,
+            onErrorReset = { promoError = false }
+        )
     }
 
     Scaffold(containerColor = FondoZesta) { innerPadding ->
@@ -139,7 +172,8 @@ fun OrderSummaryScreen(
                     .weight(1f),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Restaurante header
+
+                // Header restaurante
                 item {
                     RestaurantSummaryHeader(
                         restaurantName = restaurantName,
@@ -156,9 +190,62 @@ fun OrderSummaryScreen(
                     )
                 }
 
-                // Items
-                items(items = items, key = { it.productId }) { item ->
-                    OrderSummaryItemRow(item = item)
+                // Items con promo por producto
+                items(items = items, key = { it.productId }) { cartItem ->
+                    val product = restaurant?.products?.firstOrNull {
+                        it.id.toString() == cartItem.productId
+                    }
+                    val promoType = product?.promoType ?: PromoType.NONE
+                    val precioNormal = cartItem.precio * cartItem.cantidad
+                    val precioFinal = calcularPrecioConPromo(cartItem, promoType)
+                    val ahorro = precioNormal - precioFinal
+
+                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "${cartItem.cantidad}x ${cartItem.nombre}",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = TextoPrincipalZesta,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Column(horizontalAlignment = Alignment.End) {
+                                // Precio tachado si hay promo
+                                if (ahorro > 0.0){
+                                    Text(
+                                        text = stringResource(R.string.carrito_precio_formato, precioNormal),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = TextoSecundarioZesta,
+                                        textDecoration = TextDecoration.LineThrough
+                                    )
+                                }
+                                Text(
+                                    text = stringResource(R.string.carrito_precio_formato, precioFinal),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = if (ahorro > 0.0) NaranjaZesta else TextoPrincipalZesta,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                        }
+                        // Badge de ahorro
+                        if (ahorro > 0.0) {
+                            val promoLabel = when (promoType) {
+                                PromoType.DOS_POR_UNO -> "2x1 · "
+                                PromoType.DESCUENTO_20 -> "-20% · "
+                                PromoType.DESCUENTO_10 -> "-10% · "
+                                PromoType.NONE -> ""
+                            }
+                            Text(
+                                text = "${promoLabel}Ahorras ${String.format("%.2f", ahorro)} €",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = NaranjaZesta,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
                 }
 
                 // Dirección
@@ -194,105 +281,119 @@ fun OrderSummaryScreen(
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(16.dp))
                             .background(FondoPlaceholderZesta)
-                            .padding(16.dp),
+                            .padding(horizontal = 16.dp, vertical = 14.dp),
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Outlined.LocalOffer,
-                                contentDescription = null,
-                                tint = NaranjaZesta,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = stringResource(R.string.pedido_codigo_promo),
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = TextoPrincipalZesta,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
-
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            OutlinedTextField(
-                                value = promoInput,
-                                onValueChange = {
-                                    promoInput = it.uppercase()
-                                    promoError = false
-                                },
-                                modifier = Modifier.weight(1f),
-                                placeholder = {
-                                    Text(
-                                        text = stringResource(R.string.pedido_codigo_placeholder),
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = TextoSecundarioZesta
-                                    )
-                                },
-                                singleLine = true,
-                                shape = RoundedCornerShape(12.dp),
-                                isError = promoError,
-                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                                keyboardActions = KeyboardActions(onDone = { applyPromo() }),
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedContainerColor = BlancoZesta,
-                                    unfocusedContainerColor = BlancoZesta,
-                                    focusedBorderColor = if (promoApplied.isNotBlank()) VerdeExitoZesta else NaranjaZesta,
-                                    unfocusedBorderColor = BordeCirculoZesta,
-                                    errorBorderColor = MaterialTheme.colorScheme.error,
-                                    cursorColor = TextoPrincipalZesta
-                                )
-                            )
-
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(NaranjaZesta)
-                                    .clickable { applyPromo() }
-                                    .padding(horizontal = 16.dp, vertical = 14.dp),
-                                contentAlignment = Alignment.Center
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.LocalOffer,
+                                    contentDescription = null,
+                                    tint = NaranjaZesta,
+                                    modifier = Modifier.size(20.dp)
+                                )
                                 Text(
-                                    text = stringResource(R.string.pedido_aplicar),
-                                    color = BlancoZesta,
+                                    text = stringResource(R.string.pedido_codigo_promo),
                                     style = MaterialTheme.typography.bodyMedium,
+                                    color = TextoPrincipalZesta,
                                     fontWeight = FontWeight.SemiBold
                                 )
                             }
+
+                            AnimatedContent(
+                                targetState = promoApplied,
+                                transitionSpec = {
+                                    (slideInVertically { it } + fadeIn()).togetherWith(
+                                        slideOutVertically { -it } + fadeOut()
+                                    )
+                                },
+                                label = "promo_chip"
+                            ) { applied ->
+                                if (applied.isNotBlank()) {
+                                    Row(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(20.dp))
+                                            .background(NaranjaZesta)
+                                            .clickable {
+                                                promoApplied = ""
+                                                discount = 0.0
+                                                promoError = false
+                                            }
+                                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        Text(
+                                            text = "$applied · -${(discount * 100).toInt()}%",
+                                            color = BlancoZesta,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                        Icon(
+                                            imageVector = Icons.Outlined.CheckCircle,
+                                            contentDescription = null,
+                                            tint = BlancoZesta,
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                    }
+                                } else {
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(20.dp))
+                                            .background(FondoCirculoZesta)
+                                            .border(1.dp, BordeCirculoZesta, RoundedCornerShape(20.dp))
+                                            .clickable { showPromoDialog = true }
+                                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                                    ) {
+                                        Text(
+                                            text = stringResource(R.string.pedido_codigo_añadir),
+                                            color = TextoPrincipalZesta,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                    }
+                                }
+                            }
                         }
 
-                        AnimatedVisibility(visible = promoError) {
-                            Text(
-                                text = stringResource(R.string.pedido_codigo_invalido),
-                                color = MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                        }
-
-                        AnimatedVisibility(visible = promoApplied.isNotBlank()) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.CheckCircle,
-                                    contentDescription = null,
-                                    tint = VerdeExitoZesta,
-                                    modifier = Modifier.size(18.dp)
-                                )
+                        // Chips de códigos disponibles
+                        AnimatedVisibility(visible = promoApplied.isBlank()) {
+                            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                                 Text(
-                                    text = stringResource(
-                                        R.string.pedido_codigo_aplicado,
-                                        promoApplied,
-                                        (discount * 100).toInt()
-                                    ),
-                                    color = VerdeExitoZesta,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.SemiBold
+                                    text = "Códigos disponibles:",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = TextoSecundarioZesta
                                 )
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    PROMO_CODES.forEach { (code, pct) ->
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(20.dp))
+                                                .background(FondoCirculoZesta)
+                                                .border(1.dp, NaranjaZesta.copy(alpha = 0.4f), RoundedCornerShape(20.dp))
+                                                .clickable {
+                                                    discount = pct
+                                                    promoApplied = code
+                                                    promoError = false
+                                                }
+                                                .padding(horizontal = 10.dp, vertical = 5.dp)
+                                        ) {
+                                            Text(
+                                                text = "$code · -${(pct * 100).toInt()}%",
+                                                color = NaranjaZesta,
+                                                style = MaterialTheme.typography.bodySmall,
+                                                fontWeight = FontWeight.SemiBold
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -314,6 +415,27 @@ fun OrderSummaryScreen(
                             value = stringResource(R.string.carrito_precio_formato, subtotal)
                         )
 
+                        // Gastos de envío
+                        if (deliveryFee == 0.0) {
+                            PriceRow(
+                                label = "Gastos de envío",
+                                value = "Gratis",
+                                valueColor = NaranjaZesta
+                            )
+                        } else {
+                            PriceRow(
+                                label = "Gastos de envío",
+                                value = stringResource(R.string.carrito_precio_formato, deliveryFee)
+                            )
+                        }
+
+                        // Precio de servicio
+                        PriceRow(
+                            label = "Precio de servicio",
+                            value = stringResource(R.string.carrito_precio_formato, serviceFee)
+                        )
+
+                        // Descuento código promo
                         AnimatedVisibility(visible = discountAmount > 0) {
                             PriceRow(
                                 label = stringResource(
@@ -327,6 +449,7 @@ fun OrderSummaryScreen(
 
                         HorizontalDivider(color = BordeCirculoZesta)
 
+                        // Total final
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
@@ -370,14 +493,15 @@ fun OrderSummaryScreen(
                                 restaurantImageResName = restaurantImageName,
                                 items = items,
                                 subtotal = subtotal,
+                                deliveryFee = deliveryFee,
+                                serviceFee = serviceFee,
                                 discount = discountAmount,
                                 total = total,
-                                promoCode = promoApplied,
+                                promoCode = promoApplied.ifBlank { null },
                                 address = address
                             )
                             val result = orderRepository.placeOrder(order)
                             if (result.isSuccess) {
-                                cartViewModel.clearCart()
                                 onOrderPlaced()
                             }
                             isPlacingOrder = false
@@ -407,6 +531,8 @@ fun OrderSummaryScreen(
         }
     }
 }
+
+// ── Composables privados ─────────────────────────────────────────────────────
 
 @Composable
 private fun RestaurantSummaryHeader(
@@ -456,35 +582,10 @@ private fun RestaurantSummaryHeader(
 }
 
 @Composable
-private fun OrderSummaryItemRow(item: com.zesta.app.data.model.CartItem) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = "${item.cantidad}x ${item.nombre}",
-            style = MaterialTheme.typography.bodyLarge,
-            color = TextoPrincipalZesta,
-            modifier = Modifier.weight(1f)
-        )
-        Text(
-            text = stringResource(
-                R.string.carrito_precio_formato,
-                item.precio * item.cantidad
-            ),
-            style = MaterialTheme.typography.bodyLarge,
-            color = TextoPrincipalZesta,
-            fontWeight = FontWeight.SemiBold
-        )
-    }
-}
-
-@Composable
 private fun PriceRow(
     label: String,
     value: String,
-    valueColor: androidx.compose.ui.graphics.Color = TextoPrincipalZesta
+    valueColor: Color = TextoPrincipalZesta
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -502,4 +603,136 @@ private fun PriceRow(
             fontWeight = FontWeight.SemiBold
         )
     }
+}
+
+// ── Lógica de promos por producto ────────────────────────────────────────────
+
+fun calcularPrecioConPromo(item: CartItem, promoType: PromoType): Double {
+    return when (promoType) {
+        PromoType.DOS_POR_UNO -> {
+            val pagadas = (item.cantidad / 2) + (item.cantidad % 2)
+            pagadas * item.precio
+        }
+        PromoType.DESCUENTO_20 -> item.precio * item.cantidad * 0.80
+        PromoType.DESCUENTO_10 -> item.precio * item.cantidad * 0.90
+        PromoType.NONE -> item.precio * item.cantidad
+    }
+}
+
+// ── Dialog código promo ──────────────────────────────────────────────────────
+
+@Composable
+private fun PromoCodeDialog(
+    onDismiss: () -> Unit,
+    onApply: (String) -> Unit,
+    hasError: Boolean,
+    onErrorReset: () -> Unit
+) {
+    var input by remember { mutableStateOf("") }
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = BlancoZesta,
+        shape = RoundedCornerShape(24.dp),
+        title = null,
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(CircleShape)
+                        .background(FondoSeleccionNaranjaZesta),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.LocalOffer,
+                        contentDescription = null,
+                        tint = NaranjaZesta,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+
+                Text(
+                    text = stringResource(R.string.pedido_codigo_promo),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = TextoPrincipalZesta,
+                    fontWeight = FontWeight.SemiBold,
+                    textAlign = TextAlign.Center
+                )
+
+                OutlinedTextField(
+                    value = input,
+                    onValueChange = {
+                        input = it.uppercase()
+                        onErrorReset()
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = {
+                        Text(
+                            text = stringResource(R.string.pedido_codigo_placeholder),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextoSecundarioZesta
+                        )
+                    },
+                    singleLine = true,
+                    shape = RoundedCornerShape(14.dp),
+                    isError = hasError,
+                    supportingText = if (hasError) {
+                        { Text(stringResource(R.string.pedido_codigo_invalido)) }
+                    } else null,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = {
+                        keyboardController?.hide()
+                        onApply(input)
+                    }),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = BlancoZesta,
+                        unfocusedContainerColor = BlancoZesta,
+                        focusedBorderColor = NaranjaZesta,
+                        unfocusedBorderColor = BordeCirculoZesta,
+                        cursorColor = TextoPrincipalZesta
+                    )
+                )
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(28.dp))
+                        .background(NaranjaZesta)
+                        .clickable {
+                            keyboardController?.hide()
+                            onApply(input)
+                        }
+                        .padding(vertical = 14.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = stringResource(R.string.pedido_aplicar),
+                        color = BlancoZesta,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+
+                TextButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = stringResource(R.string.carrito_cancelar),
+                        color = TextoSecundarioZesta,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+        },
+        confirmButton = {}
+    )
 }

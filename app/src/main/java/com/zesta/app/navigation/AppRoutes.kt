@@ -20,7 +20,9 @@ sealed class AppRoutes(val route: String) {
     object OrderSummary : AppRoutes("order_summary/{restaurantId}") {
         fun createRoute(restaurantId: Int) = "order_summary/$restaurantId"
     }
+    object OrderHistory : AppRoutes("order_history")
     object OrderSuccess : AppRoutes("order_success")
     }
+
 
 

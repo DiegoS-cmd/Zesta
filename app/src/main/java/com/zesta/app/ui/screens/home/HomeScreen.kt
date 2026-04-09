@@ -26,7 +26,6 @@ import android.location.Geocoder
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.material.icons.outlined.MyLocation
 import androidx.compose.material.icons.outlined.NearMe
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.LocationServices
@@ -46,12 +45,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.zesta.app.R
-import com.zesta.app.data.repository.AuthRepository
-import com.zesta.app.data.repository.UserPreferencesRepository
-import com.zesta.app.data.restaurant.Restaurant
-import com.zesta.app.data.restaurant.RestaurantRepository
+import com.zesta.app.ui.screens.restaurant.Restaurant
+import com.zesta.app.data.repository.RestaurantRepository
 import com.zesta.app.navigation.AppRoutes
 import com.zesta.app.ui.components.ZestaBottomNavBar
 import com.zesta.app.ui.theme.*
