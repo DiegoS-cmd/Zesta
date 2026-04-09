@@ -11,7 +11,7 @@ val NegroZesta = Color(0xFF000000)
 val NaranjaSeleccionZesta = Color(0xFFFF8A00)
 val FondoSeleccionNaranjaZesta = Color(0xFFFFE2BF)
 
-
+val VerdeExitoZesta = Color(0xFF437A22)
 val FondoOfertaZesta = Color(0xFFFA0303)
 val TextoResenaZesta = Color(0xFFADABAB)
 val FondoTarjetaRestauranteZesta = Color(0xFFF1F1F1)

@@ -43,6 +43,7 @@ fun CartDetailScreen(
     onBack: () -> Unit,
     onNavigateToManageAccount: () -> Unit,
     onNavigateToProfile: () -> Unit,
+    onGoToOrderSummary: () -> Unit,
     authViewModel: AuthViewModel
 ) {
 
@@ -178,9 +179,7 @@ fun CartDetailScreen(
                                 incompleteDialogIsGuest = false
                                 showIncompleteDialog = true
                             }
-                            else -> {
-                                // lógica de pago real aquí
-                            }
+                            else -> onGoToOrderSummary()
                         }
                     }
                     .padding(vertical = 14.dp),
@@ -275,7 +274,7 @@ private fun ProfileIncompleteDialog(
                 ) {
                     Text(
                         text = if (isGuest)
-                            stringResource(R.string.carrito_ir_perfil)
+                            stringResource(R.string.carrito_iniciar_sesion)
                         else
                             stringResource(R.string.carrito_ir_gestionar),
                         color = BlancoZesta,
@@ -308,6 +307,13 @@ private fun CartDetailItemCard(
     onIncrease: () -> Unit,
     onDecrease: () -> Unit
 ) {
+    val context = LocalContext.current
+    val imageResId = remember(item.imageKey) {
+        if (item.imageKey.isBlank()) return@remember null
+        val id = context.resources.getIdentifier(item.imageKey, "drawable", context.packageName)
+        if (id != 0) id else null
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -323,9 +329,9 @@ private fun CartDetailItemCard(
                 .background(BlancoZesta),
             contentAlignment = Alignment.Center
         ) {
-            if (item.imageRes != 0) {
+            if (imageResId != null) {
                 Image(
-                    painter = painterResource(item.imageRes),
+                    painter = painterResource(imageResId),
                     contentDescription = item.nombre,
                     modifier = Modifier
                         .fillMaxSize()
@@ -399,4 +405,5 @@ private fun CartDetailItemCard(
             }
         }
     }
+
 }

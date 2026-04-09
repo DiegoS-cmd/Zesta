@@ -9,10 +9,18 @@ sealed class AppRoutes(val route: String) {
     object Cart : AppRoutes("cart")
     object CartDetail : AppRoutes("cart_detail/{restaurantId}") {
         fun createRoute(restaurantId: Int) = "cart_detail/$restaurantId"
+
     }
     object Profile : AppRoutes("profile")
     object ManageAccount : AppRoutes("manage_account")
     object RestaurantDetail : AppRoutes("restaurant_detail/{restaurantId}") {
         fun createRoute(restaurantId: Int) = "restaurant_detail/$restaurantId"
     }
-}
+    object Favorites : AppRoutes("favorites")
+    object OrderSummary : AppRoutes("order_summary/{restaurantId}") {
+        fun createRoute(restaurantId: Int) = "order_summary/$restaurantId"
+    }
+    object OrderSuccess : AppRoutes("order_success")
+    }
+
+

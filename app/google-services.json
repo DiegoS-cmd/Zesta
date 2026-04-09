@@ -12,7 +12,20 @@
           "package_name": "com.zesta.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "216901028902-phasvnmvrga0shtirlek3k88u7k0o2r6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.zesta.app",
+            "certificate_hash": "17b23e7b095fa80fe10d588e8eeca75530cd3d93"
+          }
+        },
+        {
+          "client_id": "216901028902-fgmtdm40qf737kqcrc8u6r7unt40ffaq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAD9fnU1Mu0ZuerGnvzsSfkaRytLgSoSbk"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "216901028902-fgmtdm40qf737kqcrc8u6r7unt40ffaq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

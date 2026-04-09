@@ -3,6 +3,7 @@ package com.zesta.app.ui.screens.login
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,6 +31,17 @@ import com.zesta.app.ui.theme.FondoZesta
 import com.zesta.app.ui.theme.LinkTextStyle
 import com.zesta.app.ui.theme.PlaceholderShape
 import com.zesta.app.ui.theme.TextoPrincipalZesta
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
+import com.zesta.app.ui.theme.BlancoZesta
+import com.zesta.app.ui.theme.BordeCirculoZesta
+import com.zesta.app.ui.theme.TextoSecundarioZesta
 
 @Composable
 fun LoginScreen(
@@ -40,6 +52,7 @@ fun LoginScreen(
     onPasswordChange: (String) -> Unit,
     onLoginClick: () -> Unit,
     onGoRegister: () -> Unit,
+    onGoogleSignIn: () -> Unit,
     onContinueAsGuestClick: () -> Unit
 ) {
     Column(
@@ -133,7 +146,53 @@ fun LoginScreen(
             text = stringResource(R.string.inicio_sesion_entrar),
             onClick = onLoginClick
         )
+        Spacer(modifier = Modifier.height(12.dp))
 
+// Separador
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            HorizontalDivider(modifier = Modifier.weight(1f), color = BordeCirculoZesta)
+            Text(
+                text = stringResource(R.string.login_o),
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextoSecundarioZesta
+            )
+            HorizontalDivider(modifier = Modifier.weight(1f), color = BordeCirculoZesta)
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+// Botón Google
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(28.dp))
+                .background(BlancoZesta)
+                .border(1.dp, BordeCirculoZesta, RoundedCornerShape(28.dp))
+                .clickable { onGoogleSignIn() }
+                .padding(vertical = 14.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.logo_google),
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+                Text(
+                    text = stringResource(R.string.login_google),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = TextoPrincipalZesta,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        }
         Spacer(modifier = Modifier.height(18.dp))
 
         PrimaryGradientButton(

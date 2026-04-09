@@ -88,6 +88,21 @@
     <string name="carrito_vacio_descripcion">Cuando añadas artículos, tu carrito aparecerá aquí</string>
     <string name="carrito_empezar_comprar">Empieza a comprar</string>
     <string name="carrito_prueba_compra">Prueba de compra</string>
+    <string name="pedido_resumen_titulo">Resumen del pedido</string>
+    <string name="pedido_tus_productos">Tus productos</string>
+    <string name="pedido_direccion_entrega">Dirección de entrega</string>
+    <string name="pedido_sin_direccion">Sin dirección configurada</string>
+    <string name="pedido_codigo_promo">¿Tienes un código promocional?</string>
+    <string name="pedido_codigo_placeholder">Introduce tu código</string>
+    <string name="pedido_aplicar">Aplicar</string>
+    <string name="pedido_codigo_invalido">Código no válido</string>
+    <string name="pedido_codigo_aplicado">%1$s aplicado · %2$d%% de descuento</string>
+    <string name="pedido_subtotal">Subtotal</string>
+    <string name="pedido_descuento">Descuento (%1$d%%)</string>
+    <string name="pedido_confirmar">Confirmar pedido</string>
+    <string name="pedido_exito_titulo">¡Pedido realizado!</string>
+    <string name="pedido_exito_descripcion">Tu pedido está en camino. Pronto recibirás tu comida.</string>
+    <string name="pedido_exito_volver_inicio">Volver al inicio</string>
 
     <!-- CartDetailScreen — validación de perfil -->
     <string name="carrito_datos_incompletos_titulo">Datos necesarios</string>
@@ -106,14 +121,17 @@
     <string name="gestionar_cuenta_guardar">Guardar cambios</string>
     <string name="gestionar_cuenta_guardado_ok">✓ Datos guardados correctamente</string>
     <string name="carrito_invitado_no_puede_pagar">Inicia sesión para realizar pedidos</string>
-    <string name="carrito_ir_perfil">Ir al perfil</string>
+    <string name="carrito_iniciar_sesion">Iniciar Sesión</string>
     <string name="carrito_ir_gestionar">Completar datos</string>
+    <string name="login_google">Continuar con Google</string>
+    <string name="login_o">o</string>
 
 
     <!-- Carrito — dialog invitado -->
     <string name="carrito_invitado_titulo">Inicia sesión para continuar</string>
     <string name="carrito_invitado_descripcion">Los pedidos solo están disponibles para usuarios registrados.</string>
-
+    <string name="favoritos_invitado_titulo">Inicia sesión para guardar favoritos</string>
+    <string name="favoritos_invitado_descripcion">Crea una cuenta o inicia sesión para guardar tus restaurantes favoritos y acceder a ellos cuando quieras</string>
     <!-- Perfil -->
     <string name="perfil_titulo">Perfil</string>
     <string name="perfil_nombre_placeholder">Tu nombre</string>
@@ -131,6 +149,9 @@
     <string name="gestionar_cuenta_foto_titulo">Foto de perfil</string>
     <string name="gestionar_cuenta_foto_camara">Hacer foto</string>
     <string name="gestionar_cuenta_foto_galeria">Elegir de la galeria</string>
+    <string name="inicio_favoritos">Tus favoritos</string>
+    <string name="favoritos_vacio_titulo">Aún no tienes favoritos</string>
+    <string name="favoritos_vacio_descripcion">Pulsa el corazón en cualquier restaurante para guardarlo aquí</string>
 
 
     <!-- Gestionar cuenta -->

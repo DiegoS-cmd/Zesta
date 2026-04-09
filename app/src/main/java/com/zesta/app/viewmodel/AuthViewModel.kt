@@ -26,7 +26,8 @@ data class AuthUiState(
     val userName: String = "",
     val errorMessage: String? = null,
     val isLoading: Boolean = false,
-    val isSessionChecked: Boolean = false
+    val isSessionChecked: Boolean = false,
+    val favoritos: List<Int> = emptyList()
 )
 
 class AuthViewModel(
@@ -46,7 +47,7 @@ class AuthViewModel(
         }
     }
 
-    // ── Foto de perfil ─────────────────────────────────────────────────────
+    // ── Foto de perfil
 
     val profileImageUri: StateFlow<Uri?> = preferencesRepository.profileImageUri
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
@@ -58,7 +59,7 @@ class AuthViewModel(
         }
     }
 
-    // ── Estado UI ──────────────────────────────────────────────────────────
+    // ── Estado UI
 
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
@@ -77,7 +78,8 @@ class AuthViewModel(
                     currentUser = user,
                     userName = user?.nombre.orEmpty(),
                     phone = user?.telefono.orEmpty(),
-                    address = user?.direccion.orEmpty()
+                    address = user?.direccion.orEmpty(),
+                    favoritos = user?.favoritos ?: emptyList()
                 )
             }
         }
@@ -109,6 +111,7 @@ class AuthViewModel(
                     phone = user?.telefono.orEmpty(),
                     address = user?.direccion.orEmpty(),
                     errorMessage = null,
+                    favoritos = user?.favoritos ?: emptyList(),
                     isSessionChecked = true
                 )
             } else {
@@ -164,6 +167,20 @@ class AuthViewModel(
             val result = authRepository.deleteDireccion(direccion)
             if (result.isSuccess) { loadCurrentUser(); onSuccess() }
             else onError(result.exceptionOrNull()?.message ?: "Error al eliminar")
+        }
+    }
+
+    fun toggleFavorito(restaurantId: Int) {
+        viewModelScope.launch {
+            val result = authRepository.toggleFavorito(restaurantId)
+            if (result.isSuccess) {
+                _uiState.value = _uiState.value.copy(
+                    favoritos = result.getOrDefault(emptyList()),
+                    currentUser = _uiState.value.currentUser?.copy(
+                        favoritos = result.getOrDefault(emptyList())
+                    )
+                )
+            }
         }
     }
 
@@ -240,6 +257,32 @@ class AuthViewModel(
         }
     }
 
+    fun loginWithGoogle(idToken: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
+            val result = authRepository.loginWithGoogle(idToken)
+            if (result.isSuccess) {
+                val user = result.getOrNull()
+                preferencesRepository.clearGuestMode()
+                _uiState.value = AuthUiState(
+                    isLoggedIn = true,
+                    isGuest = false,
+                    currentUser = user,
+                    userName = user?.nombre.orEmpty(),
+                    phone = user?.telefono.orEmpty(),
+                    address = user?.direccion.orEmpty(),
+                    isLoading = false
+                )
+                onSuccess()
+            } else {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    errorMessage = result.exceptionOrNull()?.message ?: "Error con Google"
+                )
+                onError(_uiState.value.errorMessage ?: "Error")
+            }
+        }
+    }
     fun updateProfile(telefono: String, direccion: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
             val result = authRepository.updateProfile(telefono = telefono.trim(), direccion = direccion.trim())

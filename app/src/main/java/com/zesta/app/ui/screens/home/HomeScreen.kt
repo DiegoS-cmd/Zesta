@@ -183,6 +183,22 @@ fun HomeScreen(
                     )
                 }
 
+                val favoritos = authState.favoritos
+                val favoritoRestaurants = RestaurantRepository.getAllRestaurants()
+                    .filter { favoritos.contains(it.id) }
+
+                if (favoritoRestaurants.isNotEmpty()) {
+                    item {
+                        SectionHeader(title = stringResource(R.string.inicio_favoritos))
+                    }
+                    item {
+                        RestaurantRow(
+                            restaurants = favoritoRestaurants,
+                            onRestaurantClick = onRestaurantClick
+                        )
+                    }
+                }
+
                 item { SectionHeader(title = stringResource(R.string.inicio_promociones)) }
                 item {
                     RestaurantRow(
@@ -190,6 +206,7 @@ fun HomeScreen(
                         onRestaurantClick = onRestaurantClick
                     )
                 }
+
 
                 item { SectionHeader(title = stringResource(R.string.inicio_explorar)) }
                 item {

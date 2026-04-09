@@ -25,16 +25,22 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.ShoppingCart
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -54,7 +60,9 @@ import com.zesta.app.data.restaurant.Product
 import com.zesta.app.data.restaurant.Restaurant
 import com.zesta.app.data.restaurant.RestaurantRepository
 import com.zesta.app.ui.theme.AzulFinGradienteZesta
+import com.zesta.app.ui.theme.AzulInicioGradienteZesta
 import com.zesta.app.ui.theme.BlancoZesta
+import com.zesta.app.ui.theme.BordeBotonZesta
 import com.zesta.app.ui.theme.BordeCirculoZesta
 import com.zesta.app.ui.theme.BordeDoradoZesta
 import com.zesta.app.ui.theme.BordeIconoZesta
@@ -62,10 +70,13 @@ import com.zesta.app.ui.theme.ColorUbicacionZesta
 import com.zesta.app.ui.theme.FondoBotonMasZesta
 import com.zesta.app.ui.theme.FondoCirculoZesta
 import com.zesta.app.ui.theme.FondoPlaceholderZesta
+import com.zesta.app.ui.theme.FondoSeleccionNaranjaZesta
 import com.zesta.app.ui.theme.FondoZesta
+import com.zesta.app.ui.theme.NaranjaZesta
 import com.zesta.app.ui.theme.NegroZesta
 import com.zesta.app.ui.theme.TextoPrincipalZesta
 import com.zesta.app.ui.theme.TextoResenaZesta
+import com.zesta.app.ui.theme.TextoSecundarioZesta
 import com.zesta.app.viewmodel.AuthViewModel
 import com.zesta.app.ui.theme.NegroZesta as InicioGradiente
 import com.zesta.app.viewmodel.CartViewModel
@@ -76,8 +87,9 @@ fun RestaurantDetailScreen(
     restaurantId: Int,
     onBack: () -> Unit,
     onGoToCart: () -> Unit,
+    onNavigateToLogin: () -> Unit,
     authViewModel: AuthViewModel
-) {
+){
     val context = LocalContext.current
 
     val cartViewModel: CartViewModel = viewModel(
@@ -88,7 +100,9 @@ fun RestaurantDetailScreen(
 
     val restaurant = RestaurantRepository.getRestaurantById(restaurantId)
         ?: RestaurantRepository.getAllRestaurants().first()
-
+    var guestDialogType by remember { mutableStateOf<GuestDialogType?>(null) }
+    val authState by authViewModel.uiState.collectAsState()
+    val isFavorito = authState.favoritos.contains(restaurant.id)
     val restaurantName = context.getString(restaurant.nameRes)
     val restaurantImageName = context.resources.getResourceEntryName(restaurant.imageRes)
 
@@ -106,7 +120,16 @@ fun RestaurantDetailScreen(
             contentPadding = PaddingValues(top = 16.dp, bottom = 100.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            item { RestaurantTopBar(onBack = onBack) }
+            item {
+                RestaurantTopBar(
+                    onBack = onBack,
+                    isFavorito = isFavorito,
+                    onToggleFavorito = {
+                        if (authState.isGuest) guestDialogType = GuestDialogType.FAVORITO
+                        else authViewModel.toggleFavorito(restaurant.id)
+                    }
+                )
+            }
 
             item { RestaurantHeader(restaurant = restaurant) }
 
@@ -130,7 +153,8 @@ fun RestaurantDetailScreen(
                             quantity = cartItem?.cantidad ?: 0,
                             modifier = Modifier.weight(1f),
                             onAddToCart = {
-                                cartViewModel.addItem(
+                                if (authState.isGuest) guestDialogType = GuestDialogType.CARRITO
+                                else cartViewModel.addItem(
                                     restaurantId = restaurant.id,
                                     restaurantName = restaurantName,
                                     restaurantImageResName = restaurantImageName,
@@ -171,7 +195,8 @@ fun RestaurantDetailScreen(
                     product = product,
                     quantity = cartItem?.cantidad ?: 0,
                     onAddToCart = {
-                        cartViewModel.addItem(
+                        if (authState.isGuest) guestDialogType = GuestDialogType.CARRITO
+                        else cartViewModel.addItem(
                             restaurantId = restaurant.id,
                             restaurantName = restaurantName,
                             restaurantImageResName = restaurantImageName,
@@ -199,6 +224,16 @@ fun RestaurantDetailScreen(
             onClick = onGoToCart
         )
     }
+    guestDialogType?.let { tipo ->
+        GuestActionDialog(
+            tipo = tipo,
+            onDismiss = { guestDialogType = null },
+            onConfirm = {
+                guestDialogType = null
+                onNavigateToLogin()
+            }
+        )
+    }
 }
 
 private fun Product.toCartItem(
@@ -211,12 +246,16 @@ private fun Product.toCartItem(
         nombre = productName,
         precio = price,
         cantidad = 1,
-        imageRes = imageRes
+        imageKey = imageKey
     )
 }
 
 @Composable
-private fun RestaurantTopBar(onBack: () -> Unit) {
+private fun RestaurantTopBar(
+    onBack: () -> Unit,
+    isFavorito: Boolean,
+    onToggleFavorito: () -> Unit
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -233,11 +272,23 @@ private fun RestaurantTopBar(onBack: () -> Unit) {
                 contentDescription = stringResource(R.string.accesibilidad_buscar_accion),
                 onClick = { }
             )
-            CircleIconButton(
-                icon = Icons.Outlined.FavoriteBorder,
-                contentDescription = stringResource(R.string.accesibilidad_favorito_accion),
-                onClick = { }
-            )
+            // Botón favorito con estado visual
+            Box(
+                modifier = Modifier
+                    .size(46.dp)
+                    .clip(CircleShape)
+                    .background(if (isFavorito) FondoSeleccionNaranjaZesta else FondoCirculoZesta)
+                    .border(1.dp, if (isFavorito) NaranjaZesta else BordeCirculoZesta, CircleShape)
+                    .clickable { onToggleFavorito() },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = if (isFavorito) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
+                    contentDescription = stringResource(R.string.accesibilidad_favorito_accion),
+                    tint = if (isFavorito) NaranjaZesta else NegroZesta,
+                    modifier = Modifier.size(26.dp)
+                )
+            }
         }
     }
 }
@@ -495,6 +546,7 @@ private fun ViewCartButton(
             .clickable { onClick() }
             .padding(horizontal = 26.dp),
         contentAlignment = Alignment.Center
+
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
@@ -510,7 +562,9 @@ private fun ViewCartButton(
                 color = BlancoZesta
             )
         }
+
     }
+
 }
 
 @Composable
@@ -536,3 +590,101 @@ private fun CircleIconButton(
         )
     }
 }
+@Composable
+private fun GuestActionDialog(
+    tipo: GuestDialogType,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    val titulo = stringResource(
+        if (tipo == GuestDialogType.FAVORITO) R.string.favoritos_invitado_titulo
+        else R.string.carrito_invitado_titulo
+    )
+    val descripcion = stringResource(
+        if (tipo == GuestDialogType.FAVORITO) R.string.favoritos_invitado_descripcion
+        else R.string.carrito_invitado_descripcion
+    )
+    val icono = if (tipo == GuestDialogType.FAVORITO)
+        Icons.Outlined.FavoriteBorder
+    else
+        Icons.Outlined.ShoppingCart
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = BlancoZesta,
+        shape = RoundedCornerShape(24.dp),
+        title = null,
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(CircleShape)
+                        .background(FondoSeleccionNaranjaZesta),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = icono,
+                        contentDescription = null,
+                        tint = NaranjaZesta,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+                Text(
+                    text = titulo,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = TextoPrincipalZesta,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+                Text(
+                    text = descripcion,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextoSecundarioZesta,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(28.dp))
+                        .background(
+                            brush = Brush.horizontalGradient(
+                                colors = listOf(AzulInicioGradienteZesta, AzulFinGradienteZesta)
+                            )
+                        )
+                        .border(1.dp, BordeBotonZesta, RoundedCornerShape(28.dp))
+                        .clickable { onConfirm() }
+                        .padding(vertical = 14.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = stringResource(R.string.carrito_iniciar_sesion),
+                        color = BlancoZesta,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+                TextButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = stringResource(R.string.carrito_cancelar),
+                        color = TextoSecundarioZesta,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+        },
+        confirmButton = {}
+    )
+}
+private enum class GuestDialogType { FAVORITO, CARRITO }
+

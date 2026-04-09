@@ -7,5 +7,6 @@ data class User(
     val telefono: String = "",
     val direccion: String = "",
     val direcciones: List<String> = emptyList(),
+    val favoritos: List<Int> = emptyList(),
     val rol: String = "cliente"
 )

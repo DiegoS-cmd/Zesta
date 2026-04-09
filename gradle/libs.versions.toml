@@ -15,6 +15,7 @@ activityCompose = "1.8.0"
 kotlin = "2.2.10"
 composeBom = "2024.09.00"
 navigationCompose = "2.9.7"
+playServicesAuth = "21.5.1"
 playServicesLocation = "21.3.0"
 uiGraphics = "1.10.6"
 
@@ -46,6 +47,7 @@ androidx-navigation-compose = { module = "androidx.navigation:navigation-compose
 kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "kotlinxCoroutinesPlayServices" }
 kotlinx-coroutines-play-services-v181 = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "kotlinxCoroutinesPlayServicesVersion" }
 androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "uiGraphics" }
+play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
 
 [plugins]

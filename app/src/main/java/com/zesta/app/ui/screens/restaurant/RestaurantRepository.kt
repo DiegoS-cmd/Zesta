@@ -18,13 +18,13 @@ object RestaurantRepository {
             categories = listOf("Hamburguesas"),
             products = listOf(
                 Product(id = 1, nameRes = R.string.producto_whopper, price = 8.25,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.whopper),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.whopper, imageKey = "whopper"),
                 Product(id = 2, nameRes = R.string.producto_chili_cheese, price = 10.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.chilicheese),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.chilicheese, imageKey = "chilicheese"),
                 Product(id = 3, nameRes = R.string.producto_big_mac, price = 7.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.crazybacon),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.crazybacon, imageKey = "crazybacon"),
                 Product(id = 4, nameRes = R.string.producto_combo_wings, price = 9.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.burgerkingicono)
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.burgerkingicono, imageKey = "burgerkingicono")
             )
         ),
 
@@ -40,13 +40,13 @@ object RestaurantRepository {
             categories = listOf("Pizzas"),
             products = listOf(
                 Product(id = 5, nameRes = R.string.producto_pizza_carbonara, price = 12.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.dominos),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.dominos, imageKey = "dominos"),
                 Product(id = 6, nameRes = R.string.producto_pizza_pepperoni, price = 13.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.dominos),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.dominos, imageKey = "dominos"),
                 Product(id = 7, nameRes = R.string.producto_pizza_4quesos, price = 11.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.dominos),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.dominos, imageKey = "dominos"),
                 Product(id = 8, nameRes = R.string.producto_pasta_carbonara, price = 8.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.dominos)
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.dominos, imageKey = "dominos")
             )
         ),
 
@@ -63,13 +63,13 @@ object RestaurantRepository {
             categories = listOf("Hamburguesas", "Americana"),
             products = listOf(
                 Product(id = 9, nameRes = R.string.producto_alitas_bbq, price = 9.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.wingstop),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.wingstop, imageKey = "wingstop"),
                 Product(id = 10, nameRes = R.string.producto_combo_wings, price = 12.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.wingstop),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.wingstop, imageKey = "wingstop"),
                 Product(id = 11, nameRes = R.string.producto_alitas_kfc, price = 7.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.wingstop),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.wingstop, imageKey = "wingstop"),
                 Product(id = 12, nameRes = R.string.producto_patatas_cajun, price = 4.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.wingstop)
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.wingstop, imageKey = "wingstop")
             )
         ),
 
@@ -86,13 +86,13 @@ object RestaurantRepository {
             categories = listOf("Hamburguesas"),
             products = listOf(
                 Product(id = 13, nameRes = R.string.producto_big_mac, price = 7.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.mcdonalds),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.mcdonalds, imageKey = "mcdonalds"),
                 Product(id = 14, nameRes = R.string.producto_mcnuggets, price = 6.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.mcdonalds),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.mcdonalds, imageKey = "mcdonalds"),
                 Product(id = 15, nameRes = R.string.producto_mcflurry, price = 3.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.mcdonalds),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.mcdonalds, imageKey = "mcdonalds"),
                 Product(id = 16, nameRes = R.string.producto_whopper, price = 8.25,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.mcdonalds)
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.mcdonalds, imageKey = "mcdonalds")
             )
         ),
 
@@ -108,13 +108,13 @@ object RestaurantRepository {
             categories = listOf("Hamburguesas", "Americana"),
             products = listOf(
                 Product(id = 17, nameRes = R.string.producto_bucket_kfc, price = 14.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.kfc),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.kfc, imageKey = "kfc"),
                 Product(id = 18, nameRes = R.string.producto_twister_kfc, price = 6.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.kfc),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.kfc, imageKey = "kfc"),
                 Product(id = 19, nameRes = R.string.producto_alitas_kfc, price = 8.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.kfc),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.kfc, imageKey = "kfc"),
                 Product(id = 20, nameRes = R.string.producto_combo_wings, price = 11.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.kfc)
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.kfc, imageKey = "kfc")
             )
         ),
 
@@ -131,13 +131,13 @@ object RestaurantRepository {
             categories = listOf("Panadera"),
             products = listOf(
                 Product(id = 21, nameRes = R.string.producto_sub_italiano, price = 7.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.subway),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.subway, imageKey = "subway"),
                 Product(id = 22, nameRes = R.string.producto_sub_pollo, price = 8.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.subway),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.subway, imageKey = "subway"),
                 Product(id = 23, nameRes = R.string.producto_sub_veggie, price = 6.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.subway),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.subway, imageKey = "subway"),
                 Product(id = 24, nameRes = R.string.producto_club_sandwich, price = 9.25,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.subway)
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.subway, imageKey = "subway")
             )
         ),
 
@@ -153,13 +153,13 @@ object RestaurantRepository {
             categories = listOf("Pizzas"),
             products = listOf(
                 Product(id = 25, nameRes = R.string.producto_pizza_barbacoa, price = 11.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.telepizza),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.telepizza, imageKey = "telepizza"),
                 Product(id = 26, nameRes = R.string.producto_pizza_4quesos, price = 12.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.telepizza),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.telepizza, imageKey = "telepizza"),
                 Product(id = 27, nameRes = R.string.producto_pizza_carbonara, price = 13.25,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.telepizza),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.telepizza, imageKey = "telepizza"),
                 Product(id = 28, nameRes = R.string.producto_pasta_carbonara, price = 7.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.telepizza)
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.telepizza, imageKey = "telepizza")
             )
         ),
 
@@ -176,13 +176,13 @@ object RestaurantRepository {
             categories = listOf("Pizzas"),
             products = listOf(
                 Product(id = 29, nameRes = R.string.producto_pizza_garden, price = 12.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.papajohns),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.papajohns, imageKey = "papajohns"),
                 Product(id = 30, nameRes = R.string.producto_pizza_hawaiana, price = 11.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.papajohns),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.papajohns, imageKey = "papajohns"),
                 Product(id = 31, nameRes = R.string.producto_papas_ajo, price = 4.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.papajohns),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.papajohns, imageKey = "papajohns"),
                 Product(id = 32, nameRes = R.string.producto_pizza_pepperoni, price = 13.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.papajohns)
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.papajohns, imageKey = "papajohns")
             )
         ),
 
@@ -198,13 +198,13 @@ object RestaurantRepository {
             categories = listOf("Mexicana"),
             products = listOf(
                 Product(id = 33, nameRes = R.string.producto_crunchwrap, price = 5.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.tacobell),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.tacobell, imageKey = "tacobell"),
                 Product(id = 34, nameRes = R.string.producto_nachos_bell, price = 6.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.tacobell),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.tacobell, imageKey = "tacobell"),
                 Product(id = 35, nameRes = R.string.producto_quesarito, price = 4.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.tacobell),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.tacobell, imageKey = "tacobell"),
                 Product(id = 36, nameRes = R.string.producto_combo_wings, price = 8.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.tacobell)
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.tacobell, imageKey = "tacobell")
             )
         ),
 
@@ -221,13 +221,13 @@ object RestaurantRepository {
             categories = listOf("Desayuno", "Panadería"),
             products = listOf(
                 Product(id = 37, nameRes = R.string.producto_donut_clasico, price = 2.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.dunkin),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.dunkin, imageKey = "dunkin"),
                 Product(id = 38, nameRes = R.string.producto_cafe_americano, price = 3.20,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.dunkin),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.dunkin, imageKey = "dunkin"),
                 Product(id = 39, nameRes = R.string.producto_bagel_jamon, price = 4.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.dunkin),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.dunkin, imageKey = "dunkin"),
                 Product(id = 40, nameRes = R.string.producto_mcflurry, price = 3.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.dunkin)
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.dunkin, imageKey = "dunkin")
             )
         ),
 
@@ -243,13 +243,13 @@ object RestaurantRepository {
             categories = listOf("Desayuno", "Panadería"),
             products = listOf(
                 Product(id = 41, nameRes = R.string.producto_frappuccino, price = 6.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.starbucks),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.starbucks, imageKey = "starbucks"),
                 Product(id = 42, nameRes = R.string.producto_latte, price = 4.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.starbucks),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.starbucks, imageKey = "starbucks"),
                 Product(id = 43, nameRes = R.string.producto_croissant, price = 3.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.starbucks),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.starbucks, imageKey = "starbucks"),
                 Product(id = 44, nameRes = R.string.producto_cafe_americano, price = 3.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.starbucks)
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.starbucks, imageKey = "starbucks")
             )
         ),
 
@@ -266,13 +266,13 @@ object RestaurantRepository {
             categories = listOf("Hamburguesas"),
             products = listOf(
                 Product(id = 45, nameRes = R.string.producto_burger_fiveguys, price = 12.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.fiveguys),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.fiveguys, imageKey = "fiveguys"),
                 Product(id = 46, nameRes = R.string.producto_hotdog_fiveguys, price = 8.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.fiveguys),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.fiveguys, imageKey = "fiveguys"),
                 Product(id = 47, nameRes = R.string.producto_patatas_fiveguys, price = 5.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.fiveguys),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.fiveguys, imageKey = "fiveguys"),
                 Product(id = 48, nameRes = R.string.producto_smash_goiko, price = 13.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.fiveguys)
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.fiveguys, imageKey = "fiveguys")
             )
         ),
 
@@ -288,13 +288,13 @@ object RestaurantRepository {
             categories = listOf("Hamburguesas", "Americana"),
             products = listOf(
                 Product(id = 49, nameRes = R.string.producto_costillas_fosters, price = 16.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.fosters),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.fosters, imageKey = "fosters"),
                 Product(id = 50, nameRes = R.string.producto_burger_fosters, price = 11.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.fosters),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.fosters, imageKey = "fosters"),
                 Product(id = 51, nameRes = R.string.producto_nachos_fosters, price = 7.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.fosters),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.fosters, imageKey = "fosters"),
                 Product(id = 52, nameRes = R.string.producto_club_sandwich, price = 9.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.fosters)
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.fosters, imageKey = "fosters")
             )
         ),
 
@@ -311,13 +311,13 @@ object RestaurantRepository {
             categories = listOf("Pizzas"),
             products = listOf(
                 Product(id = 53, nameRes = R.string.producto_pizza_ginos, price = 13.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.ginos),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.ginos, imageKey = "ginos"),
                 Product(id = 54, nameRes = R.string.producto_pasta_ginos, price = 10.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.ginos),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.ginos, imageKey = "ginos"),
                 Product(id = 55, nameRes = R.string.producto_tiramisu, price = 5.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.ginos),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.ginos, imageKey = "ginos"),
                 Product(id = 56, nameRes = R.string.producto_pizza_4quesos, price = 12.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.ginos)
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.ginos, imageKey = "ginos")
             )
         ),
 
@@ -333,13 +333,13 @@ object RestaurantRepository {
             categories = listOf("Desayuno", "Americana"),
             products = listOf(
                 Product(id = 57, nameRes = R.string.producto_club_sandwich, price = 10.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.vips),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.vips, imageKey = "vips"),
                 Product(id = 58, nameRes = R.string.producto_pancakes_vips, price = 8.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.vips),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.vips, imageKey = "vips"),
                 Product(id = 59, nameRes = R.string.producto_cheesecake_vips, price = 5.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.vips),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.vips, imageKey = "vips"),
                 Product(id = 60, nameRes = R.string.producto_cafe_americano, price = 3.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.vips)
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.vips, imageKey = "vips")
             )
         ),
 
@@ -356,13 +356,13 @@ object RestaurantRepository {
             categories = listOf("Panadería"),
             products = listOf(
                 Product(id = 61, nameRes = R.string.producto_montadito_lomo, price = 1.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.montaditos),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.montaditos, imageKey = "montaditos"),
                 Product(id = 62, nameRes = R.string.producto_montadito_tortilla, price = 1.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.montaditos),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.montaditos, imageKey = "montaditos"),
                 Product(id = 63, nameRes = R.string.producto_combo_montaditos, price = 9.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.montaditos),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.montaditos, imageKey = "montaditos"),
                 Product(id = 64, nameRes = R.string.producto_papas_ajo, price = 3.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.montaditos)
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.montaditos, imageKey = "montaditos")
             )
         ),
 
@@ -378,13 +378,13 @@ object RestaurantRepository {
             categories = listOf("Hamburguesas"),
             products = listOf(
                 Product(id = 65, nameRes = R.string.producto_burger_goiko, price = 13.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.goiko),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.goiko, imageKey = "goiko"),
                 Product(id = 66, nameRes = R.string.producto_smash_goiko, price = 12.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.goiko),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.goiko, imageKey = "goiko"),
                 Product(id = 67, nameRes = R.string.producto_patatas_goiko, price = 5.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.goiko),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.goiko, imageKey = "goiko"),
                 Product(id = 68, nameRes = R.string.producto_nachos_fosters, price = 7.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.goiko)
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.goiko, imageKey = "goiko")
             )
         ),
 
@@ -398,19 +398,20 @@ object RestaurantRepository {
             ratingCount = 89,
             imageRes = R.drawable.sushishop,
             promoTextRes = R.string.promocion_envio_gratis,
-            categories = listOf("Asiatica"),
+            categories = listOf("Asiática"),
             products = listOf(
                 Product(id = 69, nameRes = R.string.producto_california_roll, price = 9.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.sushishop),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.sushishop, imageKey = "sushishop"),
                 Product(id = 70, nameRes = R.string.producto_salmon_nigiri, price = 7.50,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.sushishop),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.sushishop, imageKey = "sushishop"),
                 Product(id = 71, nameRes = R.string.producto_combo_sushi, price = 18.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.sushishop),
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.sushishop, imageKey = "sushishop"),
                 Product(id = 72, nameRes = R.string.producto_sub_veggie, price = 6.95,
-                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.sushishop)
+                    descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.sushishop, imageKey = "sushishop")
             )
         )
     )
+
 
     fun getByCategory(category: String): List<Restaurant> =
         allRestaurants.filter { restaurant ->
@@ -428,7 +429,7 @@ object RestaurantRepository {
 
     fun getRestaurantById(id: Int): Restaurant? = allRestaurants.find { it.id == id }
 
-    fun getFeaturedRestaurants(): List<Restaurant> = allRestaurants.take(3)
+    fun getFeaturedRestaurants(): List<Restaurant> = allRestaurants.take(6)
 
     fun getPromoRestaurants(): List<Restaurant> = allRestaurants.filter { it.promoTextRes != null }
 

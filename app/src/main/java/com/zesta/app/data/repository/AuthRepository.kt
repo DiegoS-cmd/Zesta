@@ -249,5 +249,57 @@ class AuthRepository(
             Result.failure(e)
         }
     }
+    suspend fun toggleFavorito(restaurantId: Int): Result<List<Int>> {
+        return try {
+            val uid = auth.currentUser?.uid
+                ?: return Result.failure(Exception("No hay sesion iniciada"))
 
+            val doc = db.collection("users").document(uid).get().await()
+            val current = (doc.get("favoritos") as? List<Long>)
+                ?.map { it.toInt() } ?: emptyList()
+
+            val updated = if (current.contains(restaurantId))
+                current.filter { it != restaurantId }
+            else
+                current + restaurantId
+
+            db.collection("users").document(uid)
+                .update("favoritos", updated)
+                .await()
+
+            Result.success(updated)
+        } catch (e: Exception) {
+            Result.failure(Exception("No se pudo actualizar favoritos"))
+        }
+    }suspend fun loginWithGoogle(idToken: String): Result<User> {
+        return try {
+            val credential = com.google.firebase.auth.GoogleAuthProvider
+                .getCredential(idToken, null)
+            val authResult = auth.signInWithCredential(credential).await()
+
+            val uid = authResult.user?.uid
+                ?: return Result.failure(Exception("No se pudo obtener el usuario"))
+
+            val docRef = db.collection("users").document(uid)
+            val snapshot = docRef.get().await()
+
+            val user = if (!snapshot.exists()) {
+                val newUser = User(
+                    uid = uid,
+                    nombre = authResult.user?.displayName.orEmpty(),
+                    email = authResult.user?.email.orEmpty(),
+                    rol = "cliente"
+                )
+                docRef.set(newUser).await()
+                newUser
+            } else {
+                snapshot.toObject(User::class.java)
+                    ?: return Result.failure(Exception("Error al cargar perfil"))
+            }
+
+            Result.success(user)
+        } catch (e: Exception) {
+            Result.failure(Exception("No se pudo iniciar sesión con Google"))
+        }
+    }
 }
