@@ -189,7 +189,7 @@ fun SearchScreen(
 }
 
 
-// ── Tarjeta de resultado
+// Tarjeta de resultado
 
 @Composable
 private fun SearchRestaurantCard(

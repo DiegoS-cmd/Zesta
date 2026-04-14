@@ -1,17 +1,18 @@
 package com.zesta.app.viewmodel
 
+import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import com.zesta.app.data.model.User
 import com.zesta.app.data.repository.AuthRepository
+import com.zesta.app.data.repository.StorageRepository
 import com.zesta.app.data.repository.UserPreferencesRepository
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 data class AuthUiState(
@@ -32,7 +33,8 @@ data class AuthUiState(
 
 class AuthViewModel(
     private val authRepository: AuthRepository,
-    private val preferencesRepository: UserPreferencesRepository
+    private val preferencesRepository: UserPreferencesRepository,
+    private val storageRepository: StorageRepository = StorageRepository()
 ) : ViewModel() {
 
     companion object {
@@ -47,19 +49,9 @@ class AuthViewModel(
         }
     }
 
-    // ── Foto de perfil
-
-    val profileImageUri: StateFlow<Uri?> = preferencesRepository.profileImageUri
-        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
-
-    fun setProfileImageUri(uri: Uri?) {
-        viewModelScope.launch {
-            if (uri != null) preferencesRepository.saveProfileImageUri(uri)
-            else preferencesRepository.clearProfileImageUri()
-        }
-    }
-
-    // ── Estado UI
+    // Base64
+    private val _profileImageUrl = MutableStateFlow<String?>(null)
+    val profileImageUrl: StateFlow<String?> = _profileImageUrl.asStateFlow()
 
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
@@ -67,6 +59,11 @@ class AuthViewModel(
     init {
         observeGuestMode()
         restoreSessionIfNeeded()
+        viewModelScope.launch {
+            profileImageUrl.collect { value ->
+                android.util.Log.d("ZESTA_PHOTO", "profileImageUrl cambió: ${value?.take(20) ?: "NULL"}")
+            }
+        }
     }
 
     private fun loadCurrentUser() {
@@ -74,6 +71,9 @@ class AuthViewModel(
             val result = authRepository.getCurrentUser()
             if (result.isSuccess) {
                 val user = result.getOrNull()
+                if (_profileImageUrl.value.isNullOrBlank()) {
+                    _profileImageUrl.value = user?.profilePhotoUrl
+                }
                 _uiState.value = _uiState.value.copy(
                     currentUser = user,
                     userName = user?.nombre.orEmpty(),
@@ -98,12 +98,14 @@ class AuthViewModel(
             _uiState.value = _uiState.value.copy(isSessionChecked = true)
             return
         }
-
         viewModelScope.launch {
             val result = authRepository.getCurrentUser()
-            _uiState.value = if (result.isSuccess) {
+            if (result.isSuccess) {
                 val user = result.getOrNull()
-                _uiState.value.copy(
+                if (_profileImageUrl.value.isNullOrBlank()) {
+                    _profileImageUrl.value = user?.profilePhotoUrl
+                }
+                _uiState.value = _uiState.value.copy(
                     isLoggedIn = true,
                     isGuest = false,
                     currentUser = user,
@@ -115,7 +117,7 @@ class AuthViewModel(
                     isSessionChecked = true
                 )
             } else {
-                _uiState.value.copy(
+                _uiState.value = _uiState.value.copy(
                     isLoggedIn = false,
                     currentUser = null,
                     userName = "",
@@ -126,25 +128,44 @@ class AuthViewModel(
         }
     }
 
-    fun onFullNameChange(value: String) {
-        _uiState.value = _uiState.value.copy(fullName = value, errorMessage = null)
+    // Recibe context para leer el Uri y subirlo como Base64
+    fun setProfileImageUri(context: Context, uri: Uri) {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        viewModelScope.launch {
+            val result = storageRepository.uploadProfilePhoto(context, uid, uri)
+            if (result.isSuccess) {
+                _profileImageUrl.value = result.getOrNull()
+            } else {
+
+                android.util.Log.e("ZESTA_PHOTO", "Error subiendo foto: ${result.exceptionOrNull()?.message}")
+            }
+        }
     }
 
-    fun onEmailChange(value: String) {
-        _uiState.value = _uiState.value.copy(email = value, errorMessage = null)
+    fun setProfileImageBase64(base64: String) {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        viewModelScope.launch {
+            val result = storageRepository.uploadProfilePhotoFromBase64(uid, base64)
+            if (result.isSuccess) {
+                _profileImageUrl.value = result.getOrNull()
+            } else {
+                android.util.Log.e("ZESTA_PHOTO", "Error: ${result.exceptionOrNull()?.message}")
+            }
+        }
+    }
+    fun clearProfileImage() {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        viewModelScope.launch {
+            storageRepository.deleteProfilePhoto(uid)
+            _profileImageUrl.value = null
+        }
     }
 
-    fun onPasswordChange(value: String) {
-        _uiState.value = _uiState.value.copy(password = value, errorMessage = null)
-    }
-
-    fun onPhoneChange(value: String) {
-        _uiState.value = _uiState.value.copy(phone = value, errorMessage = null)
-    }
-
-    fun onAddressChange(value: String) {
-        _uiState.value = _uiState.value.copy(address = value, errorMessage = null)
-    }
+    fun onFullNameChange(value: String) { _uiState.value = _uiState.value.copy(fullName = value, errorMessage = null) }
+    fun onEmailChange(value: String) { _uiState.value = _uiState.value.copy(email = value, errorMessage = null) }
+    fun onPasswordChange(value: String) { _uiState.value = _uiState.value.copy(password = value, errorMessage = null) }
+    fun onPhoneChange(value: String) { _uiState.value = _uiState.value.copy(phone = value, errorMessage = null) }
+    fun onAddressChange(value: String) { _uiState.value = _uiState.value.copy(address = value, errorMessage = null) }
 
     fun addDireccion(direccion: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
@@ -202,14 +223,11 @@ class AuthViewModel(
             if (result.isSuccess) {
                 val user = result.getOrNull()
                 preferencesRepository.clearGuestMode()
+                _profileImageUrl.value = user?.profilePhotoUrl
                 _uiState.value = AuthUiState(
-                    isLoggedIn = true,
-                    isGuest = false,
-                    currentUser = user,
-                    userName = user?.nombre.orEmpty(),
-                    phone = user?.telefono.orEmpty(),
-                    address = user?.direccion.orEmpty(),
-                    isLoading = false
+                    isLoggedIn = true, isGuest = false, currentUser = user,
+                    userName = user?.nombre.orEmpty(), phone = user?.telefono.orEmpty(),
+                    address = user?.direccion.orEmpty(), isLoading = false
                 )
                 onSuccess()
             } else {
@@ -233,24 +251,17 @@ class AuthViewModel(
             if (result.isSuccess) {
                 val user = result.getOrNull()
                 preferencesRepository.clearGuestMode()
+                _profileImageUrl.value = user?.profilePhotoUrl
                 _uiState.value = _uiState.value.copy(
-                    isLoggedIn = true,
-                    isGuest = false,
-                    currentUser = user,
-                    userName = user?.nombre.orEmpty(),
-                    phone = user?.telefono.orEmpty(),
-                    address = user?.direccion.orEmpty(),
-                    password = "",
-                    errorMessage = null,
-                    isLoading = false
+                    isLoggedIn = true, isGuest = false, currentUser = user,
+                    userName = user?.nombre.orEmpty(), phone = user?.telefono.orEmpty(),
+                    address = user?.direccion.orEmpty(), password = "",
+                    errorMessage = null, isLoading = false
                 )
                 onSuccess()
             } else {
                 _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    isLoggedIn = false,
-                    currentUser = null,
-                    userName = "",
+                    isLoading = false, isLoggedIn = false, currentUser = null, userName = "",
                     errorMessage = result.exceptionOrNull()?.message ?: "Credenciales incorrectas"
                 )
             }
@@ -264,14 +275,11 @@ class AuthViewModel(
             if (result.isSuccess) {
                 val user = result.getOrNull()
                 preferencesRepository.clearGuestMode()
+                _profileImageUrl.value = user?.profilePhotoUrl
                 _uiState.value = AuthUiState(
-                    isLoggedIn = true,
-                    isGuest = false,
-                    currentUser = user,
-                    userName = user?.nombre.orEmpty(),
-                    phone = user?.telefono.orEmpty(),
-                    address = user?.direccion.orEmpty(),
-                    isLoading = false
+                    isLoggedIn = true, isGuest = false, currentUser = user,
+                    userName = user?.nombre.orEmpty(), phone = user?.telefono.orEmpty(),
+                    address = user?.direccion.orEmpty(), isLoading = false
                 )
                 onSuccess()
             } else {
@@ -283,6 +291,7 @@ class AuthViewModel(
             }
         }
     }
+
     fun updateProfile(telefono: String, direccion: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
             val result = authRepository.updateProfile(telefono = telefono.trim(), direccion = direccion.trim())
@@ -292,12 +301,9 @@ class AuthViewModel(
                     (listaActual + direccion).takeLast(3)
                 } else listaActual
                 _uiState.value = _uiState.value.copy(
-                    phone = telefono.trim(),
-                    address = direccion.trim(),
+                    phone = telefono.trim(), address = direccion.trim(),
                     currentUser = _uiState.value.currentUser?.copy(
-                        telefono = telefono.trim(),
-                        direccion = direccion.trim(),
-                        direcciones = nuevaLista
+                        telefono = telefono.trim(), direccion = direccion.trim(), direcciones = nuevaLista
                     )
                 )
                 onSuccess()
@@ -313,8 +319,7 @@ class AuthViewModel(
             if (result.isSuccess) {
                 val listaActual = _uiState.value.currentUser?.direcciones ?: emptyList()
                 val direccionBorrada = _uiState.value.currentUser?.direccion.orEmpty()
-                val nuevaLista = if (field == "direccion") listaActual.filter { it != direccionBorrada }
-                else listaActual
+                val nuevaLista = if (field == "direccion") listaActual.filter { it != direccionBorrada } else listaActual
                 _uiState.value = _uiState.value.copy(
                     phone = if (field == "telefono") "" else _uiState.value.phone,
                     address = if (field == "direccion") "" else _uiState.value.address,
@@ -340,11 +345,8 @@ class AuthViewModel(
         viewModelScope.launch {
             preferencesRepository.continueAsGuest()
             _uiState.value = _uiState.value.copy(
-                isLoggedIn = false,
-                isGuest = true,
-                currentUser = null,
-                userName = "",
-                errorMessage = null
+                isLoggedIn = false, isGuest = true,
+                currentUser = null, userName = "", errorMessage = null
             )
             onSuccess()
         }
@@ -354,6 +356,7 @@ class AuthViewModel(
         viewModelScope.launch {
             authRepository.logout()
             preferencesRepository.clearGuestMode()
+            _profileImageUrl.value = null
             _uiState.value = AuthUiState()
         }
     }

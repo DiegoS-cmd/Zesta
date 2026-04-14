@@ -19,10 +19,13 @@ class UserPreferencesRepository(private val context: Context) {
 
     private object PreferencesKeys {
         val IS_GUEST = booleanPreferencesKey("is_guest")
-        val PROFILE_IMAGE_URI = stringPreferencesKey("profile_image_uri") // ← nuevo
+
+        // Clave dinámica
+        fun profileImageUri(userId: String) =
+            stringPreferencesKey("profile_image_uri_$userId")
     }
 
-    // ── Invitado
+    // Invitado
 
     val isGuestFlow: Flow<Boolean> = context.dataStore.data
         .catch { exception ->
@@ -40,21 +43,27 @@ class UserPreferencesRepository(private val context: Context) {
         context.dataStore.edit { it[PreferencesKeys.IS_GUEST] = false }
     }
 
-    // ── Foto de perfil
+    // Foto de perfil
 
-    val profileImageUri: Flow<Uri?> = context.dataStore.data
+    fun profileImageUriFlow(userId: String?): Flow<Uri?> = context.dataStore.data
         .catch { exception ->
             if (exception is IOException) emit(emptyPreferences()) else throw exception
         }
         .map { preferences ->
-            preferences[PreferencesKeys.PROFILE_IMAGE_URI]?.let { Uri.parse(it) }
+            // (mostrará el logo por defecto)
+            if (userId.isNullOrBlank()) return@map null
+            preferences[PreferencesKeys.profileImageUri(userId)]?.let { Uri.parse(it) }
         }
 
-    suspend fun saveProfileImageUri(uri: Uri) {
-        context.dataStore.edit { it[PreferencesKeys.PROFILE_IMAGE_URI] = uri.toString() }
+    suspend fun saveProfileImageUri(userId: String, uri: Uri) {
+        context.dataStore.edit {
+            it[PreferencesKeys.profileImageUri(userId)] = uri.toString()
+        }
     }
 
-    suspend fun clearProfileImageUri() {
-        context.dataStore.edit { it.remove(PreferencesKeys.PROFILE_IMAGE_URI) }
+    suspend fun clearProfileImageUri(userId: String) {
+        context.dataStore.edit {
+            it.remove(PreferencesKeys.profileImageUri(userId))
+        }
     }
 }

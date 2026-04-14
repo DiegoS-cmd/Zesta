@@ -153,7 +153,7 @@
     <string name="inicio_favoritos">Tus favoritos</string>
     <string name="favoritos_vacio_titulo">Aún no tienes favoritos</string>
     <string name="favoritos_vacio_descripcion">Pulsa el corazón en cualquier restaurante para guardarlo aquí</string>
-
+    <string name="gestionar_cuenta_foto_eliminar">Eliminar foto</string>
 
     <!-- Gestionar cuenta -->
     <string name="gestionar_cuenta_descripcion_invitado">Has entrado como invitado. Desde aquí puedes iniciar sesión o crear una cuenta.</string>

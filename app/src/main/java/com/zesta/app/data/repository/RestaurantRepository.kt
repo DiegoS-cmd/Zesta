@@ -77,7 +77,7 @@ object RestaurantRepository {
             )
         ),
 
-        // Wingstop — promoTextRes = 2x1 → DOS_POR_UNO en los 2 primeros productos
+        // Wingstop — promoTextRes = 2x1
         Restaurant(
             id = 3,
             nameRes = R.string.restaurante_nombre_wingstop,
@@ -103,7 +103,7 @@ object RestaurantRepository {
             )
         ),
 
-        // McDonalds — promoTextRes = 2x1 → DOS_POR_UNO en los 2 primeros productos
+        // McDonalds — promoTextRes = 2x1
         Restaurant(
             id = 4,
             nameRes = R.string.restaurante_nombre_mcdonalds,
@@ -157,7 +157,7 @@ object RestaurantRepository {
             )
         ),
 
-        // Subway — promoTextRes = envío gratis (ya aplicado en hasFreeDelivery, sin promoType en productos)
+
         Restaurant(
             id = 6,
             nameRes = R.string.restaurante_nombre_subway,
@@ -203,7 +203,7 @@ object RestaurantRepository {
             )
         ),
 
-        // Papa Johns — promoTextRes = descuento_20 → DESCUENTO_20 en los 2 primeros productos
+        // Papa Johns — promoTextRes = descuento_20
         Restaurant(
             id = 8,
             nameRes = R.string.restaurante_nombre_papajohns,
@@ -251,7 +251,7 @@ object RestaurantRepository {
             )
         ),
 
-        // Dunkin — promoTextRes = envío gratis (ya en hasFreeDelivery)
+        // Dunkin — promoTextRes = envío gratis
         Restaurant(
             id = 10,
             nameRes = R.string.restaurante_nombre_dunkin,
@@ -297,7 +297,7 @@ object RestaurantRepository {
             )
         ),
 
-        // Five Guys — promoTextRes = 2x1 → DOS_POR_UNO en los 2 primeros productos
+        // Five Guys — promoTextRes = 2x1
         Restaurant(
             id = 12,
             nameRes = R.string.restaurante_nombre_fiveguys,
@@ -345,7 +345,7 @@ object RestaurantRepository {
             )
         ),
 
-        // Ginos — promoTextRes = descuento_20 → DESCUENTO_20 en los 2 primeros productos
+        // Ginos — promoTextRes = descuento_20
         Restaurant(
             id = 14,
             nameRes = R.string.restaurante_nombre_ginos,
@@ -393,7 +393,7 @@ object RestaurantRepository {
             )
         ),
 
-        // Montaditos — promoTextRes = 2x1 → DOS_POR_UNO en los 2 primeros productos
+        // Montaditos — promoTextRes = 2x1
         Restaurant(
             id = 16,
             nameRes = R.string.restaurante_nombre_montaditos,
@@ -441,7 +441,7 @@ object RestaurantRepository {
             )
         ),
 
-        // Sushi Shop — promoTextRes = envío gratis (ya en hasFreeDelivery)
+        // Sushi Shop — promoTextRes = envío gratis
         Restaurant(
             id = 18,
             nameRes = R.string.restaurante_nombre_sushishop,

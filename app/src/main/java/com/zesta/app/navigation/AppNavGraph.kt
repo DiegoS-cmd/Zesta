@@ -131,7 +131,11 @@ fun AppNavGraph() {
                 password = uiState.password,
                 errorMessage = uiState.errorMessage,
                 onEmailChange = authViewModel::onEmailChange,
-                onGoogleSignIn = { googleLauncher.launch(googleSignInClient.signInIntent) },
+                onGoogleSignIn = {
+                    googleSignInClient.signOut().addOnCompleteListener {
+                        googleLauncher.launch(googleSignInClient.signInIntent)
+                    }
+                },
                 onPasswordChange = authViewModel::onPasswordChange,
                 onLoginClick = {
                     authViewModel.login {

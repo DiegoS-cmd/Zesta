@@ -63,11 +63,11 @@ class CartRepository(
             val itemDoc = cartDoc.collection("items").document(item.productId)
 
             db.runTransaction { transaction ->
-                // Primero TODAS las lecturas
+                // Primero lecturas
                 val cartSnapshot = transaction.get(cartDoc)
                 val itemSnapshot = transaction.get(itemDoc)
 
-                // Después TODAS las escrituras
+                // Después escrituras
                 if (!cartSnapshot.exists()) {
                     transaction.set(
                         cartDoc,

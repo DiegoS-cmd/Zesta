@@ -250,7 +250,7 @@ private fun Product.toCartItem(
     )
 }
 
-// ── Badge de promo reutilizable ───────────────────────────────────────────────
+// Badge de promo reutilizable
 
 @Composable
 private fun PromoBadge(promoType: PromoType) {
@@ -276,7 +276,7 @@ private fun PromoBadge(promoType: PromoType) {
     }
 }
 
-// ── Cards ─────────────────────────────────────────────────────────────────────
+// Cards
 
 @Composable
 private fun ProductPromoCard(
@@ -472,7 +472,7 @@ private fun MenuProductCard(
     }
 }
 
-// ── Resto de composables ──────────────────────────────────────────────────────
+// composables
 
 @Composable
 private fun RestaurantTopBar(
@@ -491,11 +491,6 @@ private fun RestaurantTopBar(
             onClick = onBack
         )
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            CircleIconButton(
-                icon = Icons.Outlined.Search,
-                contentDescription = stringResource(R.string.accesibilidad_buscar_accion),
-                onClick = { }
-            )
             Box(
                 modifier = Modifier
                     .size(46.dp)

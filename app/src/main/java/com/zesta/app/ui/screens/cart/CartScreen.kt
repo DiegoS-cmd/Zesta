@@ -178,7 +178,7 @@ private fun RestaurantCartSummaryCard(
             .padding(14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Imagen del restaurante si está disponible
+        // Imagen del restaurante
         Box(
             modifier = Modifier
                 .size(64.dp)

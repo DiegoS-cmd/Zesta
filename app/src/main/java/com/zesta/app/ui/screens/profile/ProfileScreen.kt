@@ -2,9 +2,9 @@ package com.zesta.app.ui.screens.profile
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -14,30 +14,33 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CameraAlt
-import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import coil.compose.AsyncImage
 import com.zesta.app.R
 import com.zesta.app.navigation.AppRoutes
 import com.zesta.app.ui.components.ZestaBottomNavBar
 import com.zesta.app.ui.theme.*
 import com.zesta.app.viewmodel.AuthViewModel
 import java.io.File
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.util.Base64
+import androidx.compose.ui.graphics.asImageBitmap
 
 @Composable
 fun ProfileScreen(
@@ -58,7 +61,7 @@ fun ProfileScreen(
     authViewModel: AuthViewModel
 ) {
     val context = LocalContext.current
-    val profileImageUri by authViewModel.profileImageUri.collectAsState()
+    val profileImageUrl by authViewModel.profileImageUrl.collectAsState()
     var showImageSourceDialog by remember { mutableStateOf(false) }
 
     val displayName = when {
@@ -75,11 +78,21 @@ fun ProfileScreen(
 
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
-    ) { uri -> uri?.let { authViewModel.setProfileImageUri(it) } }
+    ) { uri ->
+        uri?.let {
+            val base64 = uriToBase64(context, it)
+            if (base64 != null) authViewModel.setProfileImageBase64(base64)
+        }
+    }
 
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
-    ) { success -> if (success) authViewModel.setProfileImageUri(cameraImageUri) }
+    ) { success ->
+        if (success) {
+            val base64 = uriToBase64(context, cameraImageUri)
+            if (base64 != null) authViewModel.setProfileImageBase64(base64)
+        }
+    }
 
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -98,15 +111,14 @@ fun ProfileScreen(
                 ProfileHeader(
                     displayName = displayName,
                     isGuest = isGuest,
-                    profileImageUri = profileImageUri,
-                    onAvatarClick = { showImageSourceDialog = true },
+                    profileImageUrl = profileImageUrl,
+                    onAvatarClick = { if (!isGuest) showImageSourceDialog = true },
                     onFavoritesClick = onFavoritesClick,
                     onOrderHistoryClick = onOrderHistoryClick,
                     onLoginClick = onLoginClick,
                     onRegisterClick = onRegisterClick
                 )
             }
-
             item {
                 ProfileOptionsSection(
                     onHelpClick = onHelpClick,
@@ -146,63 +158,38 @@ fun ProfileScreen(
             },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(FondoZesta)
-                            .border(1.dp, BordeCirculoZesta, RoundedCornerShape(14.dp))
-                            .clickable {
-                                showImageSourceDialog = false
-                                val granted = ContextCompat.checkSelfPermission(
-                                    context, Manifest.permission.CAMERA
-                                ) == PackageManager.PERMISSION_GRANTED
-                                if (granted) cameraLauncher.launch(cameraImageUri)
-                                else cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
-                            }
-                            .padding(horizontal = 16.dp, vertical = 14.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.CameraAlt,
-                            contentDescription = null,
-                            tint = NaranjaZesta,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Text(
-                            text = stringResource(R.string.gestionar_cuenta_foto_camara),
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = TextoPrincipalZesta,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
 
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(FondoZesta)
-                            .border(1.dp, BordeCirculoZesta, RoundedCornerShape(14.dp))
-                            .clickable {
+                    DialogOption(
+                        icon = { Icon(Icons.Outlined.CameraAlt, null, tint = NaranjaZesta, modifier = Modifier.size(20.dp)) },
+                        text = stringResource(R.string.gestionar_cuenta_foto_camara),
+                        onClick = {
+                            showImageSourceDialog = false
+                            val granted = ContextCompat.checkSelfPermission(
+                                context, Manifest.permission.CAMERA
+                            ) == PackageManager.PERMISSION_GRANTED
+                            if (granted) cameraLauncher.launch(cameraImageUri)
+                            else cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                        }
+                    )
+
+                    DialogOption(
+                        icon = { Icon(Icons.Outlined.PhotoLibrary, null, tint = NaranjaZesta, modifier = Modifier.size(20.dp)) },
+                        text = stringResource(R.string.gestionar_cuenta_foto_galeria),
+                        onClick = {
+                            showImageSourceDialog = false
+                            galleryLauncher.launch("image/*")
+                        }
+                    )
+
+                    // Solo se muestra si hay foto
+                    if (!profileImageUrl.isNullOrBlank()) {
+                        DialogOption(
+                            icon = { Icon(Icons.Outlined.Delete, null, tint = NaranjaZesta, modifier = Modifier.size(20.dp)) },
+                            text = stringResource(R.string.gestionar_cuenta_foto_eliminar),
+                            onClick = {
                                 showImageSourceDialog = false
-                                galleryLauncher.launch("image/*")
+                                authViewModel.clearProfileImage()
                             }
-                            .padding(horizontal = 16.dp, vertical = 14.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.PhotoLibrary,
-                            contentDescription = null,
-                            tint = NaranjaZesta,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Text(
-                            text = stringResource(R.string.gestionar_cuenta_foto_galeria),
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = TextoPrincipalZesta,
-                            fontWeight = FontWeight.SemiBold
                         )
                     }
                 }
@@ -221,10 +208,37 @@ fun ProfileScreen(
 }
 
 @Composable
+private fun DialogOption(
+    icon: @Composable () -> Unit,
+    text: String,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(FondoZesta)
+            .border(1.dp, BordeCirculoZesta, RoundedCornerShape(14.dp))
+            .clickable { onClick() }
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        icon()
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyLarge,
+            color = TextoPrincipalZesta,
+            fontWeight = FontWeight.SemiBold
+        )
+    }
+}
+
+@Composable
 private fun ProfileHeader(
     displayName: String,
     isGuest: Boolean,
-    profileImageUri: Uri?,
+    profileImageUrl: String?,
     onAvatarClick: () -> Unit,
     onFavoritesClick: () -> Unit,
     onOrderHistoryClick: () -> Unit,
@@ -247,7 +261,8 @@ private fun ProfileHeader(
         Spacer(modifier = Modifier.height(28.dp))
 
         ProfileAvatar(
-            profileImageUri = profileImageUri,
+            profileImageUrl = profileImageUrl,
+            isGuest = isGuest,
             onAvatarClick = onAvatarClick
         )
 
@@ -308,66 +323,47 @@ private fun ProfileHeader(
 
 @Composable
 private fun ProfileAvatar(
-    profileImageUri: Uri?,
+    profileImageUrl: String?,
+    isGuest: Boolean,
     onAvatarClick: () -> Unit
 ) {
+    val profileBitmap by produceState<Bitmap?>(initialValue = null, key1 = profileImageUrl) {
+        value = try {
+            if (profileImageUrl.isNullOrBlank()) null
+            else {
+                val clean = profileImageUrl.replace("\\s".toRegex(), "")
+                val bytes = Base64.decode(clean, Base64.NO_WRAP)
+                BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+            }
+        } catch (e: Exception) { null }
+    }
+
     Box(
         modifier = Modifier
             .size(122.dp)
             .clip(CircleShape)
-            .clickable { onAvatarClick() },
+            .background(Color.White)
+            .then(if (!isGuest) Modifier.clickable { onAvatarClick() } else Modifier),
         contentAlignment = Alignment.Center
     ) {
-        if (profileImageUri != null) {
-            AsyncImage(
-                model = profileImageUri,
+        val bmp = profileBitmap
+        if (bmp != null) {
+            Image(
+                bitmap = bmp.asImageBitmap(),
                 contentDescription = stringResource(R.string.accesibilidad_avatar_perfil),
-                modifier = Modifier
-                    .size(122.dp)
-                    .clip(CircleShape),
+                modifier = Modifier.size(122.dp).clip(CircleShape),
                 contentScale = ContentScale.Crop
             )
         } else {
-            Box(
-                modifier = Modifier
-                    .size(122.dp)
-                    .clip(CircleShape)
-                    .background(
-                        brush = Brush.linearGradient(
-                            colors = listOf(AzulAvatarZesta, IndigoAvatarZesta, RosaAvatarZesta)
-                        )
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Person,
-                    contentDescription = null,
-                    tint = BlancoZesta,
-                    modifier = Modifier.size(74.dp)
-                )
-            }
-        }
-
-        // Icono editar
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .size(30.dp)
-                .clip(CircleShape)
-                .background(NaranjaZesta),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.Edit,
-                contentDescription = null,
-                tint = BlancoZesta,
-                modifier = Modifier.size(16.dp)
+            Image(
+                painter = painterResource(R.drawable.logo_zesta),
+                contentDescription = stringResource(R.string.accesibilidad_avatar_perfil),
+                modifier = Modifier.size(122.dp).padding(14.dp),
+                contentScale = ContentScale.Fit
             )
         }
     }
 }
-
-// ProfileQuickActionCard, ProfileOptionsSection y ProfileOptionItem sin cambios
 @Composable
 private fun ProfileQuickActionCard(text: String, onClick: () -> Unit) {
     Box(

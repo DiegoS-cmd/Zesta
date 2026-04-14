@@ -77,7 +77,7 @@ fun OrderSummaryScreen(
     val restaurantName = cartGroup?.cart?.restaurantName ?: ""
     val restaurantImageName = cartGroup?.cart?.restaurantImageResName ?: ""
 
-    // Restaurante para leer deliveryFee y promos por producto
+    // Restaurante para leer descuentos y promos por producto
     val restaurant = remember(restaurantId) {
         RestaurantRepository.getRestaurantById(restaurantId)
     }
@@ -94,7 +94,7 @@ fun OrderSummaryScreen(
     val deliveryFee = if (restaurant?.hasFreeDelivery == true) 0.0 else (restaurant?.deliveryFee ?: 0.0)
     val serviceFee = 2.50
 
-    // Promo manual (código)
+    // Promo manual
     var promoApplied by remember { mutableStateOf("") }
     var discount by remember { mutableStateOf(0.0) }
     var promoError by remember { mutableStateOf(false) }
@@ -532,7 +532,7 @@ fun OrderSummaryScreen(
     }
 }
 
-// ── Composables privados ─────────────────────────────────────────────────────
+// Composables
 
 @Composable
 private fun RestaurantSummaryHeader(
@@ -605,7 +605,7 @@ private fun PriceRow(
     }
 }
 
-// ── Lógica de promos por producto ────────────────────────────────────────────
+// Lógica de promos por producto
 
 fun calcularPrecioConPromo(item: CartItem, promoType: PromoType): Double {
     return when (promoType) {
@@ -619,7 +619,7 @@ fun calcularPrecioConPromo(item: CartItem, promoType: PromoType): Double {
     }
 }
 
-// ── Dialog código promo ──────────────────────────────────────────────────────
+// código promo
 
 @Composable
 private fun PromoCodeDialog(

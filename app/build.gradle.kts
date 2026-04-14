@@ -61,14 +61,13 @@ dependencies {
 
 
 
-
-
-
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
     implementation(libs.kotlinx.coroutines.play.services.v181)
     implementation(libs.androidx.ui.graphics)
+    implementation(libs.firebase.storage)
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
