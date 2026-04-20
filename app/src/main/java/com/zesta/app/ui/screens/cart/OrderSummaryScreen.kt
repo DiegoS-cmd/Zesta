@@ -36,6 +36,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -54,14 +55,20 @@ import com.zesta.app.viewmodel.CartViewModel
 import com.zesta.app.viewmodel.CartViewModelFactory
 import kotlinx.coroutines.launch
 import kotlin.compareTo
+import com.zesta.app.data.repository.UserPreferencesRepository
 
 @Composable
 fun OrderSummaryScreen(
     restaurantId: Int,
     onBack: () -> Unit,
-    onOrderPlaced: () -> Unit,
+    onOrderPlaced: (showRating: Boolean) -> Unit,
     authViewModel: AuthViewModel
 ) {
+    val context = LocalContext.current
+    val preferencesRepository = remember {
+        UserPreferencesRepository(context)
+    }
+
     val cartViewModel: CartViewModel = viewModel(
         factory = CartViewModelFactory(repository = CartRepository())
     )
@@ -401,6 +408,11 @@ fun OrderSummaryScreen(
 
                 // Desglose de precios
                 item {
+                    // Subtotal sin promos para mostrar el ahorro
+                    val subtotalSinPromo = items.sumOf { it.precio * it.cantidad }
+                    val ahorroPromos = subtotalSinPromo - subtotal
+                    val hasPromoDescuento = ahorroPromos > 0.01
+
                     Spacer(modifier = Modifier.height(4.dp))
                     Column(
                         modifier = Modifier
@@ -410,9 +422,10 @@ fun OrderSummaryScreen(
                             .padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
+                        // Subtotal (suma literal sin descuentos)
                         PriceRow(
                             label = stringResource(R.string.pedido_subtotal),
-                            value = stringResource(R.string.carrito_precio_formato, subtotal)
+                            value = stringResource(R.string.carrito_precio_formato, subtotalSinPromo)
                         )
 
                         // Gastos de envío
@@ -429,22 +442,91 @@ fun OrderSummaryScreen(
                             )
                         }
 
-                        // Precio de servicio
+                        // Tarifa de servicio
                         PriceRow(
                             label = "Precio de servicio",
                             value = stringResource(R.string.carrito_precio_formato, serviceFee)
                         )
 
-                        // Descuento código promo
+                        // Ofertas especiales (promos de producto) — naranja
+                        AnimatedVisibility(visible = hasPromoDescuento) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(NaranjaZesta.copy(alpha = 0.08f))
+                                    .border(1.dp, NaranjaZesta.copy(alpha = 0.25f), RoundedCornerShape(10.dp))
+                                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.LocalOffer,
+                                        contentDescription = null,
+                                        tint = NaranjaZesta,
+                                        modifier = Modifier.size(15.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = "Ofertas especiales",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = NaranjaZesta,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
+                                Text(
+                                    text = "- ${String.format("%.2f €", ahorroPromos)}",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = NaranjaZesta,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+
+                        // Código promocional — azul
                         AnimatedVisibility(visible = discountAmount > 0) {
-                            PriceRow(
-                                label = stringResource(
-                                    R.string.pedido_descuento,
-                                    (discount * 100).toInt()
-                                ),
-                                value = "- ${stringResource(R.string.carrito_precio_formato, discountAmount)}",
-                                valueColor = VerdeExitoZesta
-                            )
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(AzulInicioGradienteZesta.copy(alpha = 0.08f))
+                                    .border(1.dp, AzulInicioGradienteZesta.copy(alpha = 0.25f), RoundedCornerShape(10.dp))
+                                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.LocalOffer,
+                                        contentDescription = null,
+                                        tint = AzulInicioGradienteZesta,
+                                        modifier = Modifier.size(15.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Column {
+                                        Text(
+                                            text = "Código promocional",
+                                            style = MaterialTheme.typography.labelMedium,
+                                            color = AzulInicioGradienteZesta,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                        if (promoApplied.isNotBlank()) {
+                                            Text(
+                                                text = promoApplied,
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = AzulInicioGradienteZesta.copy(alpha = 0.75f)
+                                            )
+                                        }
+                                    }
+                                }
+                                Text(
+                                    text = "- ${stringResource(R.string.carrito_precio_formato, discountAmount)}",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = AzulInicioGradienteZesta,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         }
 
                         HorizontalDivider(color = BordeCirculoZesta)
@@ -474,6 +556,7 @@ fun OrderSummaryScreen(
             }
 
             // Botón confirmar pedido
+            // Botón confirmar pedido
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -502,7 +585,9 @@ fun OrderSummaryScreen(
                             )
                             val result = orderRepository.placeOrder(order)
                             if (result.isSuccess) {
-                                onOrderPlaced()
+                                // ← incrementa y comprueba si toca mostrar valoración
+                                val showRating = preferencesRepository.incrementOrderCountAndCheck()
+                                onOrderPlaced(showRating)
                             }
                             isPlacingOrder = false
                         }

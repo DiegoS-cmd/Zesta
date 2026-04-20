@@ -10,6 +10,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -35,13 +36,15 @@ import com.zesta.app.ui.screens.search.SearchScreen
 import com.zesta.app.ui.theme.FondoZesta
 import com.zesta.app.viewmodel.AuthViewModel
 import com.zesta.app.ui.screens.cart.OrderSuccessScreen
+import com.zesta.app.ui.screens.login.ForgotPasswordScreen
 import com.zesta.app.ui.screens.profile.OrderHistoryScreen
 
 @Composable
 fun AppNavGraph() {
     val navController = rememberNavController()
     val context = LocalContext.current
-
+    val preferencesRepository = remember { UserPreferencesRepository(context) }
+    val scope = rememberCoroutineScope()
 
     val authViewModel: AuthViewModel = viewModel(
         factory = AuthViewModel.factory(
@@ -136,6 +139,7 @@ fun AppNavGraph() {
                         googleLauncher.launch(googleSignInClient.signInIntent)
                     }
                 },
+                onForgotPassword = { navController.navigate("forgot_password") },
                 onPasswordChange = authViewModel::onPasswordChange,
                 onLoginClick = {
                     authViewModel.login {
@@ -155,6 +159,10 @@ fun AppNavGraph() {
                     }
                 }
             )
+        }
+
+        composable("forgot_password") {
+            ForgotPasswordScreen(onBack = { navController.popBackStack() })
         }
 
         composable(AppRoutes.Register.route) {
@@ -230,16 +238,22 @@ fun AppNavGraph() {
                 restaurantId = restaurantId,
                 authViewModel = authViewModel,
                 onBack = { navController.popBackStack() },
-                onOrderPlaced = {
-                    navController.navigate(AppRoutes.OrderSuccess.route) {
-                        popUpTo(AppRoutes.Cart.route) { this.inclusive = true }
+                onOrderPlaced = { showRating ->  // ← recibe el boolean
+                    navController.navigate(AppRoutes.OrderSuccess.createRoute(showRating)) {
+                        popUpTo(AppRoutes.Cart.route) { inclusive = true }
                     }
                 }
             )
         }
 
-        composable(AppRoutes.OrderSuccess.route) {
+
+        composable(
+            route = AppRoutes.OrderSuccess.route,
+            arguments = listOf(navArgument("showRating") { type = NavType.BoolType })
+        ) { backStackEntry ->
+            val showRating = backStackEntry.arguments?.getBoolean("showRating") ?: false
             OrderSuccessScreen(
+                showRatingDialog = showRating,
                 onGoHome = {
                     navController.navigate(AppRoutes.Home.route) {
                         popUpTo(AppRoutes.OrderSuccess.route) { inclusive = true }

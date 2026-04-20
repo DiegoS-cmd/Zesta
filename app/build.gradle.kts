@@ -67,6 +67,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.play.services.v181)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.firebase.storage)
+    implementation(libs.androidx.compose.ui.text)
 
 
     testImplementation(libs.junit)

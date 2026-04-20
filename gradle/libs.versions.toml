@@ -19,6 +19,7 @@ playServicesAuth = "21.5.1"
 playServicesLocation = "21.3.0"
 uiGraphics = "1.10.6"
 firebaseStorageKtx = "22.0.1"
+uiText = "1.10.6"
 
 [libraries]
 androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
@@ -53,6 +54,7 @@ play-services-auth = { module = "com.google.android.gms:play-services-auth", ver
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
 firebase-storage = { module = "com.google.firebase:firebase-storage" }
 com-google-firebase-firebase-storage-ktx = { group = "com.google.firebase", name = "firebase-storage-ktx", version.ref = "firebaseStorageKtx" }
+androidx-compose-ui-text = { group = "androidx.compose.ui", name = "ui-text", version.ref = "uiText" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

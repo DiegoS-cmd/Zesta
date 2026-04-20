@@ -1,4 +1,4 @@
-package com.zesta.app.ui.screens.cart
+package com.zesta.app.ui.components
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.CheckCircle
-import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.*
@@ -17,94 +15,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.zesta.app.ui.components.PrimaryGradientButton
 import com.zesta.app.ui.theme.*
 
 @Composable
-fun OrderSuccessScreen(
-    showRatingDialog: Boolean = false,
-    onGoHome: () -> Unit
-) {
-    var showDialog by remember { mutableStateOf(showRatingDialog) }
-
-    // Animación del check
-    val scale = remember { Animatable(0f) }
-    LaunchedEffect(Unit) {
-        scale.animateTo(
-            targetValue = 1f,
-            animationSpec = spring(
-                dampingRatio = Spring.DampingRatioMediumBouncy,
-                stiffness = Spring.StiffnessMedium
-            )
-        )
-    }
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(FondoZesta),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.padding(horizontal = 36.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.CheckCircle,
-                contentDescription = null,
-                tint = VerdeExitoZesta,
-                modifier = Modifier
-                    .size(96.dp)
-                    .scale(scale.value)
-            )
-            Text(
-                text = "¡Pedido realizado!",
-                style = MaterialTheme.typography.headlineSmall,
-                color = TextoPrincipalZesta,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
-            )
-            Text(
-                text = "Tu pedido está en camino. Recibirás una confirmación en breve.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = TextoSecundarioZesta,
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            PrimaryGradientButton(
-                text = "Volver al inicio",
-                onClick = onGoHome
-            )
-        }
-    }
-
-    // ── Dialog de valoración
-    if (showDialog) {
-        RatingDialog(
-            onDismiss = {
-                showDialog = false
-                onGoHome()
-            },
-            onSubmit = {
-                showDialog = false
-                onGoHome()
-            }
-        )
-    }
-}
-
-@Composable
-private fun RatingDialog(
+fun RestaurantRatingDialog(
+    restaurantName: String,
+    initialStars: Int = 0,          // 0 = no ha valorado antes
+    isLoading: Boolean = false,
     onDismiss: () -> Unit,
     onSubmit: (Int) -> Unit
 ) {
-    var selectedStars by remember { mutableStateOf(0) }
+    var selectedStars by remember { mutableStateOf(initialStars) }
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -119,7 +46,7 @@ private fun RatingDialog(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Icono
+            // Icono estrella
             Box(
                 modifier = Modifier
                     .size(64.dp)
@@ -136,21 +63,20 @@ private fun RatingDialog(
             }
 
             Text(
-                text = "Valora nuestra app",
+                text = if (initialStars > 0) "Editar valoración" else "Valorar restaurante",
                 style = MaterialTheme.typography.titleLarge,
                 color = TextoPrincipalZesta,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
             )
-
             Text(
-                text = "¿Qué te ha parecido tu experiencia con Zesta?",
+                text = restaurantName,
                 style = MaterialTheme.typography.bodyMedium,
                 color = TextoSecundarioZesta,
                 textAlign = TextAlign.Center
             )
 
-            // Estrellas
+            // Estrellas con animación
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -164,8 +90,8 @@ private fun RatingDialog(
                         }
                     }
                     Icon(
-                        imageVector = if (star <= selectedStars)
-                            Icons.Filled.Star else Icons.Outlined.StarOutline,
+                        imageVector = if (star <= selectedStars) Icons.Filled.Star
+                        else Icons.Outlined.StarOutline,
                         contentDescription = "$star estrellas",
                         tint = if (star <= selectedStars) NaranjaZesta else BordeCirculoZesta,
                         modifier = Modifier
@@ -176,15 +102,15 @@ private fun RatingDialog(
                 }
             }
 
-            // Texto según estrellas
+            // Texto reactivo
             if (selectedStars > 0) {
                 Text(
                     text = when (selectedStars) {
-                        1 -> "😞 Vaya, lo sentimos mucho"
-                        2 -> "😕 Gracias, mejoraremos"
-                        3 -> "😊 ¡Gracias por tu opinión!"
-                        4 -> "😄 ¡Nos alegra que te guste!"
-                        5 -> "🤩 ¡Eres el mejor, gracias!"
+                        1 -> "😞 Muy mala experiencia"
+                        2 -> "😕 Podría mejorar"
+                        3 -> "😊 Bastante bien"
+                        4 -> "😄 Muy bueno"
+                        5 -> "🤩 ¡Excelente!"
                         else -> ""
                     },
                     style = MaterialTheme.typography.bodySmall,
@@ -197,14 +123,36 @@ private fun RatingDialog(
             Spacer(modifier = Modifier.height(4.dp))
 
             // Botón enviar
-            PrimaryGradientButton(
-                text = if (selectedStars > 0) "Enviar valoración" else "Ahora no",
-                onClick = {
-                    if (selectedStars > 0) onSubmit(selectedStars) else onDismiss()
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(28.dp))
+                    .background(
+                        if (selectedStars > 0) NaranjaZesta
+                        else BordeCirculoZesta
+                    )
+                    .clickable(enabled = selectedStars > 0 && !isLoading) {
+                        onSubmit(selectedStars)
+                    }
+                    .padding(vertical = 14.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(22.dp),
+                        color = BlancoZesta,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text(
+                        text = if (initialStars > 0) "Guardar cambios" else "Enviar valoración",
+                        color = BlancoZesta,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
-            )
+            }
 
-            // Cancelar
             TextButton(onClick = onDismiss) {
                 Text(
                     text = "Cancelar",

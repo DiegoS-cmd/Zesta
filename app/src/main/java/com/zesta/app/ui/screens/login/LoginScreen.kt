@@ -53,6 +53,7 @@ fun LoginScreen(
     onLoginClick: () -> Unit,
     onGoRegister: () -> Unit,
     onGoogleSignIn: () -> Unit,
+    onForgotPassword: () -> Unit,
     onContinueAsGuestClick: () -> Unit
 ) {
     Column(
@@ -202,7 +203,7 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        TextButton(onClick = { }) {
+        TextButton(onClick = onForgotPassword) {
             Text(
                 text = stringResource(R.string.inicio_sesion_olvide_contrasena),
                 style = LinkTextStyle

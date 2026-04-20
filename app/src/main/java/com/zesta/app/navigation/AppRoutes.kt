@@ -9,7 +9,6 @@ sealed class AppRoutes(val route: String) {
     object Cart : AppRoutes("cart")
     object CartDetail : AppRoutes("cart_detail/{restaurantId}") {
         fun createRoute(restaurantId: Int) = "cart_detail/$restaurantId"
-
     }
     object Profile : AppRoutes("profile")
     object ManageAccount : AppRoutes("manage_account")
@@ -21,8 +20,7 @@ sealed class AppRoutes(val route: String) {
         fun createRoute(restaurantId: Int) = "order_summary/$restaurantId"
     }
     object OrderHistory : AppRoutes("order_history")
-    object OrderSuccess : AppRoutes("order_success")
+    object OrderSuccess : AppRoutes("order_success/{showRating}") {
+        fun createRoute(showRating: Boolean) = "order_success/$showRating"
     }
-
-
-
+}

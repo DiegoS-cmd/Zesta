@@ -269,7 +269,7 @@
     <!-- Productos Gino's -->
     <string name="producto_pizza_ginos">Pizza 4 Quesos</string>
     <string name="producto_pasta_ginos">Pasta Boloñesa</string>
-    <string name="producto_tiramisú">Tiramisú</string>
+    <string name="producto_tiramisu">Tiramisú</string>
 
     <!-- Productos VIPS -->
     <string name="producto_club_sandwich">Club Sandwich</string>
@@ -295,6 +295,22 @@
     <string name="promocion_2x1">2x1 en selección</string>
     <string name="promocion_envio_gratis">Envío gratis hoy</string>
     <string name="promocion_descuento_20">20% de descuento</string>
-    <string name="producto_tiramisu" />
 
+    <!-- Forgot Password -->
+    <string name="forgot_email_enviado_titulo">Correo enviado</string>
+    <string name="forgot_email_enviado_cuerpo">Revisa tu bandeja de entrada en\n%1$s\n\nSigue las instrucciones para restablecer tu contraseña.</string>
+    <string name="forgot_volver_login">Volver al inicio de sesión</string>
+    <string name="forgot_titulo">¿Olvidaste tu contraseña?</string>
+    <string name="forgot_subtitulo">Introduce tu email y te enviaremos un enlace para restablecerla.</string>
+    <string name="forgot_placeholder_email">tu@email.com</string>
+    <string name="forgot_enviar">Enviar enlace</string>
+    <string name="forgot_error_email_vacio">Introduce tu email</string>
+    <string name="forgot_error_email_invalido">El email no es válido</string>
+    <string name="forgot_error_no_encontrado">No encontramos una cuenta con ese email</string>
+
+    <!-- Valoración -->
+
+    <string name="dialog_entendido">Entendido</string>
+    <string name="valoracion_sin_pedido_titulo">Aún no has pedido aquí</string>
+    <string name="valoracion_sin_pedido_descripcion">Realiza tu primer pedido en este restaurante para poder dejar una valoración</string>
 </resources>
