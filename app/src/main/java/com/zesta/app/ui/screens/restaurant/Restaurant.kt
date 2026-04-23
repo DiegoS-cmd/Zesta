@@ -15,5 +15,7 @@ data class Restaurant(
     @StringRes val promoTextRes: Int? = null,
     val promoDiscount: Double? = null,
     val categories: List<String> = emptyList(),
-    val products: List<Product>
+    val products: List<Product>,
+    val latitude: Double = 40.4168,
+    val longitude: Double = -3.7038
 )

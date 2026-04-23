@@ -23,4 +23,10 @@ sealed class AppRoutes(val route: String) {
     object OrderSuccess : AppRoutes("order_success/{showRating}") {
         fun createRoute(showRating: Boolean) = "order_success/$showRating"
     }
+    object DeliveryTracking : AppRoutes("delivery_tracking/{restaurantId}/{totalMinutes}/{restaurantName}") {
+        fun createRoute(restaurantId: Int, totalMinutes: Int, restaurantName: String): String {
+            val encodedName = java.net.URLEncoder.encode(restaurantName, "UTF-8")
+            return "delivery_tracking/$restaurantId/$totalMinutes/$encodedName"
+        }
+    }
 }

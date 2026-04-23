@@ -25,9 +25,23 @@ class OrderRepository(
 
     suspend fun placeOrder(order: Order): Result<String> {
         val uid = getUserId() ?: return Result.failure(Exception("Usuario no autenticado"))
+
+        if (order.restaurantId <= 0) {
+            return Result.failure(Exception("Restaurante no válido"))
+        }
+
+        if (order.items.isEmpty()) {
+            return Result.failure(Exception("No se puede realizar un pedido sin artículos"))
+        }
+
+        if (order.items.all { it.cantidad <= 0 }) {
+            return Result.failure(Exception("El pedido no contiene artículos válidos"))
+        }
+
         return try {
             val orderId = UUID.randomUUID().toString()
             val finalOrder = order.copy(orderId = orderId)
+
             db.collection("users")
                 .document(uid)
                 .collection("orders")
@@ -35,7 +49,13 @@ class OrderRepository(
                 .set(finalOrder)
                 .await()
 
-            cartRepository.clearCartByRestaurant(order.restaurantId)
+            val clearCartResult = cartRepository.clearCartByRestaurant(order.restaurantId)
+            if (clearCartResult.isFailure) {
+                return Result.failure(
+                    clearCartResult.exceptionOrNull()
+                        ?: Exception("El pedido se guardó, pero no se pudo vaciar el carrito")
+                )
+            }
 
             Result.success(orderId)
         } catch (e: Exception) {

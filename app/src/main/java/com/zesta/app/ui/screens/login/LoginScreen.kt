@@ -54,7 +54,8 @@ fun LoginScreen(
     onGoRegister: () -> Unit,
     onGoogleSignIn: () -> Unit,
     onForgotPassword: () -> Unit,
-    onContinueAsGuestClick: () -> Unit
+    onContinueAsGuestClick: () -> Unit,
+    onEresEmpresa: () -> Unit // ✅ nuevo
 ) {
     Column(
         modifier = Modifier
@@ -79,11 +80,11 @@ fun LoginScreen(
             contentDescription = stringResource(R.string.inicio_sesion_descripcion_logo),
             modifier = Modifier
                 .fillMaxWidth()
-                .height(220.dp),
+                .height(200.dp),
             contentScale = ContentScale.Fit
         )
 
-        Spacer(modifier = Modifier.height(42.dp))
+        Spacer(modifier = Modifier.height(36.dp))
 
         OutlinedTextField(
             value = email,
@@ -107,7 +108,7 @@ fun LoginScreen(
             )
         )
 
-        Spacer(modifier = Modifier.height(18.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
             value = password,
@@ -141,15 +142,15 @@ fun LoginScreen(
             )
         }
 
-        Spacer(modifier = Modifier.height(28.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         PrimaryGradientButton(
             text = stringResource(R.string.inicio_sesion_entrar),
             onClick = onLoginClick
         )
+
         Spacer(modifier = Modifier.height(12.dp))
 
-// Separador
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -166,7 +167,6 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-// Botón Google
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -194,14 +194,15 @@ fun LoginScreen(
                 )
             }
         }
-        Spacer(modifier = Modifier.height(18.dp))
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         PrimaryGradientButton(
             text = stringResource(R.string.inicio_sesion_registrarse),
             onClick = onGoRegister
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(14.dp))
 
         TextButton(onClick = onForgotPassword) {
             Text(
@@ -213,6 +214,13 @@ fun LoginScreen(
         TextButton(onClick = onContinueAsGuestClick) {
             Text(
                 text = stringResource(R.string.inicio_sesion_continuar_invitado),
+                style = LinkTextStyle
+            )
+        }
+
+        TextButton(onClick = onEresEmpresa) {
+            Text(
+                text = stringResource(R.string.login_eres_empresa),
                 style = LinkTextStyle
             )
         }

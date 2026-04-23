@@ -175,7 +175,7 @@ fun RestaurantDetailScreen(
 
             item {
                 Text(
-                    text = stringResource(R.string.restaurante_promociones),
+                    text = stringResource(R.string.restaurante_destacado),
                     style = MaterialTheme.typography.titleLarge,
                     color = TextoPrincipalZesta
                 )

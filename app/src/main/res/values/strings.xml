@@ -104,6 +104,13 @@
     <string name="pedido_exito_titulo">¡Pedido realizado!</string>
     <string name="pedido_exito_descripcion">Tu pedido está en camino. Pronto recibirás tu comida.</string>
     <string name="pedido_exito_volver_inicio">Volver al inicio</string>
+    <string name="promo_label_2x1">2x1 · </string>
+    <string name="promo_label_20">-20% · </string>
+    <string name="promo_label_10">-10% · </string>
+    <string name="pedido_ahorro_promo">%1$sAhorras %2$s €</string>
+    <string name="pedido_ahorro_importe">- %1$s €</string>
+    <string name="pedido_descuento_pct">-%1$d%%</string>
+    <string name="pedido_promo_quitar_hint">Pulsa el chip de arriba para quitar</string>
 
     <!-- CartDetailScreen — validación de perfil -->
     <string name="carrito_datos_incompletos_titulo">Datos necesarios</string>
@@ -126,6 +133,7 @@
     <string name="carrito_ir_gestionar">Completar datos</string>
     <string name="login_google">Continuar con Google</string>
     <string name="login_o">o</string>
+
 
 
     <!-- Carrito — dialog invitado -->
@@ -166,7 +174,7 @@
 
     <!-- Restaurante -->
     <string name="restaurante_ubicacion">Ubicación</string>
-    <string name="restaurante_promociones">Promociones</string>
+    <string name="restaurante_destacado">Destacados</string>
     <string name="restaurante_explorar_menu">Explora el menú</string>
     <string name="restaurante_ver_carrito">Ver carrito</string>
     <string name="restaurante_envio_gratis">Sin gastos de envío - %1$d min</string>
@@ -313,4 +321,76 @@
     <string name="dialog_entendido">Entendido</string>
     <string name="valoracion_sin_pedido_titulo">Aún no has pedido aquí</string>
     <string name="valoracion_sin_pedido_descripcion">Realiza tu primer pedido en este restaurante para poder dejar una valoración</string>
+
+    <!-- Vaciar carrito -->
+    <string name="carrito_vaciar">Vaciar carrito</string>
+
+    <!-- Error en el pedido / vacío -->
+    <string name="pedido_error_carrito_vacio">Tu carrito está vacío</string>
+    <string name="pedido_error_fallo">No se pudo realizar el pedido</string>
+    <string name="pedido_error_fallo_detalle">No se pudo guardar el pedido. Revisa tu conexión e inténtalo de nuevo.</string>
+
+    <!-- Mensajes de promo -->
+    <string name="pedido_promo_aplicada">%1$s aplicado · %2$d%% de descuento</string>
+    <string name="pedido_promo_remove_hint">Toque para eliminar el código</string>
+    <string name="pedido_promo_sin_codigo">No hay código promocional aplicado</string>
+
+    <!-- Dirección de entrega -->
+    <string name="pedido_direccion_sin_datos">No tienes una dirección de entrega configurada</string>
+    <string name="pedido_direccion_falta_titulo">Falta la dirección</string>
+    <string name="pedido_direccion_falta_descripcion">Añade una dirección de entrega antes de confirmar el pedido.</string>
+    <string name="pedido_codigos_disponibles">Códigos disponibles:</string>
+    <string name="pedido_gastos_envio">Gastos de envío</string>
+    <string name="pedido_gratis">Gratis</string>
+    <string name="pedido_precio_servicio">Precio de servicio</string>
+    <string name="pedido_ofertas_especiales">Ofertas especiales</string>
+    <string name="pedido_codigo_promocional">Código promocional</string>
+
+    <!-- Cambio de contraseña -->
+    <string name="cambiar_contraseña">Cambiar contraseña</string>
+    <string name="actualizar_contraseña">Contraseña actualiza correctamente</string>
+    <string name="nueva_contraseña">Nueva contraseña</string>
+    <string name="conf_nueva_contraseña">Confirmar nueva contraseña</string>
+    <string name="actual_contraseña">Contraseña actual</string>
+    <string name="intro_actual_contraseña">Introduce tu contraseña actual</string>
+    <string name="nueva_contrasena_minimo">Mínimo 6 caracteres</string>
+    <string name="contrasenas_no_coinciden">Las contraseñas no coinciden</string>
+    <string name="contrasena_actual_incorrecta">Contraseña actual incorrecta</string>
+    <string name="correo_valido">Introduce un correo válido</string>
+    <string name="forgot_enviar_correo_tab">Enviar correo</string>
+    <string name="forgot_contrasena_exito_cuerpo">Tu contraseña se ha cambiado correctamente. Ya puedes iniciar sesión con la nueva contraseña.</string>
+    <string name="forgot_cambiar_subtitulo">Introduce tu email y contraseña actual para establecer una nueva.</string>
+
+    <!-- Login empresa -->
+    <string name="login_eres_empresa">¿Eres una empresa?</string>
+
+    <!-- Pantalla contacto empresa -->
+    <string name="empresa_titulo">Únete a Zesta</string>
+    <string name="empresa_subtitulo">¿Tienes un restaurante o franquicia? Cuéntanos sobre tu negocio y nos pondremos en contacto contigo.</string>
+    <string name="empresa_placeholder_nombre">Nombre de la empresa o franquicia</string>
+    <string name="empresa_placeholder_mensaje">Cuéntanos sobre tu negocio, ubicaciones, tipo de cocina…</string>
+    <string name="empresa_enviar">Enviar solicitud</string>
+    <string name="empresa_exito_titulo">¡Solicitud enviada!</string>
+    <string name="empresa_exito_cuerpo">Hemos recibido tu información. Nuestro equipo se pondrá en contacto contigo lo antes posible.</string>
+    <string name="empresa_error_nombre_vacio">Introduce el nombre de tu empresa</string>
+    <string name="empresa_error_mensaje_vacio">Escribe un mensaje antes de enviar</string>
+    <string name="empresa_error_envio">No se pudo enviar la solicitud. Inténtalo de nuevo.</string>
+    <string name="empresa_placeholder_correo">Correo de contacto</string>
+    <string name="empresa_error_correo_vacio">Introduce un correo de contacto</string>
+    <string name="empresa_error_correo_invalido">El correo no es válido</string>
+
+    <!-- DeliveryTrackingScreen -->
+    <string name="tracking_marker_restaurante">Restaurante</string>
+    <string name="tracking_marker_restaurante_snippet">Aquí se prepara tu pedido</string>
+    <string name="tracking_marker_usuario">Tu dirección</string>
+    <string name="tracking_marker_repartidor">Tu repartidor</string>
+    <string name="tracking_tiempo_seg">%1$d seg</string>
+    <string name="tracking_tiempo_min_seg">%1$d min %2$d seg</string>
+    <string name="tracking_estado_preparando">Preparando tu pedido en %1$s</string>
+    <string name="tracking_estado_en_camino">Tu pedido está en camino</string>
+    <string name="tracking_fase_preparando">Preparando</string>
+    <string name="tracking_fase_en_camino">En camino</string>
+    <string name="tracking_fase_entregado">Entregado</string>
+    <string name="tracking_entregado_titulo">¡Pedido entregado!</string>
+    <string name="tracking_entregado_subtitulo">¡Que lo disfrutes!</string>
 </resources>

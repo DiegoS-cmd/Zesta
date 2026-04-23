@@ -58,7 +58,9 @@ class CartViewModel(
         restaurantId: Int,
         restaurantName: String,
         restaurantImageResName: String,
-        item: CartItem
+        item: CartItem,
+        onSuccess: (() -> Unit)? = null,
+        onError: ((String) -> Unit)? = null
     ) {
         viewModelScope.launch {
             val result = repository.addItem(
@@ -68,43 +70,116 @@ class CartViewModel(
                 item = item
             )
 
-            if (result.isFailure) {
-                _uiState.value = _uiState.value.copy(
-                    errorMessage = result.exceptionOrNull()?.message
-                )
+            if (result.isSuccess) {
+                loadCart()
+                onSuccess?.invoke()
+            } else {
+                val message = result.exceptionOrNull()?.message ?: "Error al añadir producto"
+                _uiState.value = _uiState.value.copy(errorMessage = message)
+                onError?.invoke(message)
             }
-
-            loadCart()
         }
     }
 
-
-    fun increaseQuantity(restaurantId: Int, item: CartItem) {
+    fun increaseQuantity(
+        restaurantId: Int,
+        item: CartItem,
+        onSuccess: (() -> Unit)? = null,
+        onError: ((String) -> Unit)? = null
+    ) {
         viewModelScope.launch {
-            repository.increaseQuantity(restaurantId, item)
-            loadCart()
+            val result = repository.increaseQuantity(restaurantId, item)
+
+            if (result.isSuccess) {
+                loadCart()
+                onSuccess?.invoke()
+            } else {
+                val message = result.exceptionOrNull()?.message ?: "Error al aumentar cantidad"
+                _uiState.value = _uiState.value.copy(errorMessage = message)
+                onError?.invoke(message)
+            }
         }
     }
 
-    fun decreaseQuantity(restaurantId: Int, item: CartItem) {
+    fun decreaseQuantity(
+        restaurantId: Int,
+        item: CartItem,
+        onSuccess: (() -> Unit)? = null,
+        onError: ((String) -> Unit)? = null
+    ) {
         viewModelScope.launch {
-            repository.decreaseQuantity(restaurantId, item)
-            loadCart()
+            val result = repository.decreaseQuantity(restaurantId, item)
+
+            if (result.isSuccess) {
+                loadCart()
+                onSuccess?.invoke()
+            } else {
+                val message = result.exceptionOrNull()?.message ?: "Error al disminuir cantidad"
+                _uiState.value = _uiState.value.copy(errorMessage = message)
+                onError?.invoke(message)
+            }
         }
     }
 
-    fun removeItem(restaurantId: Int, item: CartItem) {
+    fun removeItem(
+        restaurantId: Int,
+        item: CartItem,
+        onSuccess: (() -> Unit)? = null,
+        onError: ((String) -> Unit)? = null
+    ) {
         viewModelScope.launch {
-            repository.removeItem(restaurantId, item)
-            loadCart()
+            val result = repository.removeItem(restaurantId, item)
+
+            if (result.isSuccess) {
+                loadCart()
+                onSuccess?.invoke()
+            } else {
+                val message = result.exceptionOrNull()?.message ?: "Error al eliminar producto"
+                _uiState.value = _uiState.value.copy(errorMessage = message)
+                onError?.invoke(message)
+            }
         }
     }
 
-    fun clearCart() {
+    fun clearCart(
+        onSuccess: (() -> Unit)? = null,
+        onError: ((String) -> Unit)? = null
+    ) {
         viewModelScope.launch {
-            repository.clearCart()
-            loadCart()
+            val result = repository.clearCart()
+
+            if (result.isSuccess) {
+                loadCart()
+                onSuccess?.invoke()
+            } else {
+                val message = result.exceptionOrNull()?.message ?: "Error al vaciar carrito"
+                _uiState.value = _uiState.value.copy(errorMessage = message)
+                onError?.invoke(message)
+            }
         }
+    }
+
+    fun clearCartByRestaurant(
+        restaurantId: Int,
+        onSuccess: (() -> Unit)? = null,
+        onError: ((String) -> Unit)? = null
+    ) {
+        viewModelScope.launch {
+            val result = repository.clearCartByRestaurant(restaurantId)
+
+            if (result.isSuccess) {
+                loadCart()
+                onSuccess?.invoke()
+            } else {
+                val message = result.exceptionOrNull()?.message ?: "Error al vaciar carrito del restaurante"
+                _uiState.value = _uiState.value.copy(errorMessage = message)
+                onError?.invoke(message)
+            }
+        }
+    }
+
+    fun clearError() {
+        _uiState.value = _uiState.value.copy(errorMessage = null)
     }
 }
 

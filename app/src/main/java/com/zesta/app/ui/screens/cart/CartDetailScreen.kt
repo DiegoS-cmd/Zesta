@@ -4,7 +4,18 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -13,8 +24,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Warning
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,13 +48,21 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.zesta.app.R
 import com.zesta.app.data.model.CartItem
-import com.zesta.app.data.repository.AuthRepository
-import com.zesta.app.data.repository.CartRepository
-import com.zesta.app.data.repository.UserPreferencesRepository
-import com.zesta.app.ui.theme.*
+import com.zesta.app.ui.theme.AzulFinGradienteZesta
+import com.zesta.app.ui.theme.AzulInicioGradienteZesta
+import com.zesta.app.ui.theme.BlancoZesta
+import com.zesta.app.ui.theme.BordeBotonZesta
+import com.zesta.app.ui.theme.BordeCirculoZesta
+import com.zesta.app.ui.theme.FondoCirculoZesta
+import com.zesta.app.ui.theme.FondoPlaceholderZesta
+import com.zesta.app.ui.theme.FondoSeleccionNaranjaZesta
+import com.zesta.app.ui.theme.FondoZesta
+import com.zesta.app.ui.theme.NaranjaZesta
+import com.zesta.app.ui.theme.NegroZesta
+import com.zesta.app.ui.theme.TextoPrincipalZesta
+import com.zesta.app.ui.theme.TextoSecundarioZesta
 import com.zesta.app.viewmodel.AuthViewModel
 import com.zesta.app.viewmodel.CartViewModel
 import com.zesta.app.viewmodel.CartViewModelFactory
@@ -41,18 +71,16 @@ import com.zesta.app.viewmodel.CartViewModelFactory
 fun CartDetailScreen(
     restaurantId: Int,
     onBack: () -> Unit,
+    cartViewModel: CartViewModel,
     onNavigateToManageAccount: () -> Unit,
     onNavigateToProfile: () -> Unit,
     onGoToOrderSummary: () -> Unit,
     authViewModel: AuthViewModel
 ) {
-
     var showIncompleteDialog by remember { mutableStateOf(false) }
     var incompleteDialogIsGuest by remember { mutableStateOf(false) }
+    var showClearCartDialog by remember { mutableStateOf(false) }
 
-    val cartViewModel: CartViewModel = viewModel(
-        factory = CartViewModelFactory(repository = CartRepository())
-    )
 
     val uiState by cartViewModel.uiState.collectAsState()
     val authState by authViewModel.uiState.collectAsState()
@@ -61,6 +89,19 @@ fun CartDetailScreen(
     val items = cartGroup?.items ?: emptyList()
     val totalPrice = items.sumOf { it.precio * it.cantidad }
     val restaurantName = cartGroup?.cart?.restaurantName ?: ""
+    var initialLoadDone by remember { mutableStateOf(false) }
+
+    LaunchedEffect(uiState.isLoading) {
+        if (!uiState.isLoading) {
+            initialLoadDone = true
+        }
+    }
+
+    LaunchedEffect(uiState.carts, initialLoadDone) {
+        if (initialLoadDone && cartGroup == null) {
+            onBack()
+        }
+    }
 
     if (showIncompleteDialog) {
         ProfileIncompleteDialog(
@@ -74,7 +115,57 @@ fun CartDetailScreen(
         )
     }
 
-    Scaffold(containerColor = FondoZesta) { innerPadding ->
+    if (showClearCartDialog) {
+        AlertDialog(
+            onDismissRequest = { showClearCartDialog = false },
+            containerColor = BlancoZesta,
+            shape = RoundedCornerShape(24.dp),
+            title = {
+                Text(
+                    text = "Vaciar carrito",
+                    color = TextoPrincipalZesta,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.SemiBold
+                )
+            },
+            text = {
+                Text(
+                    text = "¿Seguro que quieres eliminar todos los artículos de este carrito?",
+                    color = TextoSecundarioZesta,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showClearCartDialog = false
+                        cartViewModel.clearCartByRestaurant(
+                            restaurantId = restaurantId
+
+                        )
+                    }
+                ) {
+                    Text(
+                        text = "Vaciar",
+                        color = NaranjaZesta,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearCartDialog = false }) {
+                    Text(
+                        text = "Cancelar",
+                        color = TextoSecundarioZesta
+                    )
+                }
+            }
+        )
+    }
+
+    Scaffold(
+        containerColor = FondoZesta
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -83,7 +174,6 @@ fun CartDetailScreen(
         ) {
             Spacer(modifier = Modifier.height(20.dp))
 
-            // TopBar
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -104,39 +194,72 @@ fun CartDetailScreen(
                         modifier = Modifier.size(26.dp)
                     )
                 }
+
                 Spacer(modifier = Modifier.width(14.dp))
+
                 Text(
                     text = restaurantName,
                     style = MaterialTheme.typography.titleLarge,
                     color = TextoPrincipalZesta,
-                    fontWeight = FontWeight.Normal
+                    fontWeight = FontWeight.Normal,
+                    modifier = Modifier.weight(1f)
                 )
+
+                if (items.isNotEmpty()) {
+                    TextButton(onClick = { showClearCartDialog = true }) {
+                        Text(
+                            text = "Vaciar",
+                            color = NaranjaZesta,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Lista de productos
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(items = items, key = { it.productId }) { item ->
-                    CartDetailItemCard(
-                        restaurantId = restaurantId,
-                        item = item,
-                        onIncrease = { cartViewModel.increaseQuantity(restaurantId, item) },
-                        onDecrease = {
-                            if (item.cantidad == 1) cartViewModel.removeItem(restaurantId, item)
-                            else cartViewModel.decreaseQuantity(restaurantId, item)
-                        }
+            if (items.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Este carrito está vacío",
+                        color = TextoSecundarioZesta,
+                        style = MaterialTheme.typography.bodyLarge
                     )
                 }
-                item { Spacer(modifier = Modifier.height(24.dp)) }
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(items = items, key = { it.productId }) { item ->
+                        CartDetailItemCard(
+                            item = item,
+                            onIncrease = {
+                                cartViewModel.increaseQuantity(restaurantId, item)
+                            },
+                            onDecrease = {
+                                if (item.cantidad == 1) {
+                                    cartViewModel.removeItem(restaurantId, item)
+                                } else {
+                                    cartViewModel.decreaseQuantity(restaurantId, item)
+                                }
+                            }
+                        )
+                    }
+
+                    item {
+                        Spacer(modifier = Modifier.height(24.dp))
+                    }
+                }
             }
 
-            // Total
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -158,7 +281,6 @@ fun CartDetailScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Botón pagar
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -169,17 +291,21 @@ fun CartDetailScreen(
                         )
                     )
                     .border(2.dp, BordeBotonZesta, RoundedCornerShape(28.dp))
-                    .clickable {
+                    .clickable(enabled = items.isNotEmpty()) {
                         when {
                             authState.isGuest -> {
                                 incompleteDialogIsGuest = true
                                 showIncompleteDialog = true
                             }
+
                             !authViewModel.hasCompleteProfile() -> {
                                 incompleteDialogIsGuest = false
                                 showIncompleteDialog = true
                             }
-                            else -> onGoToOrderSummary()
+
+                            items.isNotEmpty() -> {
+                                onGoToOrderSummary()
+                            }
                         }
                     }
                     .padding(vertical = 14.dp),
@@ -218,7 +344,6 @@ private fun ProfileIncompleteDialog(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Icono en círculo naranja
                 Box(
                     modifier = Modifier
                         .size(64.dp)
@@ -257,7 +382,6 @@ private fun ProfileIncompleteDialog(
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                // Botón principal — gradiente azul
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -283,7 +407,6 @@ private fun ProfileIncompleteDialog(
                     )
                 }
 
-                // Botón cancelar
                 TextButton(
                     onClick = onDismiss,
                     modifier = Modifier.fillMaxWidth()
@@ -302,7 +425,6 @@ private fun ProfileIncompleteDialog(
 
 @Composable
 private fun CartDetailItemCard(
-    restaurantId: Int,
     item: CartItem,
     onIncrease: () -> Unit,
     onDecrease: () -> Unit
@@ -377,7 +499,11 @@ private fun CartDetailItemCard(
                         modifier = Modifier.size(16.dp)
                     )
                 } else {
-                    Text("-", color = NegroZesta, style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        text = "-",
+                        color = NegroZesta,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
                 }
             }
 
@@ -401,9 +527,12 @@ private fun CartDetailItemCard(
                     .clickable { onIncrease() },
                 contentAlignment = Alignment.Center
             ) {
-                Text("+", color = NegroZesta, style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    text = "+",
+                    color = NegroZesta,
+                    style = MaterialTheme.typography.bodyLarge
+                )
             }
         }
     }
-
 }

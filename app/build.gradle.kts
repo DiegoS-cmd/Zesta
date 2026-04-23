@@ -68,6 +68,8 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.firebase.storage)
     implementation(libs.androidx.compose.ui.text)
+    implementation(libs.androidx.compose.runtime)
+    implementation(libs.osmdroid.android)
 
 
     testImplementation(libs.junit)

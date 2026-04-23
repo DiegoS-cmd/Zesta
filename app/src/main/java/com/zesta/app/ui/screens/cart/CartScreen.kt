@@ -27,6 +27,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -39,9 +40,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.zesta.app.R
-import com.zesta.app.data.repository.CartRepository
 import com.zesta.app.data.repository.RestaurantCartWithItems
 import com.zesta.app.ui.components.ZestaBottomNavBar
 import com.zesta.app.ui.theme.AzulFinGradienteZesta
@@ -67,15 +66,15 @@ fun CartScreen(
     onSearchClick: () -> Unit,
     onProfileClick: () -> Unit,
     onCartClick: () -> Unit,
+    cartViewModel: CartViewModel,
     onStartShoppingClick: () -> Unit,
     onCartDetailClick: (Int) -> Unit,
     authViewModel: AuthViewModel
 ) {
-    val cartViewModel: CartViewModel = viewModel(
-        factory = CartViewModelFactory(repository = CartRepository())
-    )
     val uiState by cartViewModel.uiState.collectAsState()
-
+    LaunchedEffect(Unit) {
+        cartViewModel.loadCart()
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()

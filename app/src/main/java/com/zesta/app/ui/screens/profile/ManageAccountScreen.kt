@@ -1,13 +1,9 @@
 package com.zesta.app.ui.screens.profile
 
-import android.Manifest
 import android.content.Context
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.location.Geocoder
 import android.net.Uri
-import android.os.Build
 import android.util.Base64
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -35,20 +31,21 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
-import com.google.android.gms.tasks.CancellationTokenSource
+import com.google.firebase.auth.EmailAuthProvider
+import com.google.firebase.auth.FirebaseAuth
 import com.zesta.app.R
+import com.zesta.app.ui.components.AddressBottomSheet
 import com.zesta.app.ui.components.PrimaryGradientButton
 import com.zesta.app.ui.theme.*
 import com.zesta.app.viewmodel.AuthViewModel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import java.io.ByteArrayOutputStream
 import java.io.File
-import java.util.Locale
-
 
 @Composable
 fun ManageAccountScreen(
@@ -61,30 +58,23 @@ fun ManageAccountScreen(
     authViewModel: AuthViewModel
 ) {
     val errorTelefono = stringResource(R.string.carrito_error_telefono)
-    val errorDireccion = stringResource(R.string.carrito_error_direccion)
     val authState by authViewModel.uiState.collectAsState()
     val context = LocalContext.current
+    var showAddressSheet by remember { mutableStateOf(false) }
 
     val profileImageBase64 by authViewModel.profileImageUrl.collectAsState()
     val profileBitmap by produceState<Bitmap?>(initialValue = null, key1 = profileImageBase64) {
         value = try {
             val base64 = profileImageBase64
-            android.util.Log.d("ZESTA_PHOTO", "produceState ejecutado, base64 es null: ${base64 == null}, longitud: ${base64?.length}")
-            if (base64.isNullOrBlank()) {
-                null
-            } else {
+            if (base64.isNullOrBlank()) null
+            else {
                 val clean = base64.replace("\\s".toRegex(), "")
                 val bytes = Base64.decode(clean, Base64.NO_WRAP)
-                android.util.Log.d("ZESTA_PHOTO", "Bytes decodificados: ${bytes.size}")
-                val bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                android.util.Log.d("ZESTA_PHOTO", "Bitmap resultado: $bmp")
-                bmp
+                BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
             }
-        } catch (e: Exception) {
-            android.util.Log.e("ZESTA_PHOTO", "Error bitmap: ${e.message}")
-            null
-        }
+        } catch (e: Exception) { null }
     }
+
     var showImageSourceDialog by remember { mutableStateOf(false) }
 
     val cameraImageUri = remember {
@@ -93,24 +83,16 @@ fun ManageAccountScreen(
         FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
     }
 
-    // Galería
-    val galleryLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.GetContent()
-    ) { uri ->
+    val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let {
             val base64 = uriToBase64(context, it)
-            android.util.Log.d("ZESTA_PHOTO", "Base64 desde galería: ${base64?.take(30)}")
             if (base64 != null) authViewModel.setProfileImageBase64(base64)
         }
     }
 
-// Cámara
-    val cameraLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.TakePicture()
-    ) { success ->
+    val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
         if (success) {
             val base64 = uriToBase64(context, cameraImageUri)
-            android.util.Log.d("ZESTA_PHOTO", "Base64 desde cámara: ${base64?.take(30)}")
             if (base64 != null) authViewModel.setProfileImageBase64(base64)
         }
     }
@@ -120,54 +102,9 @@ fun ManageAccountScreen(
     }
 
     var phone by remember(authState.currentUser) { mutableStateOf(authState.currentUser?.telefono ?: "") }
-    var address by remember(authState.currentUser) { mutableStateOf(authState.currentUser?.direccion ?: "") }
-
     var phoneSuccess by remember { mutableStateOf(false) }
     var phoneError by remember { mutableStateOf<String?>(null) }
     var isSavingPhone by remember { mutableStateOf(false) }
-
-    var addressSuccess by remember { mutableStateOf(false) }
-    var addressError by remember { mutableStateOf<String?>(null) }
-    var isSavingAddress by remember { mutableStateOf(false) }
-    var isLocating by remember { mutableStateOf(false) }
-
-    fun resolveLocation() {
-        isLocating = true
-        val fusedClient = LocationServices.getFusedLocationProviderClient(context)
-        val cancellationToken = CancellationTokenSource()
-        try {
-            fusedClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, cancellationToken.token)
-                .addOnSuccessListener { location ->
-                    if (location != null) {
-                        val geocoder = Geocoder(context, Locale.getDefault())
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            geocoder.getFromLocation(location.latitude, location.longitude, 1) { addresses ->
-                                address = addresses.firstOrNull()?.getAddressLine(0) ?: ""
-                                addressError = null; addressSuccess = false; isLocating = false
-                            }
-                        } else {
-                            @Suppress("DEPRECATION")
-                            val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
-                            address = addresses?.firstOrNull()?.getAddressLine(0) ?: ""
-                            addressError = null; addressSuccess = false; isLocating = false
-                        }
-                    } else isLocating = false
-                }.addOnFailureListener { isLocating = false }
-        } catch (e: SecurityException) { isLocating = false }
-    }
-
-    val locationLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
-        val granted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
-                permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
-        if (granted) resolveLocation()
-    }
-
-    fun requestOrResolveLocation() {
-        val fine = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-        val coarse = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
-        if (fine || coarse) resolveLocation()
-        else locationLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
-    }
 
     Column(
         modifier = Modifier
@@ -201,31 +138,18 @@ fun ManageAccountScreen(
         // Avatar
         Box(
             modifier = Modifier
-                .size(110.dp)
-                .clip(CircleShape)
-                .background(FondoPlaceholderZesta)
+                .size(110.dp).clip(CircleShape).background(FondoPlaceholderZesta)
                 .then(if (!isGuest) Modifier.clickable { showImageSourceDialog = true } else Modifier),
             contentAlignment = Alignment.Center
         ) {
             val bmp = profileBitmap
             if (bmp != null) {
-                Image(
-                    bitmap = bmp.asImageBitmap(),
-                    contentDescription = stringResource(R.string.accesibilidad_avatar_perfil),
-                    modifier = Modifier.size(110.dp).clip(CircleShape),
-                    contentScale = ContentScale.Crop
-                )
+                Image(bitmap = bmp.asImageBitmap(), contentDescription = stringResource(R.string.accesibilidad_avatar_perfil),
+                    modifier = Modifier.size(110.dp).clip(CircleShape), contentScale = ContentScale.Crop)
             } else {
-                Image(
-                    painter = painterResource(R.drawable.logo_zesta),
-                    contentDescription = stringResource(R.string.accesibilidad_avatar_perfil),
-                    modifier = Modifier.size(70.dp).padding(8.dp),
-                    contentScale = ContentScale.Fit
-                )
+                Image(painter = painterResource(R.drawable.logo_zesta), contentDescription = stringResource(R.string.accesibilidad_avatar_perfil),
+                    modifier = Modifier.size(70.dp).padding(8.dp), contentScale = ContentScale.Fit)
             }
-
-
-
         }
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -243,7 +167,7 @@ fun ManageAccountScreen(
                 modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
             )
 
-            // Teléfono
+            // ── Teléfono
             OutlinedTextField(
                 value = phone,
                 onValueChange = { phone = it; phoneError = null; phoneSuccess = false },
@@ -294,71 +218,40 @@ fun ManageAccountScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Dirección
-            OutlinedTextField(
-                value = address,
-                onValueChange = { address = it; addressError = null; addressSuccess = false },
-                label = { Text(stringResource(R.string.carrito_campo_direccion), color = TextoSecundarioZesta) },
-                trailingIcon = {
-                    if (address.isNotBlank()) {
-                        IconButton(onClick = {
-                            authViewModel.clearProfileField("direccion",
-                                onSuccess = { address = ""; addressSuccess = false },
-                                onError = { addressError = it })
-                        }) {
-                            Icon(Icons.Outlined.Delete, contentDescription = stringResource(R.string.gestionar_cuenta_eliminar), tint = TextoSecundarioZesta)
-                        }
-                    }
-                },
-                singleLine = true, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(14.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = FondoTarjetaRestauranteZesta, unfocusedContainerColor = FondoTarjetaRestauranteZesta,
-                    focusedBorderColor = NaranjaZesta, unfocusedBorderColor = BordeCirculoZesta,
-                    cursorColor = NegroZesta, focusedTextColor = TextoPrincipalZesta, unfocusedTextColor = TextoPrincipalZesta
-                )
-            )
-
+            // ── ✅ Dirección — botón que abre el sheet completo
+            val direccionActiva = authState.currentUser?.direccion
             Row(
-                modifier = Modifier.fillMaxWidth().padding(top = 8.dp).clip(RoundedCornerShape(14.dp))
-                    .background(FondoTarjetaRestauranteZesta).border(1.dp, BordeCirculoZesta, RoundedCornerShape(14.dp))
-                    .clickable(enabled = !isLocating) { requestOrResolveLocation() }
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(if (!direccionActiva.isNullOrBlank()) FondoSeleccionNaranjaZesta else FondoTarjetaRestauranteZesta)
+                    .border(
+                        width = if (!direccionActiva.isNullOrBlank()) 1.5.dp else 1.dp,
+                        color = if (!direccionActiva.isNullOrBlank()) NaranjaZesta else BordeCirculoZesta,
+                        shape = RoundedCornerShape(14.dp)
+                    )
+                    .clickable { showAddressSheet = true }
+                    .padding(horizontal = 16.dp, vertical = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                if (isLocating) CircularProgressIndicator(modifier = Modifier.size(18.dp), color = NaranjaZesta, strokeWidth = 2.dp)
-                else Icon(Icons.Outlined.NearMe, contentDescription = null, tint = NaranjaZesta, modifier = Modifier.size(18.dp))
+                Icon(Icons.Outlined.LocationOn, null, tint = NaranjaZesta, modifier = Modifier.size(20.dp))
                 Text(
-                    text = if (isLocating) stringResource(R.string.inicio_sheet_localizando) else stringResource(R.string.inicio_sheet_ubicacion_actual),
-                    style = MaterialTheme.typography.bodyMedium, color = NaranjaZesta, fontWeight = FontWeight.SemiBold
+                    text = if (!direccionActiva.isNullOrBlank()) direccionActiva else stringResource(R.string.inicio_direccion),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = if (!direccionActiva.isNullOrBlank()) NaranjaZesta else TextoPrincipalZesta,
+                    fontWeight = if (!direccionActiva.isNullOrBlank()) FontWeight.SemiBold else FontWeight.Normal,
+                    modifier = Modifier.weight(1f),
+                    maxLines = 2
                 )
+                Icon(Icons.Outlined.Edit, null, tint = NaranjaZesta, modifier = Modifier.size(18.dp))
             }
 
-            addressError?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error) }
-            if (addressSuccess) Text(stringResource(R.string.gestionar_cuenta_guardado_ok), style = MaterialTheme.typography.bodySmall, color = NaranjaZesta)
+            Spacer(modifier = Modifier.height(28.dp))
+            HorizontalDivider(color = BordeCirculoZesta)
+            Spacer(modifier = Modifier.height(28.dp))
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Box(
-                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(28.dp))
-                    .background(brush = Brush.horizontalGradient(colors = listOf(AzulInicioGradienteZesta, AzulFinGradienteZesta)))
-                    .border(2.dp, BordeBotonZesta, RoundedCornerShape(28.dp))
-                    .clickable(enabled = !isSavingAddress) {
-                        if (address.isBlank()) { addressError = errorDireccion; return@clickable }
-                        isSavingAddress = true
-                        authViewModel.updateProfile(
-                            telefono = authState.currentUser?.telefono.orEmpty(), direccion = address,
-                            onSuccess = { isSavingAddress = false; addressSuccess = true },
-                            onError = { isSavingAddress = false; addressError = it }
-                        )
-                    }.padding(vertical = 14.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = if (isSavingAddress) stringResource(R.string.carrito_guardando) else stringResource(R.string.gestionar_cuenta_guardar_direccion),
-                    color = BlancoZesta, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold
-                )
-            }
+            ChangePasswordSection()
 
             Spacer(modifier = Modifier.height(28.dp))
             HorizontalDivider(color = BordeCirculoZesta)
@@ -376,6 +269,15 @@ fun ManageAccountScreen(
         )
     }
 
+    // ✅ Sheet de direcciones (mismo que en HomeScreen)
+    if (showAddressSheet) {
+        AddressBottomSheet(
+            currentUser = authState.currentUser,
+            authViewModel = authViewModel,
+            onDismiss = { showAddressSheet = false }
+        )
+    }
+
     if (showImageSourceDialog) {
         AlertDialog(
             onDismissRequest = { showImageSourceDialog = false },
@@ -387,15 +289,14 @@ fun ManageAccountScreen(
             },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    // Cámara
                     Row(
                         modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp))
                             .background(FondoZesta).border(1.dp, BordeCirculoZesta, RoundedCornerShape(14.dp))
                             .clickable {
                                 showImageSourceDialog = false
-                                val granted = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+                                val granted = ContextCompat.checkSelfPermission(context, android.Manifest.permission.CAMERA) == android.content.pm.PackageManager.PERMISSION_GRANTED
                                 if (granted) cameraLauncher.launch(cameraImageUri)
-                                else cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                                else cameraPermissionLauncher.launch(android.Manifest.permission.CAMERA)
                             }.padding(horizontal = 16.dp, vertical = 14.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -403,8 +304,6 @@ fun ManageAccountScreen(
                         Icon(Icons.Outlined.CameraAlt, null, tint = NaranjaZesta, modifier = Modifier.size(20.dp))
                         Text(stringResource(R.string.gestionar_cuenta_foto_camara), style = MaterialTheme.typography.bodyLarge, color = TextoPrincipalZesta, fontWeight = FontWeight.SemiBold)
                     }
-
-                    // Galería
                     Row(
                         modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp))
                             .background(FondoZesta).border(1.dp, BordeCirculoZesta, RoundedCornerShape(14.dp))
@@ -416,8 +315,6 @@ fun ManageAccountScreen(
                         Icon(Icons.Outlined.PhotoLibrary, null, tint = NaranjaZesta, modifier = Modifier.size(20.dp))
                         Text(stringResource(R.string.gestionar_cuenta_foto_galeria), style = MaterialTheme.typography.bodyLarge, color = TextoPrincipalZesta, fontWeight = FontWeight.SemiBold)
                     }
-
-                    // Eliminar (solo si hay foto)
                     if (profileBitmap != null) {
                         Row(
                             modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp))
@@ -440,10 +337,120 @@ fun ManageAccountScreen(
                 }
             }
         )
+    }
+}
 
+@Composable
+private fun ChangePasswordSection() {
+    val scope = rememberCoroutineScope()
+    var currentPassword by remember { mutableStateOf("") }
+    var newPassword by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
+    var successMessage by remember { mutableStateOf<String?>(null) }
+    var currentPasswordError by remember { mutableStateOf<String?>(null) }
+    var newPasswordError by remember { mutableStateOf<String?>(null) }
+    var confirmPasswordError by remember { mutableStateOf<String?>(null) }
+    val errContraseñaVacia = stringResource(R.string.intro_actual_contraseña)
+    val errMinCaracteres = stringResource(R.string.nueva_contrasena_minimo)
+    val errNoCoinciden = stringResource(R.string.contrasenas_no_coinciden)
+    val errActualIncorrecta = stringResource(R.string.contrasena_actual_incorrecta)
+
+    val fieldColors = OutlinedTextFieldDefaults.colors(
+        focusedContainerColor = FondoTarjetaRestauranteZesta, unfocusedContainerColor = FondoTarjetaRestauranteZesta,
+        focusedBorderColor = NaranjaZesta, unfocusedBorderColor = BordeCirculoZesta,
+        cursorColor = NegroZesta, focusedTextColor = TextoPrincipalZesta, unfocusedTextColor = TextoPrincipalZesta
+    )
+    val fieldShape = RoundedCornerShape(14.dp)
+
+    Text(text = stringResource(R.string.cambiar_contraseña), style = MaterialTheme.typography.titleMedium,
+        color = TextoPrincipalZesta, modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp))
+
+    if (successMessage != null) {
+        Row(
+            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp))
+                .background(FondoTarjetaRestauranteZesta).border(1.dp, BordeCirculoZesta, RoundedCornerShape(14.dp))
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Icon(Icons.Outlined.CheckCircle, null, tint = VerdeExitoZesta, modifier = Modifier.size(22.dp))
+            Text(text = stringResource(R.string.actualizar_contraseña), style = MaterialTheme.typography.bodyMedium, color = TextoPrincipalZesta)
+        }
+        return
     }
 
+    OutlinedTextField(
+        value = currentPassword, onValueChange = { currentPassword = it; currentPasswordError = null },
+        label = { Text(stringResource(R.string.actual_contraseña), color = TextoSecundarioZesta) },
+        singleLine = true, visualTransformation = PasswordVisualTransformation(),
+        modifier = Modifier.fillMaxWidth(), shape = fieldShape,
+        isError = currentPasswordError != null,
+        supportingText = if (currentPasswordError != null) {{ Text(currentPasswordError!!) }} else null,
+        colors = fieldColors
+    )
+    Spacer(modifier = Modifier.height(8.dp))
+    OutlinedTextField(
+        value = newPassword, onValueChange = { newPassword = it; newPasswordError = null },
+        label = { Text(stringResource(R.string.nueva_contraseña), color = TextoSecundarioZesta) },
+        singleLine = true, visualTransformation = PasswordVisualTransformation(),
+        modifier = Modifier.fillMaxWidth(), shape = fieldShape,
+        isError = newPasswordError != null,
+        supportingText = if (newPasswordError != null) {{ Text(newPasswordError!!) }} else null,
+        colors = fieldColors
+    )
+    Spacer(modifier = Modifier.height(8.dp))
+    OutlinedTextField(
+        value = confirmPassword, onValueChange = { confirmPassword = it; confirmPasswordError = null },
+        label = { Text(stringResource(R.string.conf_nueva_contraseña), color = TextoSecundarioZesta) },
+        singleLine = true, visualTransformation = PasswordVisualTransformation(),
+        modifier = Modifier.fillMaxWidth(), shape = fieldShape,
+        isError = confirmPasswordError != null,
+        supportingText = if (confirmPasswordError != null) {{ Text(confirmPasswordError!!) }} else null,
+        colors = fieldColors
+    )
+    Spacer(modifier = Modifier.height(12.dp))
+
+    if (isLoading) {
+        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(color = NaranjaZesta)
+        }
+    } else {
+        Box(
+            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(28.dp))
+                .background(brush = Brush.horizontalGradient(colors = listOf(AzulInicioGradienteZesta, AzulFinGradienteZesta)))
+                .border(2.dp, BordeBotonZesta, RoundedCornerShape(28.dp))
+                .clickable {
+                    var valid = true
+                    if (currentPassword.isBlank()) { currentPasswordError = errContraseñaVacia; valid = false }
+                    if (newPassword.length < 6) { newPasswordError = errMinCaracteres; valid = false }
+                    if (confirmPassword != newPassword) { confirmPasswordError = errNoCoinciden; valid = false }
+                    if (!valid) return@clickable
+                    scope.launch {
+                        isLoading = true
+                        try {
+                            val auth = FirebaseAuth.getInstance()
+                            val user = auth.currentUser
+                            val credential = EmailAuthProvider.getCredential(user?.email ?: "", currentPassword)
+                            user?.reauthenticate(credential)?.await()
+                            user?.updatePassword(newPassword)?.await()
+                            currentPassword = ""; newPassword = ""; confirmPassword = ""
+                            successMessage = "ok"
+                        } catch (e: Exception) {
+                            currentPasswordError = errActualIncorrecta
+                        }
+                        isLoading = false
+                    }
+                }
+                .padding(vertical = 14.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text = stringResource(R.string.cambiar_contraseña), color = BlancoZesta,
+                style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+        }
+    }
 }
+
 fun uriToBase64(context: Context, uri: Uri): String? {
     return try {
         val inputStream = context.contentResolver.openInputStream(uri) ?: return null
@@ -454,8 +461,5 @@ fun uriToBase64(context: Context, uri: Uri): String? {
         val baos = ByteArrayOutputStream()
         scaled.compress(Bitmap.CompressFormat.JPEG, 70, baos)
         Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP)
-    } catch (e: Exception) {
-        android.util.Log.e("ZESTA_PHOTO", "uriToBase64 error: ${e.message}")
-        null
-    }
+    } catch (e: Exception) { null }
 }

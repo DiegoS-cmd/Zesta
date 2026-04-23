@@ -21,23 +21,32 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.zesta.app.data.repository.AuthRepository
+import com.zesta.app.data.repository.CartRepository
+import com.zesta.app.data.repository.RestaurantRepository
 import com.zesta.app.data.repository.UserPreferencesRepository
 import com.zesta.app.ui.screens.cart.CartDetailScreen
 import com.zesta.app.ui.screens.cart.CartScreen
+import com.zesta.app.ui.screens.cart.DeliveryTrackingScreen
+import com.zesta.app.ui.screens.cart.OrderSuccessScreen
 import com.zesta.app.ui.screens.cart.OrderSummaryScreen
 import com.zesta.app.ui.screens.home.HomeScreen
+import com.zesta.app.ui.screens.login.BusinessContactScreen
+import com.zesta.app.ui.screens.login.ForgotPasswordScreen
 import com.zesta.app.ui.screens.login.LoginScreen
 import com.zesta.app.ui.screens.profile.FavoritesScreen
 import com.zesta.app.ui.screens.profile.ManageAccountScreen
+import com.zesta.app.ui.screens.profile.OrderHistoryScreen
 import com.zesta.app.ui.screens.profile.ProfileScreen
 import com.zesta.app.ui.screens.register.RegisterScreen
 import com.zesta.app.ui.screens.restaurant.RestaurantDetailScreen
 import com.zesta.app.ui.screens.search.SearchScreen
 import com.zesta.app.ui.theme.FondoZesta
+import com.zesta.app.utils.calcularTiempoEntregaMinutos
+import com.zesta.app.utils.geocodificarDireccionMadrid
 import com.zesta.app.viewmodel.AuthViewModel
-import com.zesta.app.ui.screens.cart.OrderSuccessScreen
-import com.zesta.app.ui.screens.login.ForgotPasswordScreen
-import com.zesta.app.ui.screens.profile.OrderHistoryScreen
+import com.zesta.app.viewmodel.CartViewModel
+import com.zesta.app.viewmodel.CartViewModelFactory
+import java.net.URLDecoder
 
 @Composable
 fun AppNavGraph() {
@@ -54,7 +63,10 @@ fun AppNavGraph() {
     )
 
     val uiState by authViewModel.uiState.collectAsState()
-
+    val cartRepository = remember { CartRepository() }
+    val cartViewModel: CartViewModel = viewModel(
+        factory = CartViewModelFactory(repository = cartRepository)
+    )
 
     val googleSignInClient = remember {
         com.google.android.gms.auth.api.signin.GoogleSignIn.getClient(
@@ -67,7 +79,6 @@ fun AppNavGraph() {
                 .build()
         )
     }
-
 
     val googleLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -100,6 +111,7 @@ fun AppNavGraph() {
             android.util.Log.e("GOOGLE_LOGIN", "Excepción: ${e.message}")
         }
     }
+
     NavHost(
         navController = navController,
         startDestination = AppRoutes.Splash.route
@@ -107,23 +119,18 @@ fun AppNavGraph() {
         composable(AppRoutes.Splash.route) {
             LaunchedEffect(uiState.isSessionChecked) {
                 if (!uiState.isSessionChecked) return@LaunchedEffect
-
                 val destination = if (uiState.isLoggedIn || uiState.isGuest) {
                     AppRoutes.Home.route
                 } else {
                     AppRoutes.Login.route
                 }
-
                 navController.navigate(destination) {
                     popUpTo(AppRoutes.Splash.route) { inclusive = true }
                     launchSingleTop = true
                 }
             }
-
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(FondoZesta),
+                modifier = Modifier.fillMaxSize().background(FondoZesta),
                 contentAlignment = Alignment.Center
             ) {}
         }
@@ -149,6 +156,7 @@ fun AppNavGraph() {
                         }
                     }
                 },
+                onEresEmpresa = { navController.navigate("business_contact") },
                 onGoRegister = { navController.navigate(AppRoutes.Register.route) },
                 onContinueAsGuestClick = {
                     authViewModel.continueAsGuest {
@@ -159,6 +167,10 @@ fun AppNavGraph() {
                     }
                 }
             )
+        }
+
+        composable("business_contact") {
+            BusinessContactScreen(onBack = { navController.popBackStack() })
         }
 
         composable("forgot_password") {
@@ -203,7 +215,6 @@ fun AppNavGraph() {
             )
         }
 
-
         composable(AppRoutes.Search.route) {
             SearchScreen(
                 authViewModel = authViewModel,
@@ -218,6 +229,7 @@ fun AppNavGraph() {
 
         composable(AppRoutes.Cart.route) {
             CartScreen(
+                cartViewModel = cartViewModel,
                 authViewModel = authViewModel,
                 onHomeClick = { navController.navigate(AppRoutes.Home.route) },
                 onSearchClick = { navController.navigate(AppRoutes.Search.route) },
@@ -229,6 +241,7 @@ fun AppNavGraph() {
                 }
             )
         }
+
         composable(
             route = AppRoutes.OrderSummary.route,
             arguments = listOf(navArgument("restaurantId") { type = NavType.IntType })
@@ -238,14 +251,16 @@ fun AppNavGraph() {
                 restaurantId = restaurantId,
                 authViewModel = authViewModel,
                 onBack = { navController.popBackStack() },
-                onOrderPlaced = { showRating ->  // ← recibe el boolean
-                    navController.navigate(AppRoutes.OrderSuccess.createRoute(showRating)) {
+                cartViewModel = cartViewModel,
+                onOrderPlaced = { rId, totalMinutes, rName ->
+                    navController.navigate(
+                        AppRoutes.DeliveryTracking.createRoute(rId, totalMinutes, rName)
+                    ) {
                         popUpTo(AppRoutes.Cart.route) { inclusive = true }
                     }
                 }
             )
         }
-
 
         composable(
             route = AppRoutes.OrderSuccess.route,
@@ -262,6 +277,48 @@ fun AppNavGraph() {
             )
         }
 
+        composable(
+            route = AppRoutes.DeliveryTracking.route,
+            arguments = listOf(
+                navArgument("restaurantId") { type = NavType.IntType },
+                navArgument("totalMinutes") { type = NavType.IntType },
+                navArgument("restaurantName") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val restaurantId = backStackEntry.arguments?.getInt("restaurantId") ?: return@composable
+            val totalMinutes = backStackEntry.arguments?.getInt("totalMinutes") ?: 30
+            // ← Decode necesario porque el nombre puede tener espacios/tildes
+            val restaurantName = URLDecoder.decode(
+                backStackEntry.arguments?.getString("restaurantName") ?: "",
+                "UTF-8"
+            )
+
+            val restaurant = RestaurantRepository.getRestaurantById(restaurantId)
+            val authState by authViewModel.uiState.collectAsState()
+            val direccion = authState.currentUser?.direccion.orEmpty()
+            val (userLat, userLon) = remember(direccion) {
+                geocodificarDireccionMadrid(direccion)
+            }
+
+            DeliveryTrackingScreen(
+                restaurantId = restaurantId,
+                totalMinutes = totalMinutes,
+                restaurantName = restaurantName,
+                restaurantLat = restaurant?.latitude ?: 40.4168,
+                restaurantLon = restaurant?.longitude ?: -3.7038,
+                userLat = userLat,
+                userLon = userLon,
+                onBack = {
+                    navController.popBackStack()
+                },
+                onFinished = {
+                    navController.navigate(AppRoutes.Home.route) {
+                        popUpTo(AppRoutes.Home.route) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
 
         composable(AppRoutes.Profile.route) {
             ProfileScreen(
@@ -272,9 +329,7 @@ fun AppNavGraph() {
                 onSearchClick = { navController.navigate(AppRoutes.Search.route) },
                 onCartClick = { navController.navigate(AppRoutes.Cart.route) },
                 onFavoritesClick = { navController.navigate(AppRoutes.Favorites.route) },
-                onOrderHistoryClick = {
-                    navController.navigate(AppRoutes.OrderHistory.route)
-                },
+                onOrderHistoryClick = { navController.navigate(AppRoutes.OrderHistory.route) },
                 onHelpClick = { },
                 onPrivacyClick = { },
                 onAccessibilityClick = { },
@@ -302,6 +357,7 @@ fun AppNavGraph() {
                 }
             )
         }
+
         composable(AppRoutes.Favorites.route) {
             FavoritesScreen(
                 authViewModel = authViewModel,
@@ -311,6 +367,7 @@ fun AppNavGraph() {
                 }
             )
         }
+
         composable(AppRoutes.OrderHistory.route) {
             OrderHistoryScreen(
                 onBack = { navController.popBackStack() }
@@ -337,6 +394,7 @@ fun AppNavGraph() {
         ) { backStackEntry ->
             val restaurantId = backStackEntry.arguments?.getInt("restaurantId") ?: 0
             CartDetailScreen(
+                cartViewModel = cartViewModel,
                 authViewModel = authViewModel,
                 restaurantId = restaurantId,
                 onBack = { navController.popBackStack() },
@@ -348,9 +406,8 @@ fun AppNavGraph() {
                 },
                 onGoToOrderSummary = {
                     navController.navigate(AppRoutes.OrderSummary.createRoute(restaurantId))
-                },
+                }
             )
         }
     }
 }
-
