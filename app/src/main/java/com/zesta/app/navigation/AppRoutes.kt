@@ -10,23 +10,40 @@ sealed class AppRoutes(val route: String) {
     object CartDetail : AppRoutes("cart_detail/{restaurantId}") {
         fun createRoute(restaurantId: Int) = "cart_detail/$restaurantId"
     }
+
     object Profile : AppRoutes("profile")
     object ManageAccount : AppRoutes("manage_account")
     object RestaurantDetail : AppRoutes("restaurant_detail/{restaurantId}") {
         fun createRoute(restaurantId: Int) = "restaurant_detail/$restaurantId"
     }
+
     object Favorites : AppRoutes("favorites")
     object OrderSummary : AppRoutes("order_summary/{restaurantId}") {
         fun createRoute(restaurantId: Int) = "order_summary/$restaurantId"
     }
+
     object OrderHistory : AppRoutes("order_history")
     object OrderSuccess : AppRoutes("order_success/{showRating}") {
         fun createRoute(showRating: Boolean) = "order_success/$showRating"
     }
-    object DeliveryTracking : AppRoutes("delivery_tracking/{restaurantId}/{totalMinutes}/{restaurantName}") {
-        fun createRoute(restaurantId: Int, totalMinutes: Int, restaurantName: String): String {
-            val encodedName = java.net.URLEncoder.encode(restaurantName, "UTF-8")
-            return "delivery_tracking/$restaurantId/$totalMinutes/$encodedName"
+
+    object DeliveryTracking : AppRoutes(
+        "delivery_tracking/{restaurantId}/{totalMinutes}/{restaurantName}/{restaurantStreet}/{userStreet}"
+    ) {
+        fun createRoute(
+            restaurantId: Int,
+            totalMinutes: Int,
+            restaurantName: String,
+            restaurantStreet: String,
+            userStreet: String
+        ): String {
+            return "delivery_tracking/$restaurantId/$totalMinutes/${
+                android.net.Uri.encode(restaurantName)
+            }/${
+                android.net.Uri.encode(restaurantStreet)
+            }/${
+                android.net.Uri.encode(userStreet)
+            }"
         }
     }
 }

@@ -10,7 +10,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -22,7 +21,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.zesta.app.data.repository.AuthRepository
 import com.zesta.app.data.repository.CartRepository
-import com.zesta.app.data.repository.RestaurantRepository
 import com.zesta.app.data.repository.UserPreferencesRepository
 import com.zesta.app.ui.screens.cart.CartDetailScreen
 import com.zesta.app.ui.screens.cart.CartScreen
@@ -41,19 +39,14 @@ import com.zesta.app.ui.screens.register.RegisterScreen
 import com.zesta.app.ui.screens.restaurant.RestaurantDetailScreen
 import com.zesta.app.ui.screens.search.SearchScreen
 import com.zesta.app.ui.theme.FondoZesta
-import com.zesta.app.utils.calcularTiempoEntregaMinutos
-import com.zesta.app.utils.geocodificarDireccionMadrid
 import com.zesta.app.viewmodel.AuthViewModel
 import com.zesta.app.viewmodel.CartViewModel
 import com.zesta.app.viewmodel.CartViewModelFactory
-import java.net.URLDecoder
 
 @Composable
 fun AppNavGraph() {
     val navController = rememberNavController()
     val context = LocalContext.current
-    val preferencesRepository = remember { UserPreferencesRepository(context) }
-    val scope = rememberCoroutineScope()
 
     val authViewModel: AuthViewModel = viewModel(
         factory = AuthViewModel.factory(
@@ -130,7 +123,9 @@ fun AppNavGraph() {
                 }
             }
             Box(
-                modifier = Modifier.fillMaxSize().background(FondoZesta),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(FondoZesta),
                 contentAlignment = Alignment.Center
             ) {}
         }
@@ -241,27 +236,32 @@ fun AppNavGraph() {
                 }
             )
         }
-
         composable(
             route = AppRoutes.OrderSummary.route,
             arguments = listOf(navArgument("restaurantId") { type = NavType.IntType })
         ) { backStackEntry ->
             val restaurantId = backStackEntry.arguments?.getInt("restaurantId") ?: 0
+
             OrderSummaryScreen(
                 restaurantId = restaurantId,
                 authViewModel = authViewModel,
                 onBack = { navController.popBackStack() },
                 cartViewModel = cartViewModel,
-                onOrderPlaced = { rId, totalMinutes, rName ->
+                onOrderPlaced = { rId, totalMinutes, rName, rStreet, uStreet ->
                     navController.navigate(
-                        AppRoutes.DeliveryTracking.createRoute(rId, totalMinutes, rName)
+                        AppRoutes.DeliveryTracking.createRoute(
+                            rId,
+                            totalMinutes,
+                            rName,
+                            rStreet,
+                            uStreet
+                        )
                     ) {
-                        popUpTo(AppRoutes.Cart.route) { inclusive = true }
+                        launchSingleTop = true
                     }
                 }
             )
         }
-
         composable(
             route = AppRoutes.OrderSuccess.route,
             arguments = listOf(navArgument("showRating") { type = NavType.BoolType })
@@ -282,34 +282,26 @@ fun AppNavGraph() {
             arguments = listOf(
                 navArgument("restaurantId") { type = NavType.IntType },
                 navArgument("totalMinutes") { type = NavType.IntType },
-                navArgument("restaurantName") { type = NavType.StringType }
+                navArgument("restaurantName") { type = NavType.StringType },
+                navArgument("restaurantStreet") { type = NavType.StringType },
+                navArgument("userStreet") { type = NavType.StringType }
             )
         ) { backStackEntry ->
-            val restaurantId = backStackEntry.arguments?.getInt("restaurantId") ?: return@composable
-            val totalMinutes = backStackEntry.arguments?.getInt("totalMinutes") ?: 30
-            // ← Decode necesario porque el nombre puede tener espacios/tildes
-            val restaurantName = URLDecoder.decode(
-                backStackEntry.arguments?.getString("restaurantName") ?: "",
-                "UTF-8"
-            )
-
-            val restaurant = RestaurantRepository.getRestaurantById(restaurantId)
-            val authState by authViewModel.uiState.collectAsState()
-            val direccion = authState.currentUser?.direccion.orEmpty()
-            val (userLat, userLon) = remember(direccion) {
-                geocodificarDireccionMadrid(direccion)
-            }
+            val restaurantName = backStackEntry.arguments?.getString("restaurantName").orEmpty()
+            val restaurantStreet = backStackEntry.arguments?.getString("restaurantStreet").orEmpty()
+            val userStreet = backStackEntry.arguments?.getString("userStreet").orEmpty()
 
             DeliveryTrackingScreen(
-                restaurantId = restaurantId,
-                totalMinutes = totalMinutes,
+                restaurantId = backStackEntry.arguments?.getInt("restaurantId") ?: 0,
+                totalMinutes = backStackEntry.arguments?.getInt("totalMinutes") ?: 30,
                 restaurantName = restaurantName,
-                restaurantLat = restaurant?.latitude ?: 40.4168,
-                restaurantLon = restaurant?.longitude ?: -3.7038,
-                userLat = userLat,
-                userLon = userLon,
-                onBack = {
-                    navController.popBackStack()
+                restaurantStreet = restaurantStreet,
+                userStreet = userStreet,
+                onGoHome = {
+                    navController.navigate(AppRoutes.Home.route) {
+                        popUpTo(AppRoutes.Home.route) { inclusive = true }
+                        launchSingleTop = true
+                    }
                 },
                 onFinished = {
                     navController.navigate(AppRoutes.Home.route) {
@@ -318,8 +310,7 @@ fun AppNavGraph() {
                     }
                 }
             )
-        }
-
+}
         composable(AppRoutes.Profile.route) {
             ProfileScreen(
                 authViewModel = authViewModel,

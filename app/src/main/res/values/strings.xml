@@ -393,4 +393,7 @@
     <string name="tracking_fase_entregado">Entregado</string>
     <string name="tracking_entregado_titulo">¡Pedido entregado!</string>
     <string name="tracking_entregado_subtitulo">¡Que lo disfrutes!</string>
+    <string name="tracking_seguimiento">Seguimiento del pedido</string>
+    <string name="tracking_inicio">Volver a inicio</string>
+    <string name="tracking_casa">Mi casa</string>
 </resources>

@@ -70,6 +70,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.text)
     implementation(libs.androidx.compose.runtime)
     implementation(libs.osmdroid.android)
+    implementation(libs.androidx.ui)
 
 
     testImplementation(libs.junit)

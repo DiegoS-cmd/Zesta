@@ -24,6 +24,7 @@ uiGraphics = "1.10.6"
 firebaseStorageKtx = "22.0.1"
 uiText = "1.10.6"
 runtime = "1.11.0"
+ui = "1.11.0"
 
 [libraries]
 androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
@@ -63,6 +64,7 @@ com-google-firebase-firebase-storage-ktx = { group = "com.google.firebase", name
 androidx-compose-ui-text = { group = "androidx.compose.ui", name = "ui-text", version.ref = "uiText" }
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtime" }
 play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
+androidx-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "ui" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -55,14 +55,11 @@ import androidx.compose.ui.unit.dp
 import com.zesta.app.R
 import com.zesta.app.data.model.CartItem
 import com.zesta.app.data.model.Order
-import com.zesta.app.data.repository.CartRepository
 import com.zesta.app.data.repository.OrderRepository
 import com.zesta.app.data.repository.PROMO_CODES
 import com.zesta.app.data.repository.RestaurantRepository
 import com.zesta.app.ui.screens.restaurant.PromoType
 import com.zesta.app.ui.theme.*
-import com.zesta.app.utils.calcularTiempoEntregaMinutos
-import com.zesta.app.utils.geocodificarDireccionMadrid
 import com.zesta.app.viewmodel.AuthViewModel
 import com.zesta.app.viewmodel.CartViewModel
 import kotlinx.coroutines.launch
@@ -73,7 +70,13 @@ fun OrderSummaryScreen(
     restaurantId: Int,
     onBack: () -> Unit,
     cartViewModel: CartViewModel,
-    onOrderPlaced: (restaurantId: Int, totalMinutes: Int, restaurantName: String) -> Unit,
+    onOrderPlaced: (
+        restaurantId: Int,
+        totalMinutes: Int,
+        restaurantName: String,
+        restaurantStreet: String,
+        userStreet: String
+    ) -> Unit,
     authViewModel: AuthViewModel
 ) {
     val errorCarritoVacio = stringResource(R.string.pedido_error_carrito_vacio)
@@ -121,11 +124,7 @@ fun OrderSummaryScreen(
     val address = authState.currentUser?.direccion.orEmpty()
     val canPlaceOrder = items.isNotEmpty() && address.isNotBlank() && !isPlacingOrder
 
-    LaunchedEffect(uiState.isLoading, cartGroup) {
-        if (!uiState.isLoading && cartGroup == null) {
-            onBack()
-        }
-    }
+
 
     if (showPromoDialog) {
         PromoCodeDialog(
@@ -674,14 +673,17 @@ fun OrderSummaryScreen(
                                     val result = orderRepository.placeOrder(order)
                                     if (result.isSuccess) {
                                         cartViewModel.clearCartByRestaurant(restaurantId)
-                                        val (uLat, uLon) = geocodificarDireccionMadrid(address)
-                                        val totalMinutes = calcularTiempoEntregaMinutos(
-                                            restaurantLat = restaurant?.latitude ?: 40.4168,
-                                            restaurantLon = restaurant?.longitude ?: -3.7038,
-                                            userLat = uLat,
-                                            userLon = uLon
+
+                                        val totalMinutes = 30
+                                        val restaurantStreet = restaurant?.address.orEmpty()
+
+                                        onOrderPlaced(
+                                            restaurantId,
+                                            totalMinutes,
+                                            resolvedRestaurantName,
+                                            restaurantStreet,
+                                            address
                                         )
-                                        onOrderPlaced(restaurantId, totalMinutes, resolvedRestaurantName)
                                     } else {
                                         snackbarHostState.showSnackbar(
                                             result.exceptionOrNull()?.message ?: errorPedidoFallo
