@@ -13,7 +13,7 @@ object RestaurantRepository {
             hasFreeDelivery = true, deliveryFee = null, deliveryTimeMinutes = 20,
             ratingValue = 4.4, ratingCount = 170, imageRes = R.drawable.bk,
             categories = listOf("Hamburguesas"),
-            address = "Calle de Alcalá, 120",
+            addressRes = R.string.direccion_burger,
             products = listOf(
                 Product(id = 1, nameRes = R.string.producto_whopper, price = 8.25, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.whopper, imageKey = "whopper"),
                 Product(id = 2, nameRes = R.string.producto_chili_cheese, price = 10.50, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.chilicheese, imageKey = "chilicheese"),
@@ -26,7 +26,7 @@ object RestaurantRepository {
             hasFreeDelivery = true, deliveryFee = null, deliveryTimeMinutes = 25,
             ratingValue = 4.2, ratingCount = 320, imageRes = R.drawable.dominos,
             categories = listOf("Pizzas"),
-            address = "Gran Vía, 45",
+            addressRes = R.string.direccion_dominos,
             products = listOf(
                 Product(id = 5, nameRes = R.string.producto_pizza_carbonara, price = 12.95, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.dominos, imageKey = "dominos"),
                 Product(id = 6, nameRes = R.string.producto_pizza_pepperoni, price = 13.50, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.dominos, imageKey = "dominos"),
@@ -40,7 +40,7 @@ object RestaurantRepository {
             ratingValue = 4.8, ratingCount = 70, imageRes = R.drawable.wingstop,
             promoTextRes = R.string.promocion_compra_una_llevate_otra,
             categories = listOf("Hamburguesas", "Americana"),
-            address = "Paseo de la Castellana, 78",
+            addressRes = R.string.direccion_wingstop,
             products = listOf(
                 Product(id = 9, nameRes = R.string.producto_alitas_bbq, price = 9.95, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.wingstop, imageKey = "wingstop", promoType = PromoType.DOS_POR_UNO),
                 Product(id = 10, nameRes = R.string.producto_combo_wings, price = 12.50, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.wingstop, imageKey = "wingstop", promoType = PromoType.DOS_POR_UNO),
@@ -53,8 +53,7 @@ object RestaurantRepository {
             hasFreeDelivery = true, deliveryFee = null, deliveryTimeMinutes = 15,
             ratingValue = 4.1, ratingCount = 512, imageRes = R.drawable.mcdonalds,
             promoTextRes = R.string.promocion_2x1,
-            categories = listOf("Hamburguesas"),
-            address = "Puerta del Sol, 12",
+            addressRes = R.string.direccion_mcdonalds,
             products = listOf(
                 Product(id = 13, nameRes = R.string.producto_big_mac, price = 7.50, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.mcdonalds, imageKey = "mcdonalds", promoType = PromoType.DOS_POR_UNO),
                 Product(id = 14, nameRes = R.string.producto_mcnuggets, price = 6.95, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.mcdonalds, imageKey = "mcdonalds", promoType = PromoType.DOS_POR_UNO),
@@ -67,7 +66,7 @@ object RestaurantRepository {
             hasFreeDelivery = false, deliveryFee = 1.99, deliveryTimeMinutes = 25,
             ratingValue = 4.3, ratingCount = 248, imageRes = R.drawable.kfc,
             categories = listOf("Hamburguesas", "Americana"),
-            address = "Calle de Preciados, 23",
+            addressRes = R.string.direccion_kfc,
             products = listOf(
                 Product(id = 17, nameRes = R.string.producto_bucket_kfc, price = 14.95, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.kfc, imageKey = "kfc"),
                 Product(id = 18, nameRes = R.string.producto_twister_kfc, price = 6.50, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.kfc, imageKey = "kfc"),
@@ -81,7 +80,7 @@ object RestaurantRepository {
             ratingValue = 4.0, ratingCount = 189, imageRes = R.drawable.subway,
             promoTextRes = R.string.promocion_envio_gratis,
             categories = listOf("Panadería"),
-            address = "Calle de Fuencarral, 89",
+            addressRes = R.string.direccion_subway,
             products = listOf(
                 Product(id = 21, nameRes = R.string.producto_sub_italiano, price = 7.95, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.subway, imageKey = "subway"),
                 Product(id = 22, nameRes = R.string.producto_sub_pollo, price = 8.50, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.subway, imageKey = "subway"),
@@ -94,7 +93,7 @@ object RestaurantRepository {
             hasFreeDelivery = false, deliveryFee = 2.99, deliveryTimeMinutes = 30,
             ratingValue = 3.9, ratingCount = 410, imageRes = R.drawable.telepizza,
             categories = listOf("Pizzas"),
-            address = "Calle de Atocha, 56",
+            addressRes = R.string.direccion_telepizza,
             products = listOf(
                 Product(id = 25, nameRes = R.string.producto_pizza_barbacoa, price = 11.95, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.telepizza, imageKey = "telepizza"),
                 Product(id = 26, nameRes = R.string.producto_pizza_4quesos, price = 12.50, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.telepizza, imageKey = "telepizza"),
@@ -108,7 +107,7 @@ object RestaurantRepository {
             ratingValue = 4.2, ratingCount = 155, imageRes = R.drawable.papajohns,
             promoTextRes = R.string.promocion_descuento_20,
             categories = listOf("Pizzas"),
-            address = "Calle de Toledo, 34",
+            addressRes = R.string.direccion_papajohns,
             products = listOf(
                 Product(id = 29, nameRes = R.string.producto_pizza_garden, price = 12.95, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.papajohns, imageKey = "papajohns", promoType = PromoType.DESCUENTO_20),
                 Product(id = 30, nameRes = R.string.producto_pizza_hawaiana, price = 11.50, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.papajohns, imageKey = "papajohns", promoType = PromoType.DESCUENTO_20),
@@ -121,7 +120,7 @@ object RestaurantRepository {
             hasFreeDelivery = false, deliveryFee = 1.50, deliveryTimeMinutes = 22,
             ratingValue = 4.5, ratingCount = 93, imageRes = R.drawable.tacobell,
             categories = listOf("Mexicana"),
-            address = "Calle de Montera, 15",
+            addressRes = R.string.direccion_tacobell,
             products = listOf(
                 Product(id = 33, nameRes = R.string.producto_crunchwrap, price = 5.95, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.tacobell, imageKey = "tacobell"),
                 Product(id = 34, nameRes = R.string.producto_nachos_bell, price = 6.50, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.tacobell, imageKey = "tacobell"),
@@ -135,7 +134,7 @@ object RestaurantRepository {
             ratingValue = 4.0, ratingCount = 207, imageRes = R.drawable.dunkin,
             promoTextRes = R.string.promocion_envio_gratis,
             categories = listOf("Desayuno", "Panadería"),
-            address = "Calle de Hortaleza, 67",
+            addressRes = R.string.direccion_dunkin,
             products = listOf(
                 Product(id = 37, nameRes = R.string.producto_donut_clasico, price = 2.50, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.dunkin, imageKey = "dunkin"),
                 Product(id = 38, nameRes = R.string.producto_cafe_americano, price = 3.20, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.dunkin, imageKey = "dunkin"),
@@ -148,7 +147,7 @@ object RestaurantRepository {
             hasFreeDelivery = false, deliveryFee = 2.50, deliveryTimeMinutes = 20,
             ratingValue = 4.6, ratingCount = 341, imageRes = R.drawable.starbucks,
             categories = listOf("Desayuno", "Panadería"),
-            address = "Plaza Mayor, 8",
+            addressRes = R.string.direccion_starbucks,
             products = listOf(
                 Product(id = 41, nameRes = R.string.producto_frappuccino, price = 6.50, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.starbucks, imageKey = "starbucks"),
                 Product(id = 42, nameRes = R.string.producto_latte, price = 4.95, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.starbucks, imageKey = "starbucks"),
@@ -162,7 +161,7 @@ object RestaurantRepository {
             ratingValue = 4.7, ratingCount = 118, imageRes = R.drawable.fiveguys,
             promoTextRes = R.string.promocion_2x1,
             categories = listOf("Hamburguesas"),
-            address = "Calle de Serrano, 102",
+            addressRes = R.string.direccion_fiveguys,
             products = listOf(
                 Product(id = 45, nameRes = R.string.producto_burger_fiveguys, price = 12.95, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.fiveguys, imageKey = "fiveguys", promoType = PromoType.DOS_POR_UNO),
                 Product(id = 46, nameRes = R.string.producto_hotdog_fiveguys, price = 8.50, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.fiveguys, imageKey = "fiveguys", promoType = PromoType.DOS_POR_UNO),
@@ -175,7 +174,7 @@ object RestaurantRepository {
             hasFreeDelivery = true, deliveryFee = null, deliveryTimeMinutes = 35,
             ratingValue = 4.3, ratingCount = 86, imageRes = R.drawable.fosters,
             categories = listOf("Hamburguesas", "Americana"),
-            address = "Calle de Goya, 89",
+            addressRes = R.string.direccion_foster,
             products = listOf(
                 Product(id = 49, nameRes = R.string.producto_costillas_fosters, price = 16.95, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.fosters, imageKey = "fosters"),
                 Product(id = 50, nameRes = R.string.producto_burger_fosters, price = 11.50, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.fosters, imageKey = "fosters"),
@@ -189,7 +188,7 @@ object RestaurantRepository {
             ratingValue = 4.1, ratingCount = 143, imageRes = R.drawable.ginos,
             promoTextRes = R.string.promocion_descuento_20,
             categories = listOf("Pizzas"),
-            address = "Calle de Velázquez, 45",
+            addressRes = R.string.direccion_ginos,
             products = listOf(
                 Product(id = 53, nameRes = R.string.producto_pizza_ginos, price = 13.95, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.ginos, imageKey = "ginos", promoType = PromoType.DESCUENTO_20),
                 Product(id = 54, nameRes = R.string.producto_pasta_ginos, price = 10.50, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.ginos, imageKey = "ginos", promoType = PromoType.DESCUENTO_20),
@@ -202,7 +201,7 @@ object RestaurantRepository {
             hasFreeDelivery = true, deliveryFee = null, deliveryTimeMinutes = 25,
             ratingValue = 4.2, ratingCount = 201, imageRes = R.drawable.vips,
             categories = listOf("Desayuno", "Americana"),
-            address = "Paseo de Recoletos, 23",
+            addressRes = R.string.direccion_vips,
             products = listOf(
                 Product(id = 57, nameRes = R.string.producto_club_sandwich, price = 10.95, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.vips, imageKey = "vips"),
                 Product(id = 58, nameRes = R.string.producto_pancakes_vips, price = 8.50, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.vips, imageKey = "vips"),
@@ -216,7 +215,7 @@ object RestaurantRepository {
             ratingValue = 4.4, ratingCount = 377, imageRes = R.drawable.montaditos,
             promoTextRes = R.string.promocion_2x1,
             categories = listOf("Panadería"),
-            address = "Calle de Espoz y Mina, 9",
+            addressRes = R.string.direccion_100mon,
             products = listOf(
                 Product(id = 61, nameRes = R.string.producto_montadito_lomo, price = 1.50, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.montaditos, imageKey = "montaditos", promoType = PromoType.DOS_POR_UNO),
                 Product(id = 62, nameRes = R.string.producto_montadito_tortilla, price = 1.50, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.montaditos, imageKey = "montaditos", promoType = PromoType.DOS_POR_UNO),
@@ -229,7 +228,7 @@ object RestaurantRepository {
             hasFreeDelivery = false, deliveryFee = 2.99, deliveryTimeMinutes = 30,
             ratingValue = 4.7, ratingCount = 132, imageRes = R.drawable.goiko,
             categories = listOf("Hamburguesas"),
-            address = "Calle de Jorge Juan, 34",
+            addressRes = R.string.direccion_goiko,
             products = listOf(
                 Product(id = 65, nameRes = R.string.producto_burger_goiko, price = 13.95, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.goiko, imageKey = "goiko"),
                 Product(id = 66, nameRes = R.string.producto_smash_goiko, price = 12.50, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.goiko, imageKey = "goiko"),
@@ -243,7 +242,7 @@ object RestaurantRepository {
             ratingValue = 4.6, ratingCount = 89, imageRes = R.drawable.sushishop,
             promoTextRes = R.string.promocion_envio_gratis,
             categories = listOf("Asiática"),
-            address = "Calle de Claudio Coello, 78",
+            addressRes = R.string.direccion_sushi,
             products = listOf(
                 Product(id = 69, nameRes = R.string.producto_california_roll, price = 9.95, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.sushishop, imageKey = "sushishop"),
                 Product(id = 70, nameRes = R.string.producto_salmon_nigiri, price = 7.50, descriptionRes = R.string.producto_descripcion_generica, imageRes = R.drawable.sushishop, imageKey = "sushishop"),

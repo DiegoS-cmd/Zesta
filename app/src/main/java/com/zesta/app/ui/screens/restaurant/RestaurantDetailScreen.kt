@@ -136,7 +136,7 @@ fun RestaurantDetailScreen(
         }
     }
 
-    val restaurantName = context.getString(restaurant.nameRes)
+    val restaurantName = stringResource(restaurant.nameRes)
     val restaurantImageName = context.resources.getResourceEntryName(restaurant.imageRes)
     val currentRestaurantCart = uiState.carts.firstOrNull { it.cart.restaurantId == restaurant.id }
 
@@ -521,30 +521,57 @@ private fun RestaurantTopBar(
 private fun RestaurantHeader(restaurant: Restaurant) {
     val restaurantName = stringResource(restaurant.nameRes)
     val ratingText = stringResource(R.string.restaurante_valoracion, restaurant.ratingValue, restaurant.ratingCount)
+    val addressText = stringResource(restaurant.addressRes)
 
-    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Image(
             painter = painterResource(restaurant.imageRes),
             contentDescription = restaurantName,
-            modifier = Modifier.size(160.dp).clip(RoundedCornerShape(24.dp)),
+            modifier = Modifier
+                .size(160.dp)
+                .clip(RoundedCornerShape(24.dp)),
             contentScale = ContentScale.Fit
         )
         Spacer(modifier = Modifier.height(8.dp))
         Image(
             painter = painterResource(restaurant.imageRes),
             contentDescription = restaurantName,
-            modifier = Modifier.size(52.dp).clip(CircleShape).border(2.dp, BordeIconoZesta, CircleShape),
+            modifier = Modifier
+                .size(52.dp)
+                .clip(CircleShape)
+                .border(2.dp, BordeIconoZesta, CircleShape),
             contentScale = ContentScale.Crop
         )
         Spacer(modifier = Modifier.height(10.dp))
-        Text(text = restaurantName, style = MaterialTheme.typography.titleLarge, color = TextoPrincipalZesta, fontWeight = FontWeight.Normal)
+        Text(
+            text = restaurantName,
+            style = MaterialTheme.typography.titleLarge,
+            color = TextoPrincipalZesta,
+            fontWeight = FontWeight.Normal
+        )
         Spacer(modifier = Modifier.height(4.dp))
-        Text(text = ratingText, style = MaterialTheme.typography.bodyMedium, color = TextoResenaZesta)
+        Text(
+            text = ratingText,
+            style = MaterialTheme.typography.bodyMedium,
+            color = TextoResenaZesta
+        )
         Spacer(modifier = Modifier.height(8.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(imageVector = Icons.Outlined.LocationOn, contentDescription = stringResource(R.string.restaurante_ubicacion), tint = ColorUbicacionZesta, modifier = Modifier.size(30.dp))
+            Icon(
+                imageVector = Icons.Outlined.LocationOn,
+                contentDescription = stringResource(R.string.restaurante_ubicacion),
+                tint = ColorUbicacionZesta,
+                modifier = Modifier.size(30.dp)
+            )
             Spacer(modifier = Modifier.width(6.dp))
-            Text(text = stringResource(R.string.restaurante_ubicacion), style = MaterialTheme.typography.bodyLarge, color = TextoPrincipalZesta)
+            Text(
+                text = addressText,
+                style = MaterialTheme.typography.bodyLarge,
+                color = TextoPrincipalZesta
+            )
         }
     }
 }

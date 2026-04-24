@@ -16,5 +16,5 @@ data class Restaurant(
     val promoDiscount: Double? = null,
     val categories: List<String> = emptyList(),
     val products: List<Product>,
-    val address: String = ""
+    val addressRes: Int,
 )

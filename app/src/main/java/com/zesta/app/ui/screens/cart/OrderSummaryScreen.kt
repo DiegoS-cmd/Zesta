@@ -675,7 +675,7 @@ fun OrderSummaryScreen(
                                         cartViewModel.clearCartByRestaurant(restaurantId)
 
                                         val totalMinutes = 30
-                                        val restaurantStreet = restaurant?.address.orEmpty()
+                                        val restaurantStreet = restaurant?.let { context.getString(it.addressRes) }.orEmpty()
 
                                         onOrderPlaced(
                                             restaurantId,

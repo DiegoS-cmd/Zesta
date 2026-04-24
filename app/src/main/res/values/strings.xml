@@ -396,4 +396,26 @@
     <string name="tracking_seguimiento">Seguimiento del pedido</string>
     <string name="tracking_inicio">Volver a inicio</string>
     <string name="tracking_casa">Mi casa</string>
+
+    <!-- Direccion restaurantes -->
+    <string name="direccion_burger">Calle de Alcalá, 120</string>
+    <string name="direccion_dominos">Gran Vía, 45</string>
+    <string name="direccion_wingstop">Paseo de la Castellana, 78</string>
+    <string name="direccion_mcdonalds">Puerta del Sol, 12</string>
+    <string name="direccion_kfc">Calle de Preciados, 23</string>
+    <string name="direccion_subway">Calle de Fuencarral, 89</string>
+    <string name="direccion_telepizza">Calle de Atocha, 56</string>
+    <string name="direccion_papajohns">Calle de Toledo, 34</string>
+    <string name="direccion_tacobell">Calle de Montera, 15</string>
+    <string name="direccion_dunkin">Calle de Hortaleza, 67</string>
+    <string name="direccion_starbucks">Plaza Mayor, 8</string>
+    <string name="direccion_fiveguys">Calle de Serrano, 102</string>
+    <string name="direccion_foster">Calle de Goya, 89</string>
+    <string name="direccion_ginos">Calle de Velázquez, 45</string>
+    <string name="direccion_vips">Paseo de Recoletos, 23</string>
+    <string name="direccion_100mon">Calle de Espoz y Mina, 9</string>
+    <string name="direccion_goiko">Calle de Jorge Juan, 34</string>
+    <string name="direccion_sushi">Calle de Claudio Coello, 78</string>
+
+
 </resources>
