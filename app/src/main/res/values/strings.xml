@@ -141,6 +141,7 @@
     <string name="carrito_invitado_descripcion">Los pedidos solo están disponibles para usuarios registrados.</string>
     <string name="favoritos_invitado_titulo">Inicia sesión para guardar favoritos</string>
     <string name="favoritos_invitado_descripcion">Crea una cuenta o inicia sesión para guardar tus restaurantes favoritos y acceder a ellos cuando quieras</string>
+
     <!-- Perfil -->
     <string name="perfil_titulo">Perfil</string>
     <string name="perfil_nombre_placeholder">Tu nombre</string>
@@ -187,27 +188,6 @@
     <string name="restaurante_nombre_burger_king">Burger King</string>
     <string name="restaurante_nombre_dominos">Domino\'s Pizza</string>
     <string name="restaurante_nombre_wingstop">Wingstop</string>
-
-    <!-- Productos -->
-    <string name="producto_whopper">Whopper</string>
-    <string name="producto_crazy_bacon">Crazy Bacon</string>
-    <string name="producto_chili_cheese">Chili Cheese</string>
-    <string name="producto_pizza_carbonara">Pizza Carbonara</string>
-    <string name="producto_pizza_pepperoni">Pizza Pepperoni</string>
-    <string name="producto_alitas_bbq">Alitas BBQ</string>
-    <string name="producto_combo_wings">Combo Wings</string>
-    <string name="producto_descripcion_generica">Descripción</string>
-    <string name="producto_precio">%1$.2f€</string>
-    <string name="producto_simbolo_mas">+</string>
-
-    <string name="producto_patatas_cajun">Patatas Cajún</string>
-
-
-    <!-- Promociones -->
-    <string name="promocion_compra_una_llevate_otra">Compra 1 y consigue 1 gratis</string>
-
-
-    <!--  Restaurantes  -->
     <string name="restaurante_nombre_mcdonalds">McDonald\'s</string>
     <string name="restaurante_nombre_kfc">KFC</string>
     <string name="restaurante_nombre_subway">Subway</string>
@@ -224,80 +204,123 @@
     <string name="restaurante_nombre_goiko">Goiko</string>
     <string name="restaurante_nombre_sushishop">Sushi Shop</string>
 
-    <!-- Productos McDonald's -->
-    <string name="producto_big_mac">Big Mac</string>
-    <string name="producto_mcnuggets">McNuggets x10</string>
-    <string name="producto_mcflurry">McFlurry Oreo</string>
+    <!-- Productos -->
+    <!--Burguer King-->
+    <string name="producto_whopper">Whopper</string>
+    <string name="producto_crazy_bacon">Crazy Bacon</string>
+    <string name="producto_chili_cheese">Chili Cheese</string>
+    <string name="producto_combo_wings">Combo Wings</string>
 
-    <!-- Productos KFC -->
-    <string name="producto_bucket_kfc">Bucket Original 8 piezas</string>
-    <string name="producto_twister_kfc">Twister</string>
-    <string name="producto_alitas_kfc">Alitas crujientes x6</string>
+    <!--Dominos Pizza-->
+    <string name="producto_pizzaDominos_carbonara">Pizza Carbonara</string>
+    <string name="producto_pizzaDominos_pepperoni">Pizza Pepperoni</string>
+    <string name="producto_pizzaDominos_4quesos">Pizza 4 Quesos</string>
+    <string name="producto_pizzaDominos_BBQ">Pizza Barbacoa</string>
 
-    <!-- Productos Subway -->
-    <string name="producto_sub_italiano">Sub Italiano BMT</string>
-    <string name="producto_sub_pollo">Sub Pollo Teriyaki</string>
-    <string name="producto_sub_veggie">Sub Veggie Delite</string>
+    <!--Telepizza-->
+    <string name="producto_pizzaTelepizza_BBQ">Pizza Barbacoa</string>
+    <string name="producto_pizzaTelepizza_4quesos">Pizza 4 Quesos</string>
+    <string name="producto_pizzaTelepizza_carnivora">Pasta Carnivora</string>
+    <string name="producto_pizzaTelepizza_carbonara">Pasta Carbonara</string>
 
-    <!-- Productos Telepizza -->
-    <string name="producto_pizza_barbacoa">Pizza Barbacoa</string>
-    <string name="producto_pizza_4quesos">Pizza 4 Quesos</string>
-    <string name="producto_pasta_carbonara">Pasta Carbonara</string>
+    <!--Five Guys-->
+    <string name="producto_burgerBac_fiveguys">Hamburguesa con bacon</string>
+    <string name="producto_hotdogQueso_fiveguys">Hot Dog con queso</string>
+    <string name="producto_sandwichVeg_fiveguys">Sandwich Vegetal</string>
+    <string name="producto_sandwichQueso_fiveguys">Sandwich queso a la plancha</string>
 
-    <!-- Productos Papa John's -->
-    <string name="producto_pizza_garden">Garden Fresh</string>
-    <string name="producto_pizza_hawaiana">Hawaiana</string>
-    <string name="producto_papas_ajo">Papas con ajo</string>
-
-    <!-- Productos Taco Bell -->
-    <string name="producto_crunchwrap">Crunchwrap Supreme</string>
-    <string name="producto_nachos_bell">Nachos BellGrande</string>
-    <string name="producto_quesarito">Quesarito</string>
-
-    <!-- Productos Dunkin' -->
-    <string name="producto_donut_clasico">Donut Glaseado</string>
-    <string name="producto_cafe_americano">Café Americano</string>
-    <string name="producto_bagel_jamon">Bagel con Jamón</string>
-
-    <!-- Productos Starbucks -->
-    <string name="producto_frappuccino">Frappuccino Caramelo</string>
-    <string name="producto_latte">Caffè Latte</string>
-    <string name="producto_croissant">Croissant de Mantequilla</string>
-
-    <!-- Productos Five Guys -->
-    <string name="producto_burger_fiveguys">Hamburguesa Five Guys</string>
-    <string name="producto_hotdog_fiveguys">Hot Dog</string>
-    <string name="producto_patatas_fiveguys">Patatas Cajún</string>
-
-    <!-- Productos Foster's -->
-    <string name="producto_costillas_fosters">Costillas BBQ</string>
-    <string name="producto_burger_fosters">Burger Clásica</string>
-    <string name="producto_nachos_fosters">Nachos con Queso</string>
-
-    <!-- Productos Gino's -->
-    <string name="producto_pizza_ginos">Pizza 4 Quesos</string>
-    <string name="producto_pasta_ginos">Pasta Boloñesa</string>
-    <string name="producto_tiramisu">Tiramisú</string>
-
-    <!-- Productos VIPS -->
-    <string name="producto_club_sandwich">Club Sandwich</string>
+    <!--VIPS-->
+    <string name="producto_sandwichclub_vips">Vips Club</string>
     <string name="producto_pancakes_vips">Pancakes con Arándanos</string>
-    <string name="producto_cheesecake_vips">Cheesecake</string>
+    <string name="producto_nachos_vips">Nachos Tex-Mex</string>
+    <string name="producto_ensalada_vips">Ensalada Toscana</string>
 
-    <!-- Productos 100 Montaditos -->
-    <string name="producto_montadito_lomo">Montadito de Lomo</string>
-    <string name="producto_montadito_tortilla">Montadito de Tortilla</string>
-    <string name="producto_combo_montaditos">Combo 8 Montaditos</string>
+    <!--Sushi-->
+    <string name="producto_california_sushi">California Roll x8</string>
+    <string name="producto_salmon_sushi">Salmón Nigiri x4</string>
+    <string name="producto_combo_sushi">Combo Sushi 16 piezas</string>
+    <string name="producto_maki_sushi">Maki de aguacate y queso</string>
 
-    <!-- Productos Goiko -->
+    <!--WingStop-->
+    <string name="producto_alitasBBQ_wingstop">Alitas BBQ</string>
+    <string name="producto_combo_wingstop">Combo Wingston</string>
+    <string name="producto_alitas_wingstop">Alitas x6</string>
+    <string name="producto_patatas_wingstop">Patatas Cajún</string>
+
+    <!--McDonalds-->
+    <string name="producto_bigMac_mc">Big Mac</string>
+    <string name="producto_mcnuggets_mc">McNuggets x10</string>
+    <string name="producto_mcflurry_mc">McFlurry Oreo</string>
+    <string name="producto_macExtrem_mc">Mac Extreme</string>
+
+    <!--Papa Jons-->
+    <string name="producto_pizzaPeperonni_Papa">Pizza Peperonni</string>
+    <string name="producto_pizzaGarden_Papa">Pizza Garden</string>
+    <string name="producto_pizzaHawaiana_Papa">Pizza Hawaiana</string>
+    <string name="producto_patatas_Papa">Papas con ajo</string>
+
+    <!--Dunkin-->
+    <string name="producto_donutGlass_dunkin">Donut Glaseado</string>
+    <string name="producto_cafeAmericano_dunkin">Café Americano</string>
+    <string name="producto_tostadaJamon_dunkin">Tostada con Jamón y queso</string>
+    <string name="producto_donutLotus_dunkin">Donut con Lotus</string>
+
+    <!--Foster-->
+    <string name="producto_costillas_fosters">Costillas BBQ</string>
+    <string name="producto_burger_fosters">Pink burguer</string>
+    <string name="producto_sandwich_fosters">Sandwich Caesar</string>
+    <string name="producto_combo_fosters">Hollywod Combo</string>
+
+    <!--100 Montaditos-->
+    <string name="producto_montaditoLomo_100Mon">Montadito de Lomo</string>
+    <string name="producto_montaditoTortilla_100Mon">Montadito de Tortilla</string>
+    <string name="producto_comboMontaditos_100Mon">Combo 8 Montaditos</string>
+    <string name="producto_cheeseFries_100Mon">Cheese Fries</string>
+
+    <!--KFC-->
+    <string name="producto_bucket_kfc">Bucket Original 8 piezas</string>
+    <string name="producto_comboTiras_kfc">Cubo tiras de pollo</string>
+    <string name="producto_comboAlitas_kfc">Alitas crujientes x6</string>
+    <string name="producto_comboAlitasPic_kfc">Alitas crujientes Picantes x6</string>
+
+    <!--Subway-->
+    <string name="producto_italiano_sub">Sub Italiano BMT</string>
+    <string name="producto_pollo_sub">Sub Pollo Teriyaki</string>
+    <string name="producto_veggie_sub">Sub Veggie Delite</string>
+    <string name="producto_clubSandwich_sub">Club Sandwich</string>
+
+    <!--TacoBell-->
+    <string name="producto_crunchWrap_taco">Crunchwrap Supreme</string>
+    <string name="producto_nachosBell_taco">Nachos BellGrande</string>
+    <string name="producto_quesadilla_taco">Quesarito</string>
+    <string name="producto_crunchWrapDelux_taco">Crunchwrap Deluxe</string>
+
+    <!--Starbucks-->
+    <string name="producto_frappuccinoCar_star">Frappuccino Caramelo</string>
+    <string name="producto_latte_star">Caffè Latte</string>
+    <string name="producto_croissant_star">Croissant de Mantequilla</string>
+    <string name="producto_frappuccinoCookies_star">Frappuccino Cookies and cream</string>
+
+    <!--Ginos-->
+    <string name="producto_rigattoni_ginos">Rigattoni al forno</string>
+    <string name="producto_calzzone_ginos">Calzzone Napoletano</string>
+    <string name="producto_ensalada_ginos">Ensalada de burrata</string>
+    <string name="producto_pizza_ginos">Pizza Proscuitto</string>
+
+    <!--Goiko-->
     <string name="producto_burger_goiko">Burger Angus</string>
     <string name="producto_smash_goiko">Smash Burger</string>
-    <string name="producto_patatas_goiko">Patatas Bravas</string>
+    <string name="producto_kevin_goiko">Kevin Bacon</string>
+    <string name="producto_patatas_goiko">Patatas con queso y bacon</string>
 
-    <!-- Productos Sushi Shop -->
-    <string name="producto_california_roll">California Roll x8</string>
-    <string name="producto_salmon_nigiri">Salmón Nigiri x4</string>
-    <string name="producto_combo_sushi">Combo Sushi 16 piezas</string>
+
+    <string name="producto_descripcion_generica">Descripción</string>
+    <string name="producto_precio">%1$.2f€</string>
+    <string name="producto_simbolo_mas">+</string>
+    <string name="producto_patatas_cajun">Patatas Cajún</string>
+
+    <!-- Promociones -->
+    <string name="promocion_compra_una_llevate_otra">Compra 1 y consigue 1 gratis</string>
 
     <!-- Promociones nuevas -->
     <string name="promocion_2x1">2x1 en selección</string>
