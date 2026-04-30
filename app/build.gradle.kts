@@ -71,6 +71,7 @@ dependencies {
     implementation(libs.androidx.compose.runtime)
     implementation(libs.osmdroid.android)
     implementation(libs.androidx.ui)
+    implementation(libs.androidx.ui.tooling.preview)
 
 
     testImplementation(libs.junit)
@@ -80,4 +81,5 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+    debugImplementation(libs.androidx.ui.tooling)
 }

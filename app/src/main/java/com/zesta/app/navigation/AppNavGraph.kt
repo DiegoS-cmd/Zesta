@@ -331,18 +331,31 @@ fun AppNavGraph() {
             )
         }
 
+
         composable(AppRoutes.ManageAccount.route) {
             ManageAccountScreen(
                 authViewModel = authViewModel,
                 isGuest = uiState.isGuest,
                 userName = uiState.userName,
                 onBackClick = { navController.popBackStack() },
-                onLoginClick = { navController.navigate(AppRoutes.Login.route) },
+                onLoginClick = {
+                    navController.navigate(AppRoutes.Login.route) {
+                        popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
                 onRegisterClick = { navController.navigate(AppRoutes.Register.route) },
                 onLogoutClick = {
                     authViewModel.logout()
                     navController.navigate(AppRoutes.Login.route) {
-                        popUpTo(AppRoutes.Home.route) { inclusive = true }
+                        popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
+                onDeleteAccountSuccess = {
+                    authViewModel.logout()
+                    navController.navigate(AppRoutes.Login.route) {
+                        popUpTo(navController.graph.startDestinationId) { inclusive = true }
                         launchSingleTop = true
                     }
                 }

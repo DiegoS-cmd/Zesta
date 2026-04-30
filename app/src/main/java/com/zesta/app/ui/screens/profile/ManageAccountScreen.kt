@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -46,6 +47,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.io.ByteArrayOutputStream
 import java.io.File
+import androidx.compose.material.icons.filled.DeleteForever
+import androidx.compose.material.icons.filled.WarningAmber
+import androidx.compose.ui.text.style.TextAlign
+import com.zesta.app.ui.components.RatingDialog
 
 @Composable
 fun ManageAccountScreen(
@@ -55,6 +60,7 @@ fun ManageAccountScreen(
     onLoginClick: () -> Unit,
     onRegisterClick: () -> Unit,
     onLogoutClick: () -> Unit,
+    onDeleteAccountSuccess: () -> Unit,
     authViewModel: AuthViewModel
 ) {
     val errorTelefono = stringResource(R.string.carrito_error_telefono)
@@ -76,6 +82,13 @@ fun ManageAccountScreen(
     }
 
     var showImageSourceDialog by remember { mutableStateOf(false) }
+
+    // ─── Eliminar cuenta: estados de los dos diálogos ─────────────────────────
+    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
+    var showRatingDialog by remember { mutableStateOf(false) }
+
+    var isDeletingAccount by remember { mutableStateOf(false) }
+    var deleteErrorMessage by remember { mutableStateOf<String?>(null) }
 
     val cameraImageUri = remember {
         val file = File(context.cacheDir, "images/profile_photo_${System.currentTimeMillis()}.jpg")
@@ -218,7 +231,7 @@ fun ManageAccountScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // ── ✅ Dirección — botón que abre el sheet completo
+            // ── Dirección
             val direccionActiva = authState.currentUser?.direccion
             Row(
                 modifier = Modifier
@@ -258,6 +271,45 @@ fun ManageAccountScreen(
             Spacer(modifier = Modifier.height(28.dp))
 
             PrimaryGradientButton(text = stringResource(R.string.perfil_cerrar_sesion), onClick = onLogoutClick)
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // ── Botón eliminar cuenta
+            deleteErrorMessage?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(28.dp))
+                    .background(Color(0xFFD94B57))
+                    .border(2.dp, BordeBotonZesta, RoundedCornerShape(28.dp))
+                    .clickable(enabled = !isDeletingAccount) {
+                        deleteErrorMessage = null
+                        showDeleteConfirmDialog = true
+                    }
+                    .padding(horizontal = 18.dp, vertical = 15.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+
+                    Text(
+                        text = stringResource(R.string.eliminar_cuenta),
+                        color = BlancoZesta,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(18.dp))
@@ -269,12 +321,128 @@ fun ManageAccountScreen(
         )
     }
 
-    // ✅ Sheet de direcciones (mismo que en HomeScreen)
+    // ── Sheet de direcciones
     if (showAddressSheet) {
         AddressBottomSheet(
             currentUser = authState.currentUser,
             authViewModel = authViewModel,
             onDismiss = { showAddressSheet = false }
+        )
+    }
+
+    // ── Diálogo 1: confirmación de borrado de cuenta
+    if (showDeleteConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmDialog = false },
+            containerColor = FondoTarjetaRestauranteZesta,
+            shape = RoundedCornerShape(24.dp),
+            icon = {
+                Box(
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFFD94B57).copy(alpha = 0.12f)),
+
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.WarningAmber,
+                        contentDescription = null,
+                        tint = Color(0xFFD94B57),
+                        modifier = Modifier.size(34.dp)
+                    )
+                }
+            },
+            title = {
+                Text(
+                    text = stringResource(R.string.eliminar_cuenta_titulo),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = TextoPrincipalZesta,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(R.string.eliminar_cuenta_mensaje),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextoSecundarioZesta,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            confirmButton = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(22.dp))
+                        .background(Color(0xFFD94B57))
+                        .clickable {
+                            showDeleteConfirmDialog = false
+                            showRatingDialog = true
+                        }
+                        .padding(vertical = 14.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = stringResource(R.string.gestionar_cuenta_eliminar),
+                        color = BlancoZesta,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmDialog = false }) {
+                    Text(
+                        text = stringResource(R.string.inicio_sheet_cancelar),
+                        textAlign = TextAlign.Center,
+                        color = TextoSecundarioZesta,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+        )
+    }
+
+
+    // ── Diálogo 2: valoración antes de irse
+    if (showRatingDialog) {
+        RatingDialog(
+            onDismiss = {
+                if (!isDeletingAccount) {
+                    showRatingDialog = false
+                    isDeletingAccount = true
+                    authViewModel.deleteAccount(
+                        onSuccess = {
+                            isDeletingAccount = false
+                            onDeleteAccountSuccess()
+                        },
+                        onError = { error ->
+                            isDeletingAccount = false
+                            deleteErrorMessage = error
+                        }
+                    )
+                }
+            },
+            onSubmit = { stars ->
+                if (!isDeletingAccount) {
+                    showRatingDialog = false
+                    isDeletingAccount = true
+                    authViewModel.sendRatingAndDeleteAccount(
+                        rating = stars.toString(),
+                        onSuccess = {
+                            isDeletingAccount = false
+                            onDeleteAccountSuccess()
+                        },
+                        onError = { error ->
+                            isDeletingAccount = false
+                            deleteErrorMessage = error
+                        }
+                    )
+                }
+            }
         )
     }
 

@@ -719,7 +719,6 @@ fun OrderSummaryScreen(
     }
 }
 
-// ✅ REEMPLAZA la función completa
 @Composable
 private fun RestaurantSummaryHeader(
     restaurantName: String,

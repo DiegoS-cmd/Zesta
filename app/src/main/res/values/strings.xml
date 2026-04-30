@@ -440,5 +440,25 @@
     <string name="direccion_goiko">Calle de Jorge Juan, 34</string>
     <string name="direccion_sushi">Calle de Claudio Coello, 78</string>
 
+    <!-- Eliminar cuenta — diálogo 1: confirmación -->
+    <string name="eliminar_cuenta">Eliminar cuenta</string>
+    <string name="eliminar_cuenta_titulo">Eliminar cuenta</string>
+    <string name="eliminar_cuenta_mensaje">¿Seguro que quieres borrar tu cuenta? Esta acción no se puede deshacer.</string>
+
+    <!-- Eliminar cuenta — diálogo 2: valoración antes de irse -->
+    <string name="antes_de_irte_titulo">Antes de que te vayas</string>
+    <string name="antes_de_irte_mensaje">¿Podrías valorar tu experiencia con la app?</string>
+    <string name="antes_de_irte_placeholder">Escribe tu valoración (opcional)</string>
+    <string name="antes_de_irte_enviar">Enviar</string>
+
+    <!-- Strings nuevos para mejora visual del borrado y valoración de la app -->
+    <string name="antes_de_irte_mensaje_estrellas">Antes de cerrar tu cuenta, valora tu experiencia con Zesta.</string>
+    <string name="antes_de_irte_omitir">Omitir y eliminar cuenta</string>
+    <string name="valoracion_estrellas_conteo">%1$d estrellas</string>
+    <string name="valoracion_app_1">Muy mala experiencia</string>
+    <string name="valoracion_app_2">Podría mejorar</string>
+    <string name="valoracion_app_3">Bastante bien</string>
+    <string name="valoracion_app_4">Muy buena experiencia</string>
+    <string name="valoracion_app_5">¡Excelente!</string>
 
 </resources>

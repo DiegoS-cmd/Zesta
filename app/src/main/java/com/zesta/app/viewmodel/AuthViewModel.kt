@@ -6,6 +6,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
 import com.zesta.app.data.model.User
 import com.zesta.app.data.repository.AuthRepository
 import com.zesta.app.data.repository.StorageRepository
@@ -14,6 +16,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 data class AuthUiState(
     val fullName: String = "",
@@ -61,7 +64,10 @@ class AuthViewModel(
         restoreSessionIfNeeded()
         viewModelScope.launch {
             profileImageUrl.collect { value ->
-                android.util.Log.d("ZESTA_PHOTO", "profileImageUrl cambió: ${value?.take(20) ?: "NULL"}")
+                android.util.Log.d(
+                    "ZESTA_PHOTO",
+                    "profileImageUrl cambió: ${value?.take(20) ?: "NULL"}"
+                )
             }
         }
     }
@@ -128,7 +134,6 @@ class AuthViewModel(
         }
     }
 
-    // Recibe context para leer el Uri y subirlo como Base64
     fun setProfileImageUri(context: Context, uri: Uri) {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
         viewModelScope.launch {
@@ -136,8 +141,10 @@ class AuthViewModel(
             if (result.isSuccess) {
                 _profileImageUrl.value = result.getOrNull()
             } else {
-
-                android.util.Log.e("ZESTA_PHOTO", "Error subiendo foto: ${result.exceptionOrNull()?.message}")
+                android.util.Log.e(
+                    "ZESTA_PHOTO",
+                    "Error subiendo foto: ${result.exceptionOrNull()?.message}"
+                )
             }
         }
     }
@@ -153,6 +160,7 @@ class AuthViewModel(
             }
         }
     }
+
     fun clearProfileImage() {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
         viewModelScope.launch {
@@ -161,33 +169,54 @@ class AuthViewModel(
         }
     }
 
-    fun onFullNameChange(value: String) { _uiState.value = _uiState.value.copy(fullName = value, errorMessage = null) }
-    fun onEmailChange(value: String) { _uiState.value = _uiState.value.copy(email = value, errorMessage = null) }
-    fun onPasswordChange(value: String) { _uiState.value = _uiState.value.copy(password = value, errorMessage = null) }
-    fun onPhoneChange(value: String) { _uiState.value = _uiState.value.copy(phone = value, errorMessage = null) }
-    fun onAddressChange(value: String) { _uiState.value = _uiState.value.copy(address = value, errorMessage = null) }
+    fun onFullNameChange(value: String) {
+        _uiState.value = _uiState.value.copy(fullName = value, errorMessage = null)
+    }
+
+    fun onEmailChange(value: String) {
+        _uiState.value = _uiState.value.copy(email = value, errorMessage = null)
+    }
+
+    fun onPasswordChange(value: String) {
+        _uiState.value = _uiState.value.copy(password = value, errorMessage = null)
+    }
+
+    fun onPhoneChange(value: String) {
+        _uiState.value = _uiState.value.copy(phone = value, errorMessage = null)
+    }
+
+    fun onAddressChange(value: String) {
+        _uiState.value = _uiState.value.copy(address = value, errorMessage = null)
+    }
 
     fun addDireccion(direccion: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
             val result = authRepository.addDireccion(direccion)
-            if (result.isSuccess) { loadCurrentUser(); onSuccess() }
-            else onError(result.exceptionOrNull()?.message ?: "Error al guardar")
+            if (result.isSuccess) {
+                loadCurrentUser(); onSuccess()
+            } else onError(result.exceptionOrNull()?.message ?: "Error al guardar")
         }
     }
 
-    fun setDireccionActiva(direccion: String, onSuccess: () -> Unit = {}, onError: (String) -> Unit = {}) {
+    fun setDireccionActiva(
+        direccion: String,
+        onSuccess: () -> Unit = {},
+        onError: (String) -> Unit = {}
+    ) {
         viewModelScope.launch {
             val result = authRepository.setDireccionActiva(direccion)
-            if (result.isSuccess) { loadCurrentUser(); onSuccess() }
-            else onError(result.exceptionOrNull()?.message ?: "Error")
+            if (result.isSuccess) {
+                loadCurrentUser(); onSuccess()
+            } else onError(result.exceptionOrNull()?.message ?: "Error")
         }
     }
 
     fun deleteDireccion(direccion: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
             val result = authRepository.deleteDireccion(direccion)
-            if (result.isSuccess) { loadCurrentUser(); onSuccess() }
-            else onError(result.exceptionOrNull()?.message ?: "Error al eliminar")
+            if (result.isSuccess) {
+                loadCurrentUser(); onSuccess()
+            } else onError(result.exceptionOrNull()?.message ?: "Error al eliminar")
         }
     }
 
@@ -233,7 +262,8 @@ class AuthViewModel(
             } else {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    errorMessage = result.exceptionOrNull()?.message ?: "No se pudo registrar el usuario"
+                    errorMessage = result.exceptionOrNull()?.message
+                        ?: "No se pudo registrar el usuario"
                 )
             }
         }
@@ -292,9 +322,17 @@ class AuthViewModel(
         }
     }
 
-    fun updateProfile(telefono: String, direccion: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+    fun updateProfile(
+        telefono: String,
+        direccion: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
         viewModelScope.launch {
-            val result = authRepository.updateProfile(telefono = telefono.trim(), direccion = direccion.trim())
+            val result = authRepository.updateProfile(
+                telefono = telefono.trim(),
+                direccion = direccion.trim()
+            )
             if (result.isSuccess) {
                 val listaActual = _uiState.value.currentUser?.direcciones ?: emptyList()
                 val nuevaLista = if (direccion.isNotBlank() && !listaActual.contains(direccion)) {
@@ -303,7 +341,9 @@ class AuthViewModel(
                 _uiState.value = _uiState.value.copy(
                     phone = telefono.trim(), address = direccion.trim(),
                     currentUser = _uiState.value.currentUser?.copy(
-                        telefono = telefono.trim(), direccion = direccion.trim(), direcciones = nuevaLista
+                        telefono = telefono.trim(),
+                        direccion = direccion.trim(),
+                        direcciones = nuevaLista
                     )
                 )
                 onSuccess()
@@ -319,7 +359,8 @@ class AuthViewModel(
             if (result.isSuccess) {
                 val listaActual = _uiState.value.currentUser?.direcciones ?: emptyList()
                 val direccionBorrada = _uiState.value.currentUser?.direccion.orEmpty()
-                val nuevaLista = if (field == "direccion") listaActual.filter { it != direccionBorrada } else listaActual
+                val nuevaLista =
+                    if (field == "direccion") listaActual.filter { it != direccionBorrada } else listaActual
                 _uiState.value = _uiState.value.copy(
                     phone = if (field == "telefono") "" else _uiState.value.phone,
                     address = if (field == "direccion") "" else _uiState.value.address,
@@ -360,17 +401,99 @@ class AuthViewModel(
             _uiState.value = AuthUiState()
         }
     }
-}
 
-class AuthViewModelFactory(
-    private val authRepository: AuthRepository,
-    private val preferencesRepository: UserPreferencesRepository
-) : ViewModelProvider.Factory {
-    @Suppress("UNCHECKED_CAST")
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(AuthViewModel::class.java)) {
-            return AuthViewModel(authRepository, preferencesRepository) as T
+    // ─── Eliminar cuenta ──────────────────────────────────────────────────────
+
+    /**
+     * Guarda la valoración en Firestore (si no está vacía) y luego elimina la cuenta.
+     * Tanto si la valoración falla como si el usuario la cierra sin enviar, se borra la cuenta igualmente.
+     */
+    fun sendRatingAndDeleteAccount(
+        rating: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            val uid = FirebaseAuth.getInstance().currentUser?.uid
+            if (!rating.isBlank() && uid != null) {
+                try {
+                    FirebaseFirestore.getInstance()
+                        .collection("app_feedback")
+                        .add(
+                            mapOf(
+                                "uid" to uid,
+                                "valoracion" to rating.trim(),
+                                "creadoEn" to FieldValue.serverTimestamp()
+                            )
+                        )
+                        .await()
+                } catch (e: Exception) {
+                    // Si falla guardar la valoración, continuamos igualmente con el borrado
+                    android.util.Log.w(
+                        "ZESTA_DELETE",
+                        "No se pudo guardar valoración: ${e.message}"
+                    )
+                }
+            }
+            deleteAccount(onSuccess = onSuccess, onError = onError)
         }
-        throw IllegalArgumentException("Unknown ViewModel class")
+    }
+
+
+    fun deleteAccount(
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val user = FirebaseAuth.getInstance().currentUser
+        if (user == null) {
+            onError("Usuario no autenticado")
+            return
+        }
+
+        // se guarda antes de borrarlp
+        val uid = user.uid
+
+        viewModelScope.launch {
+            try {
+
+                FirebaseFirestore.getInstance()
+                    .collection("users")
+                    .document(uid)
+                    .delete()
+                    .await()
+
+                // borramos el usuario de Firebase Auth
+                user.delete().await()
+
+                // Limpiamos sesión local
+                authRepository.logout()
+                preferencesRepository.clearGuestMode()
+                _profileImageUrl.value = null
+                _uiState.value = AuthUiState()
+
+                onSuccess()
+            } catch (e: Exception) {
+                val mensaje = when {
+                    e.message?.contains("recent", ignoreCase = true) == true ->
+                        "Por seguridad, cierra sesión, vuelve a iniciar sesión y repite la operación."
+
+                    else -> e.localizedMessage ?: "No se pudo eliminar la cuenta."
+                }
+                onError(mensaje)
+            }
+        }
+    }
+
+    class AuthViewModelFactory(
+        private val authRepository: AuthRepository,
+        private val preferencesRepository: UserPreferencesRepository
+    ) : ViewModelProvider.Factory {
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            if (modelClass.isAssignableFrom(AuthViewModel::class.java)) {
+                return AuthViewModel(authRepository, preferencesRepository) as T
+            }
+            throw IllegalArgumentException("Unknown ViewModel class")
+        }
     }
 }

@@ -47,6 +47,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.zesta.app.R
 import com.zesta.app.ui.theme.*
@@ -451,4 +452,17 @@ private fun EntregadoHeader(onFinished: () -> Unit) {
             textAlign = TextAlign.Center
         )
     }
+}
+@Preview(showBackground = true)
+@Composable
+private fun DeliveryTrackingScreenPreview() {
+    DeliveryTrackingScreen(
+        restaurantName = "Burger Zesta",
+        restaurantStreet = "Calle Gran Vía 45",
+        userStreet = "Calle de la Paz 12",
+        onFinished = {},
+        onGoHome = {},
+        restaurantId = 1,
+        totalMinutes = 30
+    )
 }
