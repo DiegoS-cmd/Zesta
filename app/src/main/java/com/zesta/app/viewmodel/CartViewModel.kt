@@ -11,6 +11,14 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+/**
+ * Estado de la UI del carrito.
+ *
+ * @property carts Lista de carritos agrupados por restaurante.
+ * @property isLoading true mientras se está cargando el carrito desde el repositorio.
+ * @property errorMessage Mensaje de error de la última operación fallida, o null.
+ * @property totalPrice Precio total calculado sumando precio × cantidad de todos los items.
+ */
 data class CartUiState(
     val carts: List<RestaurantCartWithItems> = emptyList(),
     val isLoading: Boolean = true,
@@ -22,6 +30,15 @@ data class CartUiState(
         }
 }
 
+/**
+ * ViewModel del carrito de compra.
+ *
+ * Gestiona todas las operaciones sobre el carrito delegando en [CartRepository]
+ * y exponiendo el estado a través de [uiState].
+ * Tras cada operación exitosa recarga el carrito para mantener la UI sincronizada.
+ *
+ * @param repository Repositorio que gestiona la persistencia del carrito.
+ */
 class CartViewModel(
     private val repository: CartRepository
 ) : ViewModel() {
@@ -33,6 +50,10 @@ class CartViewModel(
         loadCart()
     }
 
+    /**
+     * Carga el carrito completo desde el repositorio.
+     * Se llama automáticamente al inicializar el ViewModel y tras cada operación exitosa.
+     */
     fun loadCart() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
@@ -54,6 +75,17 @@ class CartViewModel(
         }
     }
 
+    /**
+     * Añade un producto al carrito del restaurante indicado.
+     * Si el restaurante no tiene carrito todavía, el repositorio lo crea.
+     *
+     * @param restaurantId ID del restaurante al que pertenece el producto.
+     * @param restaurantName Nombre del restaurante (se guarda junto al carrito).
+     * @param restaurantImageResName Nombre del recurso de imagen del restaurante.
+     * @param item Producto a añadir.
+     * @param onSuccess Callback opcional al completar la operación con éxito.
+     * @param onError Callback opcional con el mensaje de error si falla.
+     */
     fun addItem(
         restaurantId: Int,
         restaurantName: String,
@@ -81,6 +113,14 @@ class CartViewModel(
         }
     }
 
+    /**
+     * Incrementa en 1 la cantidad de un producto en el carrito.
+     *
+     * @param restaurantId ID del restaurante al que pertenece el producto.
+     * @param item Producto cuya cantidad se incrementa.
+     * @param onSuccess Callback opcional al completar la operación con éxito.
+     * @param onError Callback opcional con el mensaje de error si falla.
+     */
     fun increaseQuantity(
         restaurantId: Int,
         item: CartItem,
@@ -101,6 +141,15 @@ class CartViewModel(
         }
     }
 
+    /**
+     * Decrementa en 1 la cantidad de un producto en el carrito.
+     * Si la cantidad llega a 0, el repositorio elimina el producto.
+     *
+     * @param restaurantId ID del restaurante al que pertenece el producto.
+     * @param item Producto cuya cantidad se decrementa.
+     * @param onSuccess Callback opcional al completar la operación con éxito.
+     * @param onError Callback opcional con el mensaje de error si falla.
+     */
     fun decreaseQuantity(
         restaurantId: Int,
         item: CartItem,
@@ -121,6 +170,14 @@ class CartViewModel(
         }
     }
 
+    /**
+     * Elimina un producto del carrito independientemente de su cantidad.
+     *
+     * @param restaurantId ID del restaurante al que pertenece el producto.
+     * @param item Producto a eliminar.
+     * @param onSuccess Callback opcional al completar la operación con éxito.
+     * @param onError Callback opcional con el mensaje de error si falla.
+     */
     fun removeItem(
         restaurantId: Int,
         item: CartItem,
@@ -141,6 +198,12 @@ class CartViewModel(
         }
     }
 
+    /**
+     * Vacía el carrito completo eliminando todos los restaurantes y sus productos.
+     *
+     * @param onSuccess Callback opcional al completar la operación con éxito.
+     * @param onError Callback opcional con el mensaje de error si falla.
+     */
     fun clearCart(
         onSuccess: (() -> Unit)? = null,
         onError: ((String) -> Unit)? = null
@@ -159,6 +222,14 @@ class CartViewModel(
         }
     }
 
+    /**
+     * Vacía únicamente el carrito del restaurante indicado, dejando intactos
+     * los carritos de otros restaurantes.
+     *
+     * @param restaurantId ID del restaurante cuyo carrito se quiere vaciar.
+     * @param onSuccess Callback opcional al completar la operación con éxito.
+     * @param onError Callback opcional con el mensaje de error si falla.
+     */
     fun clearCartByRestaurant(
         restaurantId: Int,
         onSuccess: (() -> Unit)? = null,
@@ -178,11 +249,20 @@ class CartViewModel(
         }
     }
 
+    /**
+     * Limpia el mensaje de error del estado, por ejemplo tras mostrarlo en la UI.
+     */
     fun clearError() {
         _uiState.value = _uiState.value.copy(errorMessage = null)
     }
 }
 
+/**
+ * Factory para crear [CartViewModel] con su [CartRepository] inyectado.
+ * Necesario porque el ViewModel tiene un constructor con parámetros.
+ *
+ * @param repository Repositorio que se inyecta en el ViewModel.
+ */
 class CartViewModelFactory(
     private val repository: CartRepository
 ) : ViewModelProvider.Factory {

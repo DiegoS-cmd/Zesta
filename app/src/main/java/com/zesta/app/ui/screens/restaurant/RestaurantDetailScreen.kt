@@ -59,6 +59,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.zesta.app.R
 import com.zesta.app.data.model.CartItem
+import com.zesta.app.data.model.Product
+import com.zesta.app.data.model.PromoType
 import com.zesta.app.data.repository.CartRepository
 import com.zesta.app.data.repository.RatingRepository
 import com.zesta.app.data.repository.RestaurantRepository

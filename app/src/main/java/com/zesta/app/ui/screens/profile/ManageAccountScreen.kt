@@ -47,11 +47,33 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.io.ByteArrayOutputStream
 import java.io.File
-import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.ui.text.style.TextAlign
 import com.zesta.app.ui.components.RatingDialog
 
+/**
+ * Pantalla de gestión de cuenta del usuario.
+ *
+ * Permite al usuario registrado:
+ * - Ver y cambiar su foto de perfil (cámara o galería)
+ * - Guardar/eliminar su número de teléfono
+ * - Cambiar su dirección de entrega
+ * - Cambiar su contraseña
+ * - Cerrar sesión
+ * - Deshabilitar su cuenta (soft delete — no borra datos)
+ *
+ * Si el usuario es invitado ([isGuest] = true), se muestran
+ * únicamente los botones de login y registro.
+ *
+ * @param isGuest          Indica si el usuario actual es un invitado (sin cuenta).
+ * @param userName         Nombre del usuario autenticado.
+ * @param onBackClick      Callback para volver a la pantalla anterior.
+ * @param onLoginClick     Callback para navegar al login (solo modo invitado).
+ * @param onRegisterClick  Callback para navegar al registro (solo modo invitado).
+ * @param onLogoutClick    Callback ejecutado al cerrar sesión.
+ * @param onDeleteAccountSuccess Callback ejecutado tras deshabilitar la cuenta con éxito.
+ * @param authViewModel    ViewModel que gestiona el estado de autenticación y perfil.
+ */
 @Composable
 fun ManageAccountScreen(
     isGuest: Boolean,
@@ -63,12 +85,19 @@ fun ManageAccountScreen(
     onDeleteAccountSuccess: () -> Unit,
     authViewModel: AuthViewModel
 ) {
-    val errorTelefono = stringResource(R.string.carrito_error_telefono)
+    val errorTelefono = stringResource(R.string.gestionar_error_telefono)
+
+    // Estado general de autenticación (usuario actual, errores, etc.)
     val authState by authViewModel.uiState.collectAsState()
     val context = LocalContext.current
+
+    // Controla la visibilidad del bottom sheet de direcciones
     var showAddressSheet by remember { mutableStateOf(false) }
 
+    // Imagen de perfil almacenada como Base64 en el ViewModel
     val profileImageBase64 by authViewModel.profileImageUrl.collectAsState()
+
+    // Decodifica el Base64 a Bitmap de forma asíncrona; se recalcula cuando cambia el Base64
     val profileBitmap by produceState<Bitmap?>(initialValue = null, key1 = profileImageBase64) {
         value = try {
             val base64 = profileImageBase64
@@ -81,21 +110,28 @@ fun ManageAccountScreen(
         } catch (e: Exception) { null }
     }
 
+    // Controla la visibilidad del diálogo para elegir fuente de imagen (cámara / galería)
     var showImageSourceDialog by remember { mutableStateOf(false) }
 
-    // ─── Eliminar cuenta: estados de los dos diálogos ─────────────────────────
-    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
+    // Estados para el flujo de deshabilitación de cuenta
+
+    // Paso 1: diálogo de confirmación ("¿Seguro que quieres deshabilitar tu cuenta?")
+    var showDisableConfirmDialog by remember { mutableStateOf(false) }
+    // Paso 2: diálogo de valoración antes de irse
     var showRatingDialog by remember { mutableStateOf(false) }
+    // Indica si la operación de deshabilitación está en curso (evita doble pulsación)
+    var isDisablingAccount by remember { mutableStateOf(false) }
+    // Mensaje de error visible en pantalla si falla la deshabilitación
+    var disableErrorMessage by remember { mutableStateOf<String?>(null) }
 
-    var isDeletingAccount by remember { mutableStateOf(false) }
-    var deleteErrorMessage by remember { mutableStateOf<String?>(null) }
-
+    // URI temporal para la foto tomada con la cámara, almacenada en caché privada
     val cameraImageUri = remember {
         val file = File(context.cacheDir, "images/profile_photo_${System.currentTimeMillis()}.jpg")
             .also { it.parentFile?.mkdirs() }
         FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
     }
 
+    // Launcher para seleccionar imagen de la galería del dispositivo
     val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let {
             val base64 = uriToBase64(context, it)
@@ -103,6 +139,7 @@ fun ManageAccountScreen(
         }
     }
 
+    // Launcher para capturar foto con la cámara
     val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
         if (success) {
             val base64 = uriToBase64(context, cameraImageUri)
@@ -110,15 +147,18 @@ fun ManageAccountScreen(
         }
     }
 
+    // Launcher para solicitar permiso de cámara; lanza la cámara si se concede
     val cameraPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         if (granted) cameraLauncher.launch(cameraImageUri)
     }
 
+    // Teléfono local: se inicializa con el valor del usuario actual y se sincroniza si cambia
     var phone by remember(authState.currentUser) { mutableStateOf(authState.currentUser?.telefono ?: "") }
     var phoneSuccess by remember { mutableStateOf(false) }
     var phoneError by remember { mutableStateOf<String?>(null) }
     var isSavingPhone by remember { mutableStateOf(false) }
 
+    // Contenido principal
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -128,15 +168,22 @@ fun ManageAccountScreen(
             .padding(horizontal = 24.dp, vertical = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // TopBar
+        // TopBar: botón atrás + título centrado
         Box(modifier = Modifier.fillMaxWidth()) {
             Box(
-                modifier = Modifier.size(46.dp).clip(CircleShape)
-                    .background(BlancoZesta).border(1.dp, BordeIconoZesta, CircleShape)
+                modifier = Modifier
+                    .size(46.dp)
+                    .clip(CircleShape)
+                    .background(BlancoZesta)
+                    .border(1.dp, BordeIconoZesta, CircleShape)
                     .clickable { onBackClick() },
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.accesibilidad_volver), tint = NegroZesta)
+                Icon(
+                    Icons.AutoMirrored.Outlined.ArrowBack,
+                    contentDescription = stringResource(R.string.accesibilidad_volver),
+                    tint = NegroZesta
+                )
             }
             Text(
                 text = stringResource(R.string.perfil_gestionar_cuenta),
@@ -148,99 +195,158 @@ fun ManageAccountScreen(
 
         Spacer(modifier = Modifier.height(40.dp))
 
-        // Avatar
+        // Avatar de perfil
+        // Si el usuario no es invitado, al pulsar se muestra el diálogo de fuente de imagen
         Box(
             modifier = Modifier
-                .size(110.dp).clip(CircleShape).background(FondoPlaceholderZesta)
+                .size(110.dp)
+                .clip(CircleShape)
+                .background(FondoPlaceholderZesta)
                 .then(if (!isGuest) Modifier.clickable { showImageSourceDialog = true } else Modifier),
             contentAlignment = Alignment.Center
         ) {
             val bmp = profileBitmap
             if (bmp != null) {
-                Image(bitmap = bmp.asImageBitmap(), contentDescription = stringResource(R.string.accesibilidad_avatar_perfil),
-                    modifier = Modifier.size(110.dp).clip(CircleShape), contentScale = ContentScale.Crop)
+                // Foto personalizada del usuario
+                Image(
+                    bitmap = bmp.asImageBitmap(),
+                    contentDescription = stringResource(R.string.accesibilidad_avatar_perfil),
+                    modifier = Modifier.size(110.dp).clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
             } else {
-                Image(painter = painterResource(R.drawable.logo_zesta), contentDescription = stringResource(R.string.accesibilidad_avatar_perfil),
-                    modifier = Modifier.size(70.dp).padding(8.dp), contentScale = ContentScale.Fit)
+                // Placeholder con el logo de Zesta
+                Image(
+                    painter = painterResource(R.drawable.logo_zesta),
+                    contentDescription = stringResource(R.string.accesibilidad_avatar_perfil),
+                    modifier = Modifier.size(70.dp).padding(8.dp),
+                    contentScale = ContentScale.Fit
+                )
             }
         }
 
         Spacer(modifier = Modifier.height(20.dp))
 
         if (isGuest) {
-            Text(stringResource(R.string.gestionar_cuenta_descripcion_invitado), style = MaterialTheme.typography.bodyLarge, color = TextoPrincipalZesta)
+            // Vista invitado: mensaje + botones de acceso
+            Text(
+                stringResource(R.string.gestionar_cuenta_descripcion_invitado),
+                style = MaterialTheme.typography.bodyLarge,
+                color = TextoPrincipalZesta
+            )
             Spacer(modifier = Modifier.height(36.dp))
             PrimaryGradientButton(text = stringResource(R.string.inicio_sesion_entrar), onClick = onLoginClick)
             Spacer(modifier = Modifier.height(18.dp))
             PrimaryGradientButton(text = stringResource(R.string.inicio_sesion_registrarse), onClick = onRegisterClick)
+
         } else {
+            //  Vista usuario autenticado
+
             Text(
                 text = stringResource(R.string.gestionar_cuenta_datos_entrega),
-                style = MaterialTheme.typography.titleMedium, color = TextoPrincipalZesta,
+                style = MaterialTheme.typography.titleMedium,
+                color = TextoPrincipalZesta,
                 modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
             )
 
-            // ── Teléfono
+            // Campo de teléfono
             OutlinedTextField(
                 value = phone,
                 onValueChange = { phone = it; phoneError = null; phoneSuccess = false },
                 label = { Text(stringResource(R.string.carrito_campo_telefono), color = TextoSecundarioZesta) },
                 trailingIcon = {
+                    // Icono de borrar: solo visible si hay texto escrito
                     if (phone.isNotBlank()) {
                         IconButton(onClick = {
-                            authViewModel.clearProfileField("telefono",
+                            authViewModel.clearProfileField(
+                                "telefono",
                                 onSuccess = { phone = ""; phoneSuccess = false },
-                                onError = { phoneError = it })
+                                onError = { phoneError = it }
+                            )
                         }) {
-                            Icon(Icons.Outlined.Delete, contentDescription = stringResource(R.string.gestionar_cuenta_eliminar), tint = TextoSecundarioZesta)
+                            Icon(
+                                Icons.Outlined.Delete,
+                                contentDescription = stringResource(R.string.gestionar_cuenta_eliminar),
+                                tint = TextoSecundarioZesta
+                            )
                         }
                     }
                 },
-                singleLine = true, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(14.dp),
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(14.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = FondoTarjetaRestauranteZesta, unfocusedContainerColor = FondoTarjetaRestauranteZesta,
-                    focusedBorderColor = NaranjaZesta, unfocusedBorderColor = BordeCirculoZesta,
-                    cursorColor = NegroZesta, focusedTextColor = TextoPrincipalZesta, unfocusedTextColor = TextoPrincipalZesta
+                    focusedContainerColor = FondoTarjetaRestauranteZesta,
+                    unfocusedContainerColor = FondoTarjetaRestauranteZesta,
+                    focusedBorderColor = NaranjaZesta,
+                    unfocusedBorderColor = BordeCirculoZesta,
+                    cursorColor = NegroZesta,
+                    focusedTextColor = TextoPrincipalZesta,
+                    unfocusedTextColor = TextoPrincipalZesta
                 )
             )
-            phoneError?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error) }
-            if (phoneSuccess) Text(stringResource(R.string.gestionar_cuenta_guardado_ok), style = MaterialTheme.typography.bodySmall, color = NaranjaZesta)
+            phoneError?.let {
+                Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+            }
+            if (phoneSuccess) {
+                Text(
+                    stringResource(R.string.gestionar_cuenta_guardado_ok),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = NaranjaZesta
+                )
+            }
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            // Botón guardar teléfono
             Box(
-                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(28.dp))
-                    .background(brush = Brush.horizontalGradient(colors = listOf(AzulInicioGradienteZesta, AzulFinGradienteZesta)))
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(28.dp))
+                    .background(brush = Brush.horizontalGradient(listOf(AzulInicioGradienteZesta, AzulFinGradienteZesta)))
                     .border(2.dp, BordeBotonZesta, RoundedCornerShape(28.dp))
                     .clickable(enabled = !isSavingPhone) {
-                        if (phone.trim().length < 9 || !phone.trim().all { it.isDigit() }) { phoneError = errorTelefono; return@clickable }
+                        // Validación: mínimo 9 dígitos y solo números tiene que empezar por 6,7,8,9
+                        if (phone.isNotBlank()) {
+                            if (!isValidSpanishPhone(phone)) {
+                                phoneError = errorTelefono
+                                return@clickable
+                            }
+                        }
                         isSavingPhone = true
                         authViewModel.updateProfile(
-                            telefono = phone, direccion = authState.currentUser?.direccion.orEmpty(),
+                            telefono = phone,
+                            direccion = authState.currentUser?.direccion.orEmpty(),
                             onSuccess = { isSavingPhone = false; phoneSuccess = true },
                             onError = { isSavingPhone = false; phoneError = it }
                         )
-                    }.padding(vertical = 14.dp),
+                    }
+                    .padding(vertical = 14.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = if (isSavingPhone) stringResource(R.string.carrito_guardando) else stringResource(R.string.gestionar_cuenta_guardar_telefono),
-                    color = BlancoZesta, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold
+                    text = if (isSavingPhone) stringResource(R.string.carrito_guardando)
+                    else stringResource(R.string.gestionar_cuenta_guardar_telefono),
+                    color = BlancoZesta,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold
                 )
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // ── Dirección
+            //  Selector de dirección de entrega
             val direccionActiva = authState.currentUser?.direccion
+            val tieneDireccion = !direccionActiva.isNullOrBlank()
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
-                    .background(if (!direccionActiva.isNullOrBlank()) FondoSeleccionNaranjaZesta else FondoTarjetaRestauranteZesta)
+                    .background(if (tieneDireccion) FondoSeleccionNaranjaZesta else FondoTarjetaRestauranteZesta)
                     .border(
-                        width = if (!direccionActiva.isNullOrBlank()) 1.5.dp else 1.dp,
-                        color = if (!direccionActiva.isNullOrBlank()) NaranjaZesta else BordeCirculoZesta,
+                        width = if (tieneDireccion) 1.5.dp else 1.dp,
+                        color = if (tieneDireccion) NaranjaZesta else BordeCirculoZesta,
                         shape = RoundedCornerShape(14.dp)
                     )
                     .clickable { showAddressSheet = true }
@@ -250,13 +356,14 @@ fun ManageAccountScreen(
             ) {
                 Icon(Icons.Outlined.LocationOn, null, tint = NaranjaZesta, modifier = Modifier.size(20.dp))
                 Text(
-                    text = if (!direccionActiva.isNullOrBlank()) direccionActiva else stringResource(R.string.inicio_direccion),
+                    text = if (tieneDireccion) direccionActiva!! else stringResource(R.string.inicio_direccion),
                     style = MaterialTheme.typography.bodyLarge,
-                    color = if (!direccionActiva.isNullOrBlank()) NaranjaZesta else TextoPrincipalZesta,
-                    fontWeight = if (!direccionActiva.isNullOrBlank()) FontWeight.SemiBold else FontWeight.Normal,
+                    color = if (tieneDireccion) NaranjaZesta else TextoPrincipalZesta,
+                    fontWeight = if (tieneDireccion) FontWeight.SemiBold else FontWeight.Normal,
                     modifier = Modifier.weight(1f),
                     maxLines = 2
                 )
+                // Icono de lápiz indicando que es editable
                 Icon(Icons.Outlined.Edit, null, tint = NaranjaZesta, modifier = Modifier.size(18.dp))
             }
 
@@ -264,18 +371,23 @@ fun ManageAccountScreen(
             HorizontalDivider(color = BordeCirculoZesta)
             Spacer(modifier = Modifier.height(28.dp))
 
+            //  Sección cambio de contraseña
             ChangePasswordSection()
 
             Spacer(modifier = Modifier.height(28.dp))
             HorizontalDivider(color = BordeCirculoZesta)
             Spacer(modifier = Modifier.height(28.dp))
 
-            PrimaryGradientButton(text = stringResource(R.string.perfil_cerrar_sesion), onClick = onLogoutClick)
+            //  Cerrar sesión
+            PrimaryGradientButton(
+                text = stringResource(R.string.perfil_cerrar_sesion),
+                onClick = onLogoutClick
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // ── Botón eliminar cuenta
-            deleteErrorMessage?.let {
+            //  Error de deshabilitación (si ocurrió)
+            disableErrorMessage?.let {
                 Text(
                     text = it,
                     style = MaterialTheme.typography.bodySmall,
@@ -284,44 +396,42 @@ fun ManageAccountScreen(
                 )
             }
 
+            //  Botón deshabilitar cuenta
+            // No borra datos: activa el campo `isDisabled = true` en Firestore
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(28.dp))
                     .background(Color(0xFFD94B57))
                     .border(2.dp, BordeBotonZesta, RoundedCornerShape(28.dp))
-                    .clickable(enabled = !isDeletingAccount) {
-                        deleteErrorMessage = null
-                        showDeleteConfirmDialog = true
+                    .clickable(enabled = !isDisablingAccount) {
+                        disableErrorMessage = null
+                        showDisableConfirmDialog = true
                     }
                     .padding(horizontal = 18.dp, vertical = 15.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-
-                    Text(
-                        text = stringResource(R.string.eliminar_cuenta),
-                        color = BlancoZesta,
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
+                Text(
+                    text = stringResource(R.string.eliminar_cuenta),
+                    color = BlancoZesta,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold
+                )
             }
         }
 
         Spacer(modifier = Modifier.height(18.dp))
 
+        //  Enlace para volver al perfil
         Text(
             text = stringResource(R.string.gestionar_cuenta_volver_perfil),
-            style = MaterialTheme.typography.bodyLarge, color = TextoPrincipalZesta,
+            style = MaterialTheme.typography.bodyLarge,
+            color = TextoPrincipalZesta,
             modifier = Modifier.clickable { onBackClick() }
         )
     }
 
-    // ── Sheet de direcciones
+    //  Bottom sheet: gestión de direcciones
     if (showAddressSheet) {
         AddressBottomSheet(
             currentUser = authState.currentUser,
@@ -330,19 +440,19 @@ fun ManageAccountScreen(
         )
     }
 
-    // ── Diálogo 1: confirmación de borrado de cuenta
-    if (showDeleteConfirmDialog) {
+    //  Diálogo 1: confirmación antes de deshabilitar cuenta
+    if (showDisableConfirmDialog) {
         AlertDialog(
-            onDismissRequest = { showDeleteConfirmDialog = false },
+            onDismissRequest = { showDisableConfirmDialog = false },
             containerColor = FondoTarjetaRestauranteZesta,
             shape = RoundedCornerShape(24.dp),
             icon = {
+                // Icono de advertencia con fondo rojo semitransparente
                 Box(
                     modifier = Modifier
                         .size(64.dp)
                         .clip(CircleShape)
                         .background(Color(0xFFD94B57).copy(alpha = 0.12f)),
-
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -373,13 +483,14 @@ fun ManageAccountScreen(
                 )
             },
             confirmButton = {
+                // Al confirmar, se avanza al diálogo de valoración (paso 2)
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(22.dp))
                         .background(Color(0xFFD94B57))
                         .clickable {
-                            showDeleteConfirmDialog = false
+                            showDisableConfirmDialog = false
                             showRatingDialog = true
                         }
                         .padding(vertical = 14.dp),
@@ -394,7 +505,7 @@ fun ManageAccountScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteConfirmDialog = false }) {
+                TextButton(onClick = { showDisableConfirmDialog = false }) {
                     Text(
                         text = stringResource(R.string.inicio_sheet_cancelar),
                         textAlign = TextAlign.Center,
@@ -406,39 +517,42 @@ fun ManageAccountScreen(
         )
     }
 
-
-    // ── Diálogo 2: valoración antes de irse
+    //  Diálogo 2: valoración antes de deshabilitar
+    // El usuario puede puntuar la app o cerrar sin puntuar; en ambos casos
+    // se deshabilita la cuenta (isDisabled = true en Firestore) y se cierra sesión.
     if (showRatingDialog) {
         RatingDialog(
             onDismiss = {
-                if (!isDeletingAccount) {
+                // Cerró sin valorar → deshabilitar igualmente
+                if (!isDisablingAccount) {
                     showRatingDialog = false
-                    isDeletingAccount = true
-                    authViewModel.deleteAccount(
+                    isDisablingAccount = true
+                    authViewModel.disableAccount(
                         onSuccess = {
-                            isDeletingAccount = false
+                            isDisablingAccount = false
                             onDeleteAccountSuccess()
                         },
                         onError = { error ->
-                            isDeletingAccount = false
-                            deleteErrorMessage = error
+                            isDisablingAccount = false
+                            disableErrorMessage = error
                         }
                     )
                 }
             },
             onSubmit = { stars ->
-                if (!isDeletingAccount) {
+                // Guardó valoración → enviar rating y luego deshabilitar
+                if (!isDisablingAccount) {
                     showRatingDialog = false
-                    isDeletingAccount = true
-                    authViewModel.sendRatingAndDeleteAccount(
+                    isDisablingAccount = true
+                    authViewModel.sendRatingAndDisableAccount(
                         rating = stars.toString(),
                         onSuccess = {
-                            isDeletingAccount = false
+                            isDisablingAccount = false
                             onDeleteAccountSuccess()
                         },
                         onError = { error ->
-                            isDeletingAccount = false
-                            deleteErrorMessage = error
+                            isDisablingAccount = false
+                            disableErrorMessage = error
                         }
                     )
                 }
@@ -446,54 +560,94 @@ fun ManageAccountScreen(
         )
     }
 
+    //  Diálogo: selección de fuente de imagen de perfil
     if (showImageSourceDialog) {
         AlertDialog(
             onDismissRequest = { showImageSourceDialog = false },
             containerColor = FondoTarjetaRestauranteZesta,
             shape = RoundedCornerShape(20.dp),
             title = {
-                Text(stringResource(R.string.gestionar_cuenta_foto_titulo),
-                    style = MaterialTheme.typography.titleMedium, color = TextoPrincipalZesta, fontWeight = FontWeight.SemiBold)
+                Text(
+                    stringResource(R.string.gestionar_cuenta_foto_titulo),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = TextoPrincipalZesta,
+                    fontWeight = FontWeight.SemiBold
+                )
             },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    // Opción: cámara
                     Row(
-                        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp))
-                            .background(FondoZesta).border(1.dp, BordeCirculoZesta, RoundedCornerShape(14.dp))
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(FondoZesta)
+                            .border(1.dp, BordeCirculoZesta, RoundedCornerShape(14.dp))
                             .clickable {
                                 showImageSourceDialog = false
-                                val granted = ContextCompat.checkSelfPermission(context, android.Manifest.permission.CAMERA) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                                val granted = ContextCompat.checkSelfPermission(
+                                    context, android.Manifest.permission.CAMERA
+                                ) == android.content.pm.PackageManager.PERMISSION_GRANTED
                                 if (granted) cameraLauncher.launch(cameraImageUri)
                                 else cameraPermissionLauncher.launch(android.Manifest.permission.CAMERA)
-                            }.padding(horizontal = 16.dp, vertical = 14.dp),
+                            }
+                            .padding(horizontal = 16.dp, vertical = 14.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Icon(Icons.Outlined.CameraAlt, null, tint = NaranjaZesta, modifier = Modifier.size(20.dp))
-                        Text(stringResource(R.string.gestionar_cuenta_foto_camara), style = MaterialTheme.typography.bodyLarge, color = TextoPrincipalZesta, fontWeight = FontWeight.SemiBold)
+                        Text(
+                            stringResource(R.string.gestionar_cuenta_foto_camara),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = TextoPrincipalZesta,
+                            fontWeight = FontWeight.SemiBold
+                        )
                     }
+
+                    // Opción: galería
                     Row(
-                        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp))
-                            .background(FondoZesta).border(1.dp, BordeCirculoZesta, RoundedCornerShape(14.dp))
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(FondoZesta)
+                            .border(1.dp, BordeCirculoZesta, RoundedCornerShape(14.dp))
                             .clickable { showImageSourceDialog = false; galleryLauncher.launch("image/*") }
                             .padding(horizontal = 16.dp, vertical = 14.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Icon(Icons.Outlined.PhotoLibrary, null, tint = NaranjaZesta, modifier = Modifier.size(20.dp))
-                        Text(stringResource(R.string.gestionar_cuenta_foto_galeria), style = MaterialTheme.typography.bodyLarge, color = TextoPrincipalZesta, fontWeight = FontWeight.SemiBold)
+                        Text(
+                            stringResource(R.string.gestionar_cuenta_foto_galeria),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = TextoPrincipalZesta,
+                            fontWeight = FontWeight.SemiBold
+                        )
                     }
+
+                    // Opción: eliminar foto (solo visible si hay foto personalizada)
                     if (profileBitmap != null) {
                         Row(
-                            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp))
-                                .background(FondoZesta).border(1.dp, BordeCirculoZesta, RoundedCornerShape(14.dp))
-                                .clickable { showImageSourceDialog = false; authViewModel.clearProfileImage() }
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(FondoZesta)
+                                .border(1.dp, BordeCirculoZesta, RoundedCornerShape(14.dp))
+                                .clickable {
+                                    showImageSourceDialog = false
+                                    authViewModel.clearProfileImage()
+                                }
                                 .padding(horizontal = 16.dp, vertical = 14.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             Icon(Icons.Outlined.Delete, null, tint = NaranjaZesta, modifier = Modifier.size(20.dp))
-                            Text(stringResource(R.string.gestionar_cuenta_foto_eliminar), style = MaterialTheme.typography.bodyLarge, color = TextoPrincipalZesta, fontWeight = FontWeight.SemiBold)
+                            Text(
+                                stringResource(R.string.gestionar_cuenta_foto_eliminar),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = TextoPrincipalZesta,
+                                fontWeight = FontWeight.SemiBold
+                            )
                         }
                     }
                 }
@@ -508,71 +662,114 @@ fun ManageAccountScreen(
     }
 }
 
+/**
+ * Sección de cambio de contraseña dentro de [ManageAccountScreen].
+ *
+ * Muestra tres campos (contraseña actual, nueva, confirmación) y un botón
+ * que reautentica al usuario con Firebase antes de actualizar la contraseña.
+ * Si el cambio tiene éxito, reemplaza el formulario por un mensaje de confirmación.
+ *
+ * Es un composable privado porque solo se usa en esta pantalla.
+ */
 @Composable
 private fun ChangePasswordSection() {
     val scope = rememberCoroutineScope()
+
     var currentPassword by remember { mutableStateOf("") }
     var newPassword by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+
     var isLoading by remember { mutableStateOf(false) }
+    // Cuando no es null, se oculta el formulario y se muestra el banner de éxito
     var successMessage by remember { mutableStateOf<String?>(null) }
+
     var currentPasswordError by remember { mutableStateOf<String?>(null) }
     var newPasswordError by remember { mutableStateOf<String?>(null) }
     var confirmPasswordError by remember { mutableStateOf<String?>(null) }
+
+    // Strings cargados fuera de la lambda para evitar llamar a stringResource
+    // dentro de un contexto no-composable (coroutine)
     val errContraseñaVacia = stringResource(R.string.intro_actual_contraseña)
     val errMinCaracteres = stringResource(R.string.nueva_contrasena_minimo)
     val errNoCoinciden = stringResource(R.string.contrasenas_no_coinciden)
     val errActualIncorrecta = stringResource(R.string.contrasena_actual_incorrecta)
 
+    // Colores y forma reutilizados en los tres campos
     val fieldColors = OutlinedTextFieldDefaults.colors(
-        focusedContainerColor = FondoTarjetaRestauranteZesta, unfocusedContainerColor = FondoTarjetaRestauranteZesta,
-        focusedBorderColor = NaranjaZesta, unfocusedBorderColor = BordeCirculoZesta,
-        cursorColor = NegroZesta, focusedTextColor = TextoPrincipalZesta, unfocusedTextColor = TextoPrincipalZesta
+        focusedContainerColor = FondoTarjetaRestauranteZesta,
+        unfocusedContainerColor = FondoTarjetaRestauranteZesta,
+        focusedBorderColor = NaranjaZesta,
+        unfocusedBorderColor = BordeCirculoZesta,
+        cursorColor = NegroZesta,
+        focusedTextColor = TextoPrincipalZesta,
+        unfocusedTextColor = TextoPrincipalZesta
     )
     val fieldShape = RoundedCornerShape(14.dp)
 
-    Text(text = stringResource(R.string.cambiar_contraseña), style = MaterialTheme.typography.titleMedium,
-        color = TextoPrincipalZesta, modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp))
+    Text(
+        text = stringResource(R.string.cambiar_contraseña),
+        style = MaterialTheme.typography.titleMedium,
+        color = TextoPrincipalZesta,
+        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+    )
 
+    //  Banner de éxito: reemplaza el formulario tras un cambio correcto
     if (successMessage != null) {
         Row(
-            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp))
-                .background(FondoTarjetaRestauranteZesta).border(1.dp, BordeCirculoZesta, RoundedCornerShape(14.dp))
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(14.dp))
+                .background(FondoTarjetaRestauranteZesta)
+                .border(1.dp, BordeCirculoZesta, RoundedCornerShape(14.dp))
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Icon(Icons.Outlined.CheckCircle, null, tint = VerdeExitoZesta, modifier = Modifier.size(22.dp))
-            Text(text = stringResource(R.string.actualizar_contraseña), style = MaterialTheme.typography.bodyMedium, color = TextoPrincipalZesta)
+            Text(
+                text = stringResource(R.string.actualizar_contraseña),
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextoPrincipalZesta
+            )
         }
-        return
+        return // No renderizar el formulario si ya se cambió la contraseña
     }
 
+    //  Formulario
     OutlinedTextField(
-        value = currentPassword, onValueChange = { currentPassword = it; currentPasswordError = null },
+        value = currentPassword,
+        onValueChange = { currentPassword = it; currentPasswordError = null },
         label = { Text(stringResource(R.string.actual_contraseña), color = TextoSecundarioZesta) },
-        singleLine = true, visualTransformation = PasswordVisualTransformation(),
-        modifier = Modifier.fillMaxWidth(), shape = fieldShape,
+        singleLine = true,
+        visualTransformation = PasswordVisualTransformation(),
+        modifier = Modifier.fillMaxWidth(),
+        shape = fieldShape,
         isError = currentPasswordError != null,
         supportingText = if (currentPasswordError != null) {{ Text(currentPasswordError!!) }} else null,
         colors = fieldColors
     )
     Spacer(modifier = Modifier.height(8.dp))
     OutlinedTextField(
-        value = newPassword, onValueChange = { newPassword = it; newPasswordError = null },
+        value = newPassword,
+        onValueChange = { newPassword = it; newPasswordError = null },
         label = { Text(stringResource(R.string.nueva_contraseña), color = TextoSecundarioZesta) },
-        singleLine = true, visualTransformation = PasswordVisualTransformation(),
-        modifier = Modifier.fillMaxWidth(), shape = fieldShape,
+        singleLine = true,
+        visualTransformation = PasswordVisualTransformation(),
+        modifier = Modifier.fillMaxWidth(),
+        shape = fieldShape,
         isError = newPasswordError != null,
         supportingText = if (newPasswordError != null) {{ Text(newPasswordError!!) }} else null,
         colors = fieldColors
     )
     Spacer(modifier = Modifier.height(8.dp))
     OutlinedTextField(
-        value = confirmPassword, onValueChange = { confirmPassword = it; confirmPasswordError = null },
+        value = confirmPassword,
+        onValueChange = { confirmPassword = it; confirmPasswordError = null },
         label = { Text(stringResource(R.string.conf_nueva_contraseña), color = TextoSecundarioZesta) },
-        singleLine = true, visualTransformation = PasswordVisualTransformation(),
-        modifier = Modifier.fillMaxWidth(), shape = fieldShape,
+        singleLine = true,
+        visualTransformation = PasswordVisualTransformation(),
+        modifier = Modifier.fillMaxWidth(),
+        shape = fieldShape,
         isError = confirmPasswordError != null,
         supportingText = if (confirmPasswordError != null) {{ Text(confirmPasswordError!!) }} else null,
         colors = fieldColors
@@ -584,24 +781,30 @@ private fun ChangePasswordSection() {
             CircularProgressIndicator(color = NaranjaZesta)
         }
     } else {
+        //  Botón cambiar contraseña
         Box(
-            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(28.dp))
-                .background(brush = Brush.horizontalGradient(colors = listOf(AzulInicioGradienteZesta, AzulFinGradienteZesta)))
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(28.dp))
+                .background(brush = Brush.horizontalGradient(listOf(AzulInicioGradienteZesta, AzulFinGradienteZesta)))
                 .border(2.dp, BordeBotonZesta, RoundedCornerShape(28.dp))
                 .clickable {
+                    // Validación local antes de llamar a Firebase
                     var valid = true
                     if (currentPassword.isBlank()) { currentPasswordError = errContraseñaVacia; valid = false }
                     if (newPassword.length < 6) { newPasswordError = errMinCaracteres; valid = false }
                     if (confirmPassword != newPassword) { confirmPasswordError = errNoCoinciden; valid = false }
                     if (!valid) return@clickable
+
                     scope.launch {
                         isLoading = true
                         try {
-                            val auth = FirebaseAuth.getInstance()
-                            val user = auth.currentUser
+                            val user = FirebaseAuth.getInstance().currentUser
+                            // Reautenticación necesaria para operaciones sensibles en Firebase Auth
                             val credential = EmailAuthProvider.getCredential(user?.email ?: "", currentPassword)
                             user?.reauthenticate(credential)?.await()
                             user?.updatePassword(newPassword)?.await()
+                            // Limpiar campos tras éxito
                             currentPassword = ""; newPassword = ""; confirmPassword = ""
                             successMessage = "ok"
                         } catch (e: Exception) {
@@ -613,21 +816,43 @@ private fun ChangePasswordSection() {
                 .padding(vertical = 14.dp),
             contentAlignment = Alignment.Center
         ) {
-            Text(text = stringResource(R.string.cambiar_contraseña), color = BlancoZesta,
-                style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+            Text(
+                text = stringResource(R.string.cambiar_contraseña),
+                color = BlancoZesta,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold
+            )
         }
     }
 }
 
+/**
+ * Convierte una [Uri] de imagen (galería o cámara) a una cadena Base64.
+ *
+ * El proceso es:
+ * 1. Abre el stream del contenido asociado a la URI.
+ * 2. Decodifica el stream a [Bitmap].
+ * 3. Escala la imagen a 300×300 px para reducir el tamaño almacenado en Firestore.
+ * 4. Comprime a JPEG con calidad 70 y codifica en Base64 sin saltos de línea ([Base64.NO_WRAP]).
+ *
+ * @param context Contexto necesario para acceder al [ContentResolver].
+ * @param uri     URI de la imagen seleccionada o capturada.
+ * @return        String Base64 de la imagen, o `null` si ocurre algún error.
+ */
 fun uriToBase64(context: Context, uri: Uri): String? {
     return try {
         val inputStream = context.contentResolver.openInputStream(uri) ?: return null
         val original = BitmapFactory.decodeStream(inputStream)
         inputStream.close()
         if (original == null) return null
+        // Reducir a 300×300 para no exceder el límite de tamaño de Firestore (1 MB por documento)
         val scaled = Bitmap.createScaledBitmap(original, 300, 300, true)
         val baos = ByteArrayOutputStream()
         scaled.compress(Bitmap.CompressFormat.JPEG, 70, baos)
         Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP)
     } catch (e: Exception) { null }
+}
+private fun isValidSpanishPhone(phone: String): Boolean {
+    val regex = Regex("^[6789]\\d{8}$")
+    return regex.matches(phone.trim())
 }

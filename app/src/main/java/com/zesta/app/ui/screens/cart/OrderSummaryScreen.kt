@@ -58,7 +58,7 @@ import com.zesta.app.data.model.Order
 import com.zesta.app.data.repository.OrderRepository
 import com.zesta.app.data.repository.PROMO_CODES
 import com.zesta.app.data.repository.RestaurantRepository
-import com.zesta.app.ui.screens.restaurant.PromoType
+import com.zesta.app.data.model.PromoType
 import com.zesta.app.ui.theme.*
 import com.zesta.app.viewmodel.AuthViewModel
 import com.zesta.app.viewmodel.CartViewModel

@@ -2,6 +2,7 @@ package com.zesta.app.ui.screens.restaurant
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import com.zesta.app.data.model.Product
 
 data class Restaurant(
     val id: Int,

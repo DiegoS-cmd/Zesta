@@ -21,19 +21,17 @@ class UserPreferencesRepository(private val context: Context) {
 
     private object PreferencesKeys {
         val IS_GUEST = booleanPreferencesKey("is_guest")
-        val ORDER_COUNT = intPreferencesKey("order_count")  // ← nuevo
+        val ORDER_COUNT = intPreferencesKey("order_count")
 
         fun profileImageUri(userId: String) =
             stringPreferencesKey("profile_image_uri_$userId")
     }
 
-    // ── Invitado
+    private fun safeDataStore() = context.dataStore.data
+        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
 
-    val isGuestFlow: Flow<Boolean> = context.dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences()) else throw exception
-        }
-        .map { preferences -> preferences[PreferencesKeys.IS_GUEST] ?: false }
+    val isGuestFlow: Flow<Boolean> = safeDataStore()
+        .map { it[PreferencesKeys.IS_GUEST] ?: false }
 
     suspend fun continueAsGuest() {
         context.dataStore.edit { it[PreferencesKeys.IS_GUEST] = true }
@@ -43,15 +41,11 @@ class UserPreferencesRepository(private val context: Context) {
         context.dataStore.edit { it[PreferencesKeys.IS_GUEST] = false }
     }
 
-    // ── Foto de perfil
-
-    fun profileImageUriFlow(userId: String?): Flow<Uri?> = context.dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences()) else throw exception
-        }
-        .map { preferences ->
+    // clave por userId para no mezclar fotos entre cuentas
+    fun profileImageUriFlow(userId: String?): Flow<Uri?> = safeDataStore()
+        .map { prefs ->
             if (userId.isNullOrBlank()) return@map null
-            preferences[PreferencesKeys.profileImageUri(userId)]?.let { Uri.parse(it) }
+            prefs[PreferencesKeys.profileImageUri(userId)]?.let { Uri.parse(it) }
         }
 
     suspend fun saveProfileImageUri(userId: String, uri: Uri) {
@@ -64,15 +58,11 @@ class UserPreferencesRepository(private val context: Context) {
         context.dataStore.edit { it.remove(PreferencesKeys.profileImageUri(userId)) }
     }
 
-    // ── Contador de pedidos
-
-    // Incrementa el contador y devuelve true si toca mostrar la valoración
+    // devuelve true cada 3 pedidos para mostrar el diálogo de valoración
     suspend fun incrementOrderCountAndCheck(): Boolean {
-        val prefs = context.dataStore.data.first()
-        val current = prefs[PreferencesKeys.ORDER_COUNT] ?: 0
-        val newCount = current + 1
-        context.dataStore.edit { it[PreferencesKeys.ORDER_COUNT] = newCount }
-        // Muestra en el 1º, 4º, 7º... (newCount % 3 == 1)
-        return newCount % 3 == 1
+        val current = context.dataStore.data.first()[PreferencesKeys.ORDER_COUNT] ?: 0
+        val next = current + 1
+        context.dataStore.edit { it[PreferencesKeys.ORDER_COUNT] = next }
+        return next % 3 == 1
     }
 }

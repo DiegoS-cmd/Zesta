@@ -18,6 +18,25 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
+/**
+ * Estado de la UI de autenticación.
+ * Es inmutable (data class) para garantizar recomposiciones predecibles en Compose.
+ *
+ * @param fullName        Nombre completo introducido en el formulario de registro.
+ * @param email           Email del formulario de login/registro.
+ * @param password        Contraseña del formulario (nunca se persiste).
+ * @param phone           Teléfono del formulario.
+ * @param address         Dirección del formulario.
+ * @param isLoggedIn      True si hay sesión activa de usuario registrado.
+ * @param isGuest         True si el usuario está navegando como invitado.
+ * @param currentUser     Datos completos del usuario autenticado, o null si no hay sesión.
+ * @param userName        Nombre del usuario para mostrar en la UI (atajo de currentUser.nombre).
+ * @param errorMessage    Mensaje de error a mostrar en pantalla, null si no hay error.
+ * @param isLoading       True mientras hay una operación de red en curso.
+ * @param isSessionChecked True cuando ya se ha comprobado si existe sesión guardada.
+ *                         Evita mostrar la pantalla de login antes de tiempo (flash).
+ * @param favoritos       Lista de IDs de restaurantes marcados como favoritos.
+ */
 data class AuthUiState(
     val fullName: String = "",
     val email: String = "",
@@ -34,6 +53,20 @@ data class AuthUiState(
     val favoritos: List<Int> = emptyList()
 )
 
+/**
+ * ViewModel central de autenticación y perfil de usuario.
+ *
+ * Gestiona:
+ * - Registro, login (email/contraseña y Google) y cierre de sesión.
+ * - Restauración de sesión al arrancar la app.
+ * - Perfil del usuario: teléfono, dirección, foto.
+ * - Favoritos de restaurantes.
+ * - Deshabilitación de cuenta (soft delete: no borra datos, solo marca isDisabled = true).
+ *
+ * @param authRepository         Repositorio de autenticación (Firebase Auth + Firestore).
+ * @param preferencesRepository  Repositorio de preferencias locales (modo invitado).
+ * @param storageRepository      Repositorio de almacenamiento de fotos de perfil.
+ */
 class AuthViewModel(
     private val authRepository: AuthRepository,
     private val preferencesRepository: UserPreferencesRepository,
@@ -41,6 +74,10 @@ class AuthViewModel(
 ) : ViewModel() {
 
     companion object {
+        /**
+         * Factory de conveniencia para crear el ViewModel desde un contexto
+         * donde no se dispone de [AuthViewModelFactory].
+         */
         fun factory(
             authRepository: AuthRepository,
             preferencesRepository: UserPreferencesRepository
@@ -52,16 +89,18 @@ class AuthViewModel(
         }
     }
 
-    // Base64
+    // Imagen de perfil del usuario almacenada en Firestore como cadena Base64
     private val _profileImageUrl = MutableStateFlow<String?>(null)
     val profileImageUrl: StateFlow<String?> = _profileImageUrl.asStateFlow()
 
+    // Estado principal de la UI; toda la pantalla reacciona a sus cambios
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
     init {
         observeGuestMode()
         restoreSessionIfNeeded()
+        // Log de depuración: registra cada cambio en la foto de perfil
         viewModelScope.launch {
             profileImageUrl.collect { value ->
                 android.util.Log.d(
@@ -72,11 +111,17 @@ class AuthViewModel(
         }
     }
 
+    /**
+     * Carga los datos actualizados del usuario desde Firestore y actualiza el estado.
+     * Solo sobreescribe la foto si aún no hay ninguna cargada en memoria,
+     * evitando parpadeos al recargar el perfil.
+     */
     private fun loadCurrentUser() {
         viewModelScope.launch {
             val result = authRepository.getCurrentUser()
             if (result.isSuccess) {
                 val user = result.getOrNull()
+                // No sobreescribir la foto si ya está en memoria
                 if (_profileImageUrl.value.isNullOrBlank()) {
                     _profileImageUrl.value = user?.profilePhotoUrl
                 }
@@ -91,6 +136,10 @@ class AuthViewModel(
         }
     }
 
+    /**
+     * Observa el estado del modo invitado en DataStore.
+     * Actualiza [AuthUiState.isGuest] cada vez que cambia.
+     */
     private fun observeGuestMode() {
         viewModelScope.launch {
             preferencesRepository.isGuestFlow.collect { isGuest ->
@@ -99,12 +148,33 @@ class AuthViewModel(
         }
     }
 
+    /**
+     * Restaura la sesión del usuario si Firebase Auth tiene un token activo.
+     * Se ejecuta al crear el ViewModel (en el init).
+     *
+     * Cuando termina (con éxito o no), pone [AuthUiState.isSessionChecked] = true
+     * para que la UI deje de mostrar la pantalla de carga inicial.
+     */
     private fun restoreSessionIfNeeded() {
         if (!authRepository.isLoggedIn()) {
             _uiState.value = _uiState.value.copy(isSessionChecked = true)
             return
         }
         viewModelScope.launch {
+            // Primero comprobar si la cuenta sigue activa
+            val activeCheck = authRepository.checkAccountStillActive()
+            if (activeCheck.isFailure) {
+                // Cuenta deshabilitada o token inválido: mandar al login
+                _uiState.value = _uiState.value.copy(
+                    isLoggedIn = false,
+                    currentUser = null,
+                    userName = "",
+                    isSessionChecked = true  // <-- solo aquí, después del check
+                )
+                return@launch
+            }
+
+            // Solo si la cuenta está activa, cargar el perfil
             val result = authRepository.getCurrentUser()
             if (result.isSuccess) {
                 val user = result.getOrNull()
@@ -127,13 +197,16 @@ class AuthViewModel(
                     isLoggedIn = false,
                     currentUser = null,
                     userName = "",
-                    errorMessage = null,
                     isSessionChecked = true
                 )
             }
         }
     }
 
+    /**
+     * Sube una foto de perfil a partir de una [Uri] local (galería o cámara).
+     * Delega la subida al [StorageRepository] y actualiza el StateFlow de la imagen.
+     */
     fun setProfileImageUri(context: Context, uri: Uri) {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
         viewModelScope.launch {
@@ -149,6 +222,10 @@ class AuthViewModel(
         }
     }
 
+    /**
+     * Sube una foto de perfil ya convertida a Base64.
+     * Se usa cuando la imagen viene de la cámara o galería tras pasar por [uriToBase64].
+     */
     fun setProfileImageBase64(base64: String) {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
         viewModelScope.launch {
@@ -161,6 +238,9 @@ class AuthViewModel(
         }
     }
 
+    /**
+     * Elimina la foto de perfil del usuario tanto en Firestore como en el estado local.
+     */
     fun clearProfileImage() {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
         viewModelScope.launch {
@@ -168,6 +248,9 @@ class AuthViewModel(
             _profileImageUrl.value = null
         }
     }
+
+    // Actualizaciones de campos del formulario
+    // Cada función limpia el error al empezar a escribir para no confundir al usuario
 
     fun onFullNameChange(value: String) {
         _uiState.value = _uiState.value.copy(fullName = value, errorMessage = null)
@@ -189,6 +272,9 @@ class AuthViewModel(
         _uiState.value = _uiState.value.copy(address = value, errorMessage = null)
     }
 
+    // Gestión de direcciones
+
+    /** Añade una nueva dirección a la lista de direcciones del usuario en Firestore. */
     fun addDireccion(direccion: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
             val result = authRepository.addDireccion(direccion)
@@ -198,6 +284,7 @@ class AuthViewModel(
         }
     }
 
+    /** Cambia la dirección de entrega activa (la que se usa por defecto al pedir). */
     fun setDireccionActiva(
         direccion: String,
         onSuccess: () -> Unit = {},
@@ -211,6 +298,7 @@ class AuthViewModel(
         }
     }
 
+    /** Elimina una dirección concreta de la lista de direcciones del usuario. */
     fun deleteDireccion(direccion: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
             val result = authRepository.deleteDireccion(direccion)
@@ -220,6 +308,13 @@ class AuthViewModel(
         }
     }
 
+    // Favoritos
+
+    /**
+     * Alterna el estado favorito de un restaurante.
+     * Si ya estaba en favoritos lo quita; si no estaba lo añade.
+     * Actualiza el estado optimistamente con el resultado del repositorio.
+     */
     fun toggleFavorito(restaurantId: Int) {
         viewModelScope.launch {
             val result = authRepository.toggleFavorito(restaurantId)
@@ -234,6 +329,13 @@ class AuthViewModel(
         }
     }
 
+    // Autenticación
+
+    /**
+     * Registra un nuevo usuario con email y contraseña.
+     * Valida que los campos obligatorios no estén vacíos antes de llamar al repositorio.
+     * Al tener éxito limpia el modo invitado y establece la sesión.
+     */
     fun register(onSuccess: () -> Unit) {
         val state = _uiState.value
         if (state.fullName.isBlank() || state.email.isBlank() || state.password.isBlank()) {
@@ -269,6 +371,11 @@ class AuthViewModel(
         }
     }
 
+    /**
+     * Inicia sesión con email y contraseña.
+     * Valida campos localmente antes de llamar a Firebase Auth.
+     * Al tener éxito limpia el modo invitado y carga el perfil del usuario.
+     */
     fun login(onSuccess: () -> Unit) {
         val state = _uiState.value
         if (state.email.isBlank() || state.password.isBlank()) {
@@ -298,6 +405,10 @@ class AuthViewModel(
         }
     }
 
+    /**
+     * Inicia sesión con Google usando el token de ID obtenido por el cliente de Google Sign-In.
+     * Al tener éxito limpia el modo invitado y establece la sesión igual que el login normal.
+     */
     fun loginWithGoogle(idToken: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
@@ -322,6 +433,10 @@ class AuthViewModel(
         }
     }
 
+    /**
+     * Actualiza el teléfono y la dirección activa del usuario en Firestore.
+     * Si la dirección es nueva, la añade al historial de direcciones (máximo 3).
+     */
     fun updateProfile(
         telefono: String,
         direccion: String,
@@ -339,7 +454,8 @@ class AuthViewModel(
                     (listaActual + direccion).takeLast(3)
                 } else listaActual
                 _uiState.value = _uiState.value.copy(
-                    phone = telefono.trim(), address = direccion.trim(),
+                    phone = telefono.trim(),
+                    address = direccion.trim(),
                     currentUser = _uiState.value.currentUser?.copy(
                         telefono = telefono.trim(),
                         direccion = direccion.trim(),
@@ -353,6 +469,10 @@ class AuthViewModel(
         }
     }
 
+    /**
+     * Borra un campo concreto del perfil del usuario ("telefono" o "direccion").
+     * Si se borra la dirección, también la elimina del historial de direcciones.
+     */
     fun clearProfileField(field: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
             val result = authRepository.clearProfileField(field)
@@ -360,7 +480,8 @@ class AuthViewModel(
                 val listaActual = _uiState.value.currentUser?.direcciones ?: emptyList()
                 val direccionBorrada = _uiState.value.currentUser?.direccion.orEmpty()
                 val nuevaLista =
-                    if (field == "direccion") listaActual.filter { it != direccionBorrada } else listaActual
+                    if (field == "direccion") listaActual.filter { it != direccionBorrada }
+                    else listaActual
                 _uiState.value = _uiState.value.copy(
                     phone = if (field == "telefono") "" else _uiState.value.phone,
                     address = if (field == "direccion") "" else _uiState.value.address,
@@ -377,11 +498,16 @@ class AuthViewModel(
         }
     }
 
+    /**
+     * Comprueba si el usuario tiene el perfil mínimo completo para realizar pedidos.
+     * Se considera completo si tiene teléfono y dirección de entrega.
+     */
     fun hasCompleteProfile(): Boolean {
         val user = _uiState.value.currentUser
         return !user?.telefono.isNullOrBlank() && !user?.direccion.isNullOrBlank()
     }
 
+    /** Establece el modo invitado y navega al flujo principal sin iniciar sesión. */
     fun continueAsGuest(onSuccess: () -> Unit) {
         viewModelScope.launch {
             preferencesRepository.continueAsGuest()
@@ -393,6 +519,7 @@ class AuthViewModel(
         }
     }
 
+    /** Cierra la sesión del usuario y resetea todo el estado de la UI. */
     fun logout() {
         viewModelScope.launch {
             authRepository.logout()
@@ -402,20 +529,27 @@ class AuthViewModel(
         }
     }
 
-    // ─── Eliminar cuenta ──────────────────────────────────────────────────────
+    // Deshabilitación de cuenta (soft delete)
 
     /**
-     * Guarda la valoración en Firestore (si no está vacía) y luego elimina la cuenta.
-     * Tanto si la valoración falla como si el usuario la cierra sin enviar, se borra la cuenta igualmente.
+     * Guarda la valoración del usuario en la colección "app_feedback" de Firestore
+     * y a continuación deshabilita la cuenta.
+     *
+     * Si guardar la valoración falla, se registra el error pero se continúa
+     * con la deshabilitación igualmente, para no bloquear al usuario.
+     *
+     * @param rating   Puntuación enviada por el usuario (1-5 estrellas como String).
+     * @param onSuccess Callback ejecutado tras deshabilitar correctamente.
+     * @param onError   Callback con mensaje de error si falla la deshabilitación.
      */
-    fun sendRatingAndDeleteAccount(
+    fun sendRatingAndDisableAccount(
         rating: String,
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
         viewModelScope.launch {
             val uid = FirebaseAuth.getInstance().currentUser?.uid
-            if (!rating.isBlank() && uid != null) {
+            if (rating.isNotBlank() && uid != null) {
                 try {
                     FirebaseFirestore.getInstance()
                         .collection("app_feedback")
@@ -428,19 +562,31 @@ class AuthViewModel(
                         )
                         .await()
                 } catch (e: Exception) {
-                    // Si falla guardar la valoración, continuamos igualmente con el borrado
+                    // Error no crítico: la valoración es opcional, la deshabilitación sigue adelante
                     android.util.Log.w(
-                        "ZESTA_DELETE",
+                        "ZESTA_DISABLE",
                         "No se pudo guardar valoración: ${e.message}"
                     )
                 }
             }
-            deleteAccount(onSuccess = onSuccess, onError = onError)
+            disableAccount(onSuccess = onSuccess, onError = onError)
         }
     }
 
-
-    fun deleteAccount(
+    /**
+     * Deshabilita la cuenta del usuario de forma segura (soft delete).
+     *
+     * En lugar de borrar el documento de Firestore (lo que destruiría el historial
+     * de pedidos y facturas asociadas), marca el campo [isDisabled] = true y
+     * registra la fecha en [disabledAt]. El usuario no podrá volver a iniciar sesión
+     * porque el repositorio comprueba este campo durante el login.
+     *
+     * Tras marcar la cuenta, cierra sesión localmente y resetea el estado.
+     *
+     * @param onSuccess Callback ejecutado tras deshabilitar correctamente.
+     * @param onError   Callback con mensaje de error legible para mostrar en la UI.
+     */
+    fun disableAccount(
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
@@ -450,22 +596,23 @@ class AuthViewModel(
             return
         }
 
-        // se guarda antes de borrarlp
         val uid = user.uid
 
         viewModelScope.launch {
             try {
-
+                // Marcar cuenta como deshabilitada en Firestore (no se borra el documento)
                 FirebaseFirestore.getInstance()
                     .collection("users")
                     .document(uid)
-                    .delete()
+                    .update(
+                        mapOf(
+                            "isDisabled" to true,
+                            "disabledAt" to FieldValue.serverTimestamp()
+                        )
+                    )
                     .await()
 
-                // borramos el usuario de Firebase Auth
-                user.delete().await()
-
-                // Limpiamos sesión local
+                // Cerrar sesión de Firebase Auth (el documento queda intacto)
                 authRepository.logout()
                 preferencesRepository.clearGuestMode()
                 _profileImageUrl.value = null
@@ -476,14 +623,41 @@ class AuthViewModel(
                 val mensaje = when {
                     e.message?.contains("recent", ignoreCase = true) == true ->
                         "Por seguridad, cierra sesión, vuelve a iniciar sesión y repite la operación."
-
-                    else -> e.localizedMessage ?: "No se pudo eliminar la cuenta."
+                    else -> e.localizedMessage ?: "No se pudo deshabilitar la cuenta."
                 }
                 onError(mensaje)
             }
         }
     }
+    fun reactivateAccount(
+        email: String,
+        password: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
+            val result = authRepository.reactivateAccount(email, password)
+            if (result.isSuccess) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    errorMessage = "Cuenta reactivada. Ya puedes iniciar sesión."
+                )
+                onSuccess()
+            } else {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    errorMessage = result.exceptionOrNull()?.message ?: "No se pudo reactivar la cuenta"
+                )
+                onError(_uiState.value.errorMessage ?: "")
+            }
+        }
+    }
 
+    /**
+     * Factory secundaria para crear el ViewModel desde un [ViewModelProvider].
+     * Se usa en los puntos donde no está disponible el [factory].
+     */
     class AuthViewModelFactory(
         private val authRepository: AuthRepository,
         private val preferencesRepository: UserPreferencesRepository

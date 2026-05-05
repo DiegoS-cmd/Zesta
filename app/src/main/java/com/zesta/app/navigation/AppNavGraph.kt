@@ -43,11 +43,25 @@ import com.zesta.app.viewmodel.AuthViewModel
 import com.zesta.app.viewmodel.CartViewModel
 import com.zesta.app.viewmodel.CartViewModelFactory
 
+/**
+ * Navegación principal de Zesta.
+ *
+ * Este composable es el punto de entrada de toda la navegación de la app.
+ * Se encarga de:
+ * - Crear el [NavController] y el [NavHost] con todas las rutas registradas.
+ * - Instanciar [AuthViewModel] y [CartViewModel] a nivel raíz para que sean
+ *   compartidos por todas las pantallas que los necesitan.
+ * - Configurar el cliente de Google Sign-In y su launcher de resultado.
+ * - Gestionar el flujo inicial (Splash → Login o Home) en función del estado
+ *   de sesión devuelto por [AuthViewModel].
+ */
 @Composable
 fun AppNavGraph() {
     val navController = rememberNavController()
     val context = LocalContext.current
 
+    // ViewModel de autenticación creado a nivel raíz del grafo para que
+    // todas las pantallas compartan la misma instancia y el mismo estado.
     val authViewModel: AuthViewModel = viewModel(
         factory = AuthViewModel.factory(
             authRepository = AuthRepository(),
@@ -55,12 +69,18 @@ fun AppNavGraph() {
         )
     )
 
+    // Se observa el estado de la UI para que el Splash y otras pantallas
+    // reaccionen automáticamente a los cambios de sesión.
     val uiState by authViewModel.uiState.collectAsState()
+
+    // CartRepository se envuelve en remember para no recrearlo en cada recomposición.
     val cartRepository = remember { CartRepository() }
     val cartViewModel: CartViewModel = viewModel(
         factory = CartViewModelFactory(repository = cartRepository)
     )
 
+    // Cliente de Google Sign-In envuelto en remember para evitar recreaciones.
+    // El Web Client ID debe coincidir con el registrado en Firebase Console.
     val googleSignInClient = remember {
         com.google.android.gms.auth.api.signin.GoogleSignIn.getClient(
             context,
@@ -73,6 +93,9 @@ fun AppNavGraph() {
         )
     }
 
+    // Launcher que recibe el resultado del intent de Google Sign-In.
+    // Si el token es válido, delega en authViewModel.loginWithGoogle().
+    // Los errores se registran en Logcat con el tag GOOGLE_LOGIN.
     val googleLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -109,6 +132,13 @@ fun AppNavGraph() {
         navController = navController,
         startDestination = AppRoutes.Splash.route
     ) {
+
+        // SPLASH
+        // Pantalla de carga inicial. No muestra contenido visible; solo espera a
+        // que isSessionChecked = true antes de decidir el destino.
+        // Este flag solo se activa cuando restoreSessionIfNeeded() ha terminado
+        // de comprobar si la sesión es válida y si la cuenta no está deshabilitada,
+        // evitando el flash de login cuando hay sesión guardada.
         composable(AppRoutes.Splash.route) {
             LaunchedEffect(uiState.isSessionChecked) {
                 if (!uiState.isSessionChecked) return@LaunchedEffect
@@ -118,6 +148,8 @@ fun AppNavGraph() {
                     AppRoutes.Login.route
                 }
                 navController.navigate(destination) {
+                    // Elimina el Splash del backstack para que el botón atrás
+                    // no vuelva a esta pantalla.
                     popUpTo(AppRoutes.Splash.route) { inclusive = true }
                     launchSingleTop = true
                 }
@@ -130,6 +162,11 @@ fun AppNavGraph() {
             ) {}
         }
 
+        // LOGIN
+        // Pantalla de inicio de sesión. Incluye login con email/contraseña,
+        // Google Sign-In, acceso como invitado y reactivación de cuenta
+        // deshabilitada. El error de cuenta deshabilitada activa el botón
+        // onReactivateAccount en LoginScreen.
         composable(AppRoutes.Login.route) {
             LoginScreen(
                 email = uiState.email,
@@ -137,6 +174,8 @@ fun AppNavGraph() {
                 errorMessage = uiState.errorMessage,
                 onEmailChange = authViewModel::onEmailChange,
                 onGoogleSignIn = {
+                    // Se fuerza signOut antes de lanzar el selector de cuenta
+                    // para que el usuario pueda elegir cuenta cada vez.
                     googleSignInClient.signOut().addOnCompleteListener {
                         googleLauncher.launch(googleSignInClient.signInIntent)
                     }
@@ -160,18 +199,37 @@ fun AppNavGraph() {
                             launchSingleTop = true
                         }
                     }
+                },
+                onReactivateAccount = {
+                    // El resultado (éxito o error) se gestiona a través de
+                    // uiState.errorMessage, que LoginScreen muestra directamente.
+                    authViewModel.reactivateAccount(
+                        email = uiState.email,
+                        password = uiState.password,
+                        onSuccess = {},
+                        onError = {}
+                    )
                 }
             )
         }
 
+        // CONTACTO EMPRESA
+        // Pantalla informativa para empresas que quieran unirse a Zesta.
+        // TODO: mover ruta literal a AppRoutes.
         composable("business_contact") {
             BusinessContactScreen(onBack = { navController.popBackStack() })
         }
 
+        // RECUPERAR CONTRASEÑA
+        // Pantalla de recuperación de contraseña vía email de Firebase Auth.
+        // TODO: mover ruta literal a AppRoutes.
         composable("forgot_password") {
             ForgotPasswordScreen(onBack = { navController.popBackStack() })
         }
 
+        // REGISTRO
+        // Tras un registro exitoso se eliminan tanto Register como Login del
+        // backstack para que el usuario no pueda volver atrás con el botón back.
         composable(AppRoutes.Register.route) {
             RegisterScreen(
                 fullName = uiState.fullName,
@@ -198,6 +256,8 @@ fun AppNavGraph() {
             )
         }
 
+        // HOME
+        // Pantalla principal con el listado de restaurantes disponibles.
         composable(AppRoutes.Home.route) {
             HomeScreen(
                 authViewModel = authViewModel,
@@ -210,6 +270,8 @@ fun AppNavGraph() {
             )
         }
 
+        // BÚSQUEDA
+        // Buscador de restaurantes por nombre o categoría.
         composable(AppRoutes.Search.route) {
             SearchScreen(
                 authViewModel = authViewModel,
@@ -222,6 +284,9 @@ fun AppNavGraph() {
             )
         }
 
+        // CARRITO
+        // Lista de restaurantes con artículos en el carrito. Desde aquí se
+        // puede acceder al detalle del carrito de cada restaurante.
         composable(AppRoutes.Cart.route) {
             CartScreen(
                 cartViewModel = cartViewModel,
@@ -236,12 +301,16 @@ fun AppNavGraph() {
                 }
             )
         }
+
+        // RESUMEN DEL PEDIDO
+        // Pantalla de confirmación antes de realizar el pedido.
+        // Recibe restaurantId como argumento Int.
+        // Al confirmar el pedido navega a DeliveryTracking con los datos del envío.
         composable(
             route = AppRoutes.OrderSummary.route,
             arguments = listOf(navArgument("restaurantId") { type = NavType.IntType })
         ) { backStackEntry ->
             val restaurantId = backStackEntry.arguments?.getInt("restaurantId") ?: 0
-
             OrderSummaryScreen(
                 restaurantId = restaurantId,
                 authViewModel = authViewModel,
@@ -250,11 +319,7 @@ fun AppNavGraph() {
                 onOrderPlaced = { rId, totalMinutes, rName, rStreet, uStreet ->
                     navController.navigate(
                         AppRoutes.DeliveryTracking.createRoute(
-                            rId,
-                            totalMinutes,
-                            rName,
-                            rStreet,
-                            uStreet
+                            rId, totalMinutes, rName, rStreet, uStreet
                         )
                     ) {
                         launchSingleTop = true
@@ -262,6 +327,10 @@ fun AppNavGraph() {
                 }
             )
         }
+
+        // PEDIDO COMPLETADO
+        // Pantalla de confirmación final del pedido.
+        // showRating controla si se muestra el diálogo de valoración de la app.
         composable(
             route = AppRoutes.OrderSuccess.route,
             arguments = listOf(navArgument("showRating") { type = NavType.BoolType })
@@ -277,6 +346,11 @@ fun AppNavGraph() {
             )
         }
 
+        // SEGUIMIENTO DEL PEDIDO
+        // Muestra el estado del pedido en tiempo real con las fases del proceso,
+        // tiempo estimado e información del restaurante y dirección del usuario.
+        // Los argumentos String se codifican con Uri.encode() en createRoute()
+        // para manejar correctamente caracteres especiales en las direcciones.
         composable(
             route = AppRoutes.DeliveryTracking.route,
             arguments = listOf(
@@ -304,13 +378,20 @@ fun AppNavGraph() {
                     }
                 },
                 onFinished = {
+                    // Se usa el mismo comportamiento que onGoHome para garantizar
+                    // que no queda ninguna pantalla del flujo de pedido en el backstack.
                     navController.navigate(AppRoutes.Home.route) {
                         popUpTo(AppRoutes.Home.route) { inclusive = true }
                         launchSingleTop = true
                     }
                 }
             )
-}
+        }
+
+        // PERFIL
+        // Pantalla de perfil del usuario. Si es invitado muestra opciones de
+        // login/registro. Los callbacks de ayuda, privacidad, accesibilidad
+        // y "sobre nosotros" están pendientes de implementar.
         composable(AppRoutes.Profile.route) {
             ProfileScreen(
                 authViewModel = authViewModel,
@@ -321,17 +402,22 @@ fun AppNavGraph() {
                 onCartClick = { navController.navigate(AppRoutes.Cart.route) },
                 onFavoritesClick = { navController.navigate(AppRoutes.Favorites.route) },
                 onOrderHistoryClick = { navController.navigate(AppRoutes.OrderHistory.route) },
-                onHelpClick = { },
-                onPrivacyClick = { },
-                onAccessibilityClick = { },
+                onHelpClick = { },           // TODO: implementar pantalla de ayuda
+                onPrivacyClick = { },        // TODO: implementar pantalla de privacidad
+                onAccessibilityClick = { },  // TODO: implementar pantalla de accesibilidad
                 onManageAccountClick = { navController.navigate(AppRoutes.ManageAccount.route) },
-                onAboutClick = { },
+                onAboutClick = { },          // TODO: implementar pantalla "sobre nosotros"
                 onLoginClick = { navController.navigate(AppRoutes.Login.route) },
                 onRegisterClick = { navController.navigate(AppRoutes.Register.route) }
             )
         }
 
-
+        // GESTIONAR CUENTA
+        // Permite al usuario ver y editar sus datos de entrega, cambiar contraseña,
+        // cerrar sesión y deshabilitar la cuenta (soft delete).
+        // Tanto onLogoutClick como onDeleteAccountSuccess limpian todo el backstack
+        // hasta startDestinationId para evitar que el usuario pueda volver atrás
+        // con el botón back tras salir de su sesión.
         composable(AppRoutes.ManageAccount.route) {
             ManageAccountScreen(
                 authViewModel = authViewModel,
@@ -362,6 +448,8 @@ fun AppNavGraph() {
             )
         }
 
+        // FAVORITOS
+        // Lista de restaurantes marcados como favoritos por el usuario.
         composable(AppRoutes.Favorites.route) {
             FavoritesScreen(
                 authViewModel = authViewModel,
@@ -372,12 +460,18 @@ fun AppNavGraph() {
             )
         }
 
+        // HISTORIAL DE PEDIDOS
+        // Lista de pedidos anteriores del usuario.
+        // TODO: pasar authViewModel cuando se implemente la carga de pedidos reales.
         composable(AppRoutes.OrderHistory.route) {
             OrderHistoryScreen(
                 onBack = { navController.popBackStack() }
             )
         }
 
+        // DETALLES DE RESTAURANTE
+        // Muestra el menú y la información del restaurante seleccionado.
+        // Recibe restaurantId como argumento Int.
         composable(
             route = AppRoutes.RestaurantDetail.route,
             arguments = listOf(navArgument("restaurantId") { type = NavType.IntType })
@@ -392,6 +486,9 @@ fun AppNavGraph() {
             )
         }
 
+        // DETALLE DEL CARRITO
+        // Muestra los artículos del carrito para un restaurante concreto.
+        // Desde aquí se puede ir al resumen del pedido para confirmar la compra.
         composable(
             route = AppRoutes.CartDetail.route,
             arguments = listOf(navArgument("restaurantId") { type = NavType.IntType })

@@ -11,6 +11,7 @@
     <string name="inicio_sesion_olvide_contrasena">Olvidé mi contraseña</string>
     <string name="inicio_sesion_continuar_invitado">Continuar como invitado</string>
     <string name="inicio_sesion_descripcion_logo">Logo de Zesta</string>
+    <string name="login_reactivar_cuenta">¿Quieres reactivar tu cuenta?</string>
 
     <!-- Registro -->
     <string name="registro_nombre_completo">Nombre completo</string>
@@ -20,6 +21,13 @@
     <string name="registro_direccion">Dirección</string>
     <string name="registro_crear_cuenta">Crear cuenta</string>
     <string name="registro_ya_tengo_cuenta">Ya tengo una cuenta</string>
+    <string name="registro_error_nombre_obligatorio">El nombre es obligatorio</string>
+    <string name="registro_error_nombre_minimo">El nombre debe tener al menos 3 caracteres</string>
+    <string name="registro_error_email_obligatorio">El email es obligatorio</string>
+    <string name="registro_error_email_formato">El formato del email no es válido</string>
+    <string name="registro_error_password_obligatoria">La contraseña es obligatoria</string>
+    <string name="registro_error_password_minimo">La contraseña debe tener al menos 6 caracteres</string>
+    <string name="registro_error_telefono_formato">El teléfono debe tener 9 dígitos numéricos</string>
 
     <!-- Inicio -->
     <string name="inicio_direccion">Añadir Dirección</string>
@@ -171,6 +179,7 @@
     <string name="gestionar_cuenta_guardar_telefono">Guardar teléfono</string>
     <string name="gestionar_cuenta_guardar_direccion">Guardar dirección</string>
     <string name="gestionar_cuenta_eliminar">Eliminar</string>
+    <string name="gestionar_error_telefono">El teléfono debe empezar por 6, 7, 8 o 9 y tener 9 dígitos</string>
 
 
     <!-- Restaurante -->

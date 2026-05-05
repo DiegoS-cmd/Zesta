@@ -1,8 +1,8 @@
 package com.zesta.app.data.repository
 
 import com.zesta.app.R
-import com.zesta.app.ui.screens.restaurant.Product
-import com.zesta.app.ui.screens.restaurant.PromoType
+import com.zesta.app.data.model.Product
+import com.zesta.app.data.model.PromoType
 import com.zesta.app.ui.screens.restaurant.Restaurant
 
 object  RestaurantRepository {
