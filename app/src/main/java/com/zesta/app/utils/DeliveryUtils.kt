@@ -3,7 +3,7 @@ package com.zesta.app.utils
 import kotlin.math.*
 
 private const val PREP_MINUTES = 12
-private const val SPEED_KMH = 25.0 // velocidad media repartidor en ciudad
+private const val SPEED_KMH = 25.0 // velocidad media
 
 fun calcularTiempoEntregaMinutos(
     restaurantLat: Double,
@@ -28,7 +28,6 @@ fun haversineKm(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double 
 }
 
 // Geocodificación simple de direcciones de Madrid a coordenadas aproximadas
-// Busca números y nombres de calles conocidos para estimar posición
 fun geocodificarDireccionMadrid(direccion: String): Pair<Double, Double> {
     val dir = direccion.lowercase()
     return when {

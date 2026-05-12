@@ -23,19 +23,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.google.firebase.auth.EmailAuthProvider
-import com.google.firebase.auth.FirebaseAuth
 import com.zesta.app.R
+import com.zesta.app.data.repository.AuthRepository
 import com.zesta.app.ui.components.PrimaryGradientButton
 import com.zesta.app.ui.theme.*
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
 private enum class ForgotMode { EMAIL, CHANGE }
 
 @Composable
 fun ForgotPasswordScreen(onBack: () -> Unit) {
     var mode by remember { mutableStateOf(ForgotMode.EMAIL) }
+    // Se crea aquí y se pasa a los subcomponentes para no reinstanciarlo en cada recomposición
+    val authRepository = remember { AuthRepository() }
 
     val tabEmail = stringResource(R.string.forgot_enviar_correo_tab)
     val tabCambiar = stringResource(R.string.cambiar_contraseña)
@@ -50,7 +50,7 @@ fun ForgotPasswordScreen(onBack: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(20.dp))
-
+            // Botón de volver
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -75,6 +75,7 @@ fun ForgotPasswordScreen(onBack: () -> Unit) {
 
             Spacer(modifier = Modifier.height(32.dp))
 
+            // Selector de opcion
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -105,10 +106,10 @@ fun ForgotPasswordScreen(onBack: () -> Unit) {
             }
 
             Spacer(modifier = Modifier.height(36.dp))
-
+            // Contenido según el modo seleccionado
             when (mode) {
-                ForgotMode.EMAIL -> EmailResetContent(onBack = onBack)
-                ForgotMode.CHANGE -> ChangePasswordContent(onBack = onBack)
+                ForgotMode.EMAIL -> EmailResetContent(onBack = onBack, authRepository = authRepository)
+                ForgotMode.CHANGE -> ChangePasswordContent(onBack = onBack, authRepository = authRepository)
             }
 
             Spacer(modifier = Modifier.height(40.dp))
@@ -117,17 +118,22 @@ fun ForgotPasswordScreen(onBack: () -> Unit) {
 }
 
 @Composable
-private fun EmailResetContent(onBack: () -> Unit) {
+private fun EmailResetContent(
+    onBack: () -> Unit,
+    authRepository: AuthRepository
+) {
     var email by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
     var emailSent by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
 
+    // Strings para usar dentro de lambdas
     val errVacio = stringResource(R.string.forgot_error_email_vacio)
     val errInvalido = stringResource(R.string.forgot_error_email_invalido)
     val errNoEncontrado = stringResource(R.string.forgot_error_no_encontrado)
 
+    // Pantalla de confirmación tras enviar el correo
     if (emailSent) {
         Icon(
             imageVector = Icons.Outlined.CheckCircle,
@@ -156,6 +162,7 @@ private fun EmailResetContent(onBack: () -> Unit) {
             onClick = onBack
         )
     } else {
+        // Formulario de introducción de email
         Box(
             modifier = Modifier
                 .size(72.dp)
@@ -216,19 +223,17 @@ private fun EmailResetContent(onBack: () -> Unit) {
             PrimaryGradientButton(
                 text = stringResource(R.string.forgot_enviar),
                 onClick = {
+                    // Validación local antes de llamar a Firebase
                     val trimmed = email.trim()
                     if (trimmed.isBlank()) { errorMessage = errVacio; return@PrimaryGradientButton }
                     if (!android.util.Patterns.EMAIL_ADDRESS.matcher(trimmed).matches()) {
                         errorMessage = errInvalido; return@PrimaryGradientButton
                     }
                     scope.launch {
+                        //Siempre se muestra éxito
                         isLoading = true
-                        try {
-                            FirebaseAuth.getInstance().sendPasswordResetEmail(trimmed).await()
-                            emailSent = true
-                        } catch (e: Exception) {
-                            errorMessage = errNoEncontrado
-                        }
+                        authRepository.enviarResetEmail(trimmed)
+                        emailSent = true
                         isLoading = false
                     }
                 }
@@ -238,7 +243,10 @@ private fun EmailResetContent(onBack: () -> Unit) {
 }
 
 @Composable
-private fun ChangePasswordContent(onBack: () -> Unit) {
+private fun ChangePasswordContent(
+    onBack: () -> Unit,
+    authRepository: AuthRepository
+) {
     var email by remember { mutableStateOf("") }
     var currentPassword by remember { mutableStateOf("") }
     var newPassword by remember { mutableStateOf("") }
@@ -268,6 +276,7 @@ private fun ChangePasswordContent(onBack: () -> Unit) {
     val strConfNuevaContraseña = stringResource(R.string.conf_nueva_contraseña)
 
     if (successMessage != null) {
+        // Pantalla de éxito tras cambiar la contraseña
         Icon(
             imageVector = Icons.Outlined.CheckCircle,
             contentDescription = null,
@@ -293,7 +302,7 @@ private fun ChangePasswordContent(onBack: () -> Unit) {
         PrimaryGradientButton(text = strVolverLogin, onClick = onBack)
         return
     }
-
+    // Icono de cabecera
     Box(
         modifier = Modifier
             .size(72.dp)
@@ -330,7 +339,7 @@ private fun ChangePasswordContent(onBack: () -> Unit) {
     )
 
     Spacer(modifier = Modifier.height(36.dp))
-
+    // Estilos compartidos por todos los campos del formulario
     val fieldColors = OutlinedTextFieldDefaults.colors(
         focusedContainerColor = FondoPlaceholderZesta,
         unfocusedContainerColor = FondoPlaceholderZesta,
@@ -404,7 +413,7 @@ private fun ChangePasswordContent(onBack: () -> Unit) {
     } else {
         PrimaryGradientButton(
             text = strCambiarTitulo,
-            onClick = {
+            onClick = {  // Validación local de todos los campos antes de llamar al repositorio
                 var valid = true
                 if (email.isBlank() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches()) {
                     emailError = strCorreoValido; valid = false
@@ -422,15 +431,13 @@ private fun ChangePasswordContent(onBack: () -> Unit) {
 
                 scope.launch {
                     isLoading = true
-                    try {
-                        val auth = FirebaseAuth.getInstance()
-                        val credential = EmailAuthProvider.getCredential(email.trim(), currentPassword)
-                        auth.signInWithCredential(credential).await()
-                        auth.currentUser?.updatePassword(newPassword)?.await()
-                        successMessage = "ok"
-                    } catch (e: Exception) {
-                        currentPasswordError = strIncorrecta
-                    }
+                    val result = authRepository.cambiarContrasena(
+                        email = email.trim(),
+                        currentPassword = currentPassword,
+                        newPassword = newPassword
+                    )
+                    if (result.isSuccess) successMessage = "ok"
+                    else currentPasswordError = strIncorrecta
                     isLoading = false
                 }
             }

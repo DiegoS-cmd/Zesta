@@ -254,14 +254,22 @@ object  RestaurantRepository {
 
     fun getByCategory(category: String): List<Restaurant> =
         allRestaurants.filter { it.categories.any { cat -> cat.equals(category, ignoreCase = true) } }
+
+    // Explorar muestra todos menos los destacados para evitar duplicados en pantalla
     fun getExploreRestaurants(): List<Restaurant> {
         val excludedIds = getFeaturedRestaurants().map { it.id }
         return allRestaurants.filter { it.id !in excludedIds }
     }
     fun getAllRestaurants(): List<Restaurant> = allRestaurants
+
     fun getRestaurantById(id: Int): Restaurant? = allRestaurants.find { it.id == id }
+
+    // Los 6 primeros de la lista son los que aparecen en "Destacado en Zesta"
     fun getFeaturedRestaurants(): List<Restaurant> = allRestaurants.take(6)
+
     fun getPromoRestaurants(): List<Restaurant> = allRestaurants.filter { it.promoTextRes != null }
+
+    // resolveName es necesario porque los nombres están en R.string, no como texto directo
     fun searchRestaurants(query: String, resolveName: (Int) -> String): List<Restaurant> {
         if (query.isBlank()) return allRestaurants
         return allRestaurants.filter { resolveName(it.nameRes).contains(query, ignoreCase = true) }

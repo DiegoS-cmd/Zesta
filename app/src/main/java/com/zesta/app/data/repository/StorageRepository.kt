@@ -13,6 +13,7 @@ class StorageRepository(
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
 ) {
 
+    // La foto se escala a 300x300 y se comprime al 70% antes de guardarla como Base64 en Firestore
     suspend fun uploadProfilePhoto(context: Context, uid: String, uri: Uri): Result<String> {
         return try {
             val inputStream = context.contentResolver.openInputStream(uri)
@@ -34,10 +35,11 @@ class StorageRepository(
 
             Result.success(base64)
         } catch (e: Exception) {
-            Result.failure(Exception("Error: ${e.message}"))
+            Result.failure(Exception("Error al subir la foto: ${e.message}"))
         }
     }
 
+    // Usada cuando la imagen ya viene en Base64, por ejemplo desde la cámara
     suspend fun uploadProfilePhotoFromBase64(uid: String, base64: String): Result<String> {
         return try {
             db.collection("users").document(uid)
@@ -56,6 +58,7 @@ class StorageRepository(
                 .await()
             Result.success(Unit)
         } catch (e: Exception) {
+            // Si el borrado falla no bloqueamos al usuario
             Result.success(Unit)
         }
     }

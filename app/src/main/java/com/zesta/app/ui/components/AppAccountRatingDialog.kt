@@ -32,11 +32,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.zesta.app.R
 import com.zesta.app.ui.theme.BordeCirculoZesta
 import com.zesta.app.ui.theme.FondoPlaceholderZesta
 import com.zesta.app.ui.theme.NaranjaZesta
@@ -80,7 +82,7 @@ fun RatingDialog(
             }
 
             Text(
-                text = "Valora nuestra app",
+                text = stringResource(R.string.rating_titulo),
                 style = MaterialTheme.typography.titleLarge,
                 color = TextoPrincipalZesta,
                 fontWeight = FontWeight.Bold,
@@ -88,7 +90,7 @@ fun RatingDialog(
             )
 
             Text(
-                text = "¿Qué te ha parecido tu experiencia con Zesta?",
+                text = stringResource(R.string.rating_subtitulo),
                 style = MaterialTheme.typography.bodyMedium,
                 color = TextoSecundarioZesta,
                 textAlign = TextAlign.Center
@@ -124,11 +126,11 @@ fun RatingDialog(
             if (selectedStars > 0) {
                 Text(
                     text = when (selectedStars) {
-                        1 -> "😞 Vaya, lo sentimos mucho"
-                        2 -> "😕 Gracias, mejoraremos"
-                        3 -> "😊 ¡Gracias por tu opinión!"
-                        4 -> "😄 ¡Nos alegra que te guste!"
-                        5 -> "🤩 ¡Eres el mejor, gracias!"
+                        1 -> stringResource(R.string.rating_texto_1)
+                        2 -> stringResource(R.string.rating_texto_2)
+                        3 -> stringResource(R.string.rating_texto_3)
+                        4 -> stringResource(R.string.rating_texto_4)
+                        5 -> stringResource(R.string.rating_texto_5)
                         else -> ""
                     },
                     style = MaterialTheme.typography.bodySmall,
@@ -142,7 +144,8 @@ fun RatingDialog(
 
             // Botón enviar
             PrimaryGradientButton(
-                text = if (selectedStars > 0) "Enviar valoración" else "Ahora no",
+                text = if (selectedStars > 0) stringResource(R.string.rating_enviar)
+                else stringResource(R.string.rating_ahora_no),
                 onClick = {
                     if (selectedStars > 0) onSubmit(selectedStars) else onDismiss()
                 }
@@ -151,7 +154,7 @@ fun RatingDialog(
             // Cancelar
             TextButton(onClick = onDismiss) {
                 Text(
-                    text = "Cancelar",
+                    text = stringResource(R.string.rating_cancelar),
                     color = TextoSecundarioZesta,
                     style = MaterialTheme.typography.bodyMedium
                 )

@@ -233,6 +233,7 @@ fun AddressBottomSheet(
                                 .clickable(enabled = !isSaving) {
                                     if (newAddress.isBlank()) { errorMsg = errorDireccion; return@clickable }
                                     isSaving = true
+                                    // Al editar: borra la dirección antigua y guarda la nueva para mantener el orden
                                     if (editingAddress != null) {
                                         authViewModel.deleteDireccion(editingAddress!!, onSuccess = {
                                             authViewModel.addDireccion(newAddress, onSuccess = { isSaving = false; showAddField = false; newAddress = ""; editingAddress = null }, onError = { isSaving = false; errorMsg = it })

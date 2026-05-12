@@ -23,10 +23,12 @@ class UserPreferencesRepository(private val context: Context) {
         val IS_GUEST = booleanPreferencesKey("is_guest")
         val ORDER_COUNT = intPreferencesKey("order_count")
 
+        // Clave por userId para no mezclar fotos entre cuentas distintas
         fun profileImageUri(userId: String) =
             stringPreferencesKey("profile_image_uri_$userId")
     }
 
+    // Si se lanza mete un archivo no valido lanzamos error en lugar de crashear
     private fun safeDataStore() = context.dataStore.data
         .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
 
@@ -41,7 +43,6 @@ class UserPreferencesRepository(private val context: Context) {
         context.dataStore.edit { it[PreferencesKeys.IS_GUEST] = false }
     }
 
-    // clave por userId para no mezclar fotos entre cuentas
     fun profileImageUriFlow(userId: String?): Flow<Uri?> = safeDataStore()
         .map { prefs ->
             if (userId.isNullOrBlank()) return@map null
@@ -58,7 +59,7 @@ class UserPreferencesRepository(private val context: Context) {
         context.dataStore.edit { it.remove(PreferencesKeys.profileImageUri(userId)) }
     }
 
-    // devuelve true cada 3 pedidos para mostrar el diálogo de valoración
+    // Devuelve true cada 3 pedidos (en el 1°, 4°, 7°...) para mostrar el diálogo de valoración
     suspend fun incrementOrderCountAndCheck(): Boolean {
         val current = context.dataStore.data.first()[PreferencesKeys.ORDER_COUNT] ?: 0
         val next = current + 1

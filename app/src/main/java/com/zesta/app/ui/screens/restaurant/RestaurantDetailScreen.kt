@@ -344,7 +344,6 @@ private fun ProductPromoCard(
     modifier: Modifier = Modifier
 ) {
     val productName = stringResource(product.nameRes)
-    val productDescription = stringResource(product.descriptionRes)
     val precioOriginal = product.price
     val precioMostrado = when (product.promoType) {
         PromoType.DESCUENTO_20 -> precioOriginal * 0.80
@@ -402,7 +401,7 @@ private fun ProductPromoCard(
         } else {
             Text(text = stringResource(R.string.producto_precio, precioOriginal), style = MaterialTheme.typography.bodyLarge, color = TextoPrincipalZesta)
         }
-        Text(text = productDescription, style = MaterialTheme.typography.bodyMedium, color = TextoResenaZesta)
+
     }
 }
 
@@ -453,7 +452,6 @@ private fun MenuProductCard(
                 Text(text = stringResource(R.string.producto_precio, precioOriginal), style = MaterialTheme.typography.bodyLarge, color = TextoPrincipalZesta)
             }
             Spacer(modifier = Modifier.height(4.dp))
-            Text(text = productDescription, style = MaterialTheme.typography.bodyMedium, color = TextoResenaZesta)
             if (product.promoType == PromoType.DOS_POR_UNO) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(text = "Llévate 2 y paga solo 1", style = MaterialTheme.typography.bodySmall, color = NaranjaZesta, fontWeight = FontWeight.Medium)

@@ -15,36 +15,23 @@ class CartRepository(
     private val auth: FirebaseAuth = FirebaseAuth.getInstance(),
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
 ) {
+    private fun uid() = auth.currentUser?.uid
 
-    private fun getUserId(): String? = auth.currentUser?.uid
+    // Ruta base a los carritos del usuario: users/{uid}/carts
+    private fun cartsRef(uid: String) =
+        db.collection("users").document(uid).collection("carts")
 
-    private fun getCartsCollection(uid: String) =
-        db.collection("users")
-            .document(uid)
-            .collection("carts")
-
+    // Devuelve todos los carritos activos con sus items, ordenados por restaurante
     suspend fun getRestaurantCarts(): Result<List<RestaurantCartWithItems>> {
-        val uid = getUserId() ?: return Result.failure(Exception("Usuario no autenticado"))
-
+        val uid = uid() ?: return Result.failure(Exception("Usuario no autenticado"))
         return try {
-            val cartsSnapshot = getCartsCollection(uid).get().await()
-
-            val results = cartsSnapshot.documents.mapNotNull { cartDoc ->
-                val cart = cartDoc.toObject(RestaurantCart::class.java) ?: return@mapNotNull null
-
-                val itemsSnapshot = cartDoc.reference
-                    .collection("items")
-                    .get()
-                    .await()
-
-                val items = itemsSnapshot.documents.mapNotNull { itemDoc ->
-                    itemDoc.toObject(CartItem::class.java)
-                }
-
-                RestaurantCartWithItems(cart = cart, items = items)
+            val carts = cartsRef(uid).get().await().documents.mapNotNull { doc ->
+                val cart = doc.toObject(RestaurantCart::class.java) ?: return@mapNotNull null
+                val items = doc.reference.collection("items").get().await()
+                    .documents.mapNotNull { it.toObject(CartItem::class.java) }
+                RestaurantCartWithItems(cart, items)
             }.sortedBy { it.cart.restaurantId }
-
-            Result.success(results)
+            Result.success(carts)
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -56,37 +43,26 @@ class CartRepository(
         restaurantImageResName: String,
         item: CartItem
     ): Result<Unit> {
-        val uid = getUserId() ?: return Result.failure(Exception("Usuario no autenticado"))
-
+        val uid = uid() ?: return Result.failure(Exception("Usuario no autenticado"))
         return try {
-            val cartDoc = getCartsCollection(uid).document(restaurantId.toString())
+            val cartDoc = cartsRef(uid).document(restaurantId.toString())
             val itemDoc = cartDoc.collection("items").document(item.productId)
 
-            db.runTransaction { transaction ->
-                // Primero lecturas
-                val cartSnapshot = transaction.get(cartDoc)
-                val itemSnapshot = transaction.get(itemDoc)
+            db.runTransaction { tx ->
+                // Primero leemos y luego escribimos
+                val cartSnap = tx.get(cartDoc)
+                val itemSnap = tx.get(itemDoc)
 
-                // Después escrituras
-                if (!cartSnapshot.exists()) {
-                    transaction.set(
-                        cartDoc,
-                        RestaurantCart(
-                            restaurantId = restaurantId,
-                            restaurantName = restaurantName,
-                            restaurantImageResName = restaurantImageResName
-                        )
-                    )
+                if (!cartSnap.exists()) {
+                    tx.set(cartDoc, RestaurantCart(restaurantId, restaurantName, restaurantImageResName))
                 }
 
-                if (itemSnapshot.exists()) {
-                    val currentItem = itemSnapshot.toObject(CartItem::class.java)
-                    val nuevaCantidad = (currentItem?.cantidad ?: 0) + 1
-                    transaction.update(itemDoc, "cantidad", nuevaCantidad)
+                if (itemSnap.exists()) {
+                    val cant = itemSnap.toObject(CartItem::class.java)?.cantidad ?: 0
+                    tx.update(itemDoc, "cantidad", cant + 1)
                 } else {
-                    transaction.set(itemDoc, item.copy(cantidad = 1))
+                    tx.set(itemDoc, item.copy(cantidad = 1))
                 }
-
                 null
             }.await()
 
@@ -97,16 +73,11 @@ class CartRepository(
     }
 
     suspend fun increaseQuantity(restaurantId: Int, item: CartItem): Result<Unit> {
-        val uid = getUserId() ?: return Result.failure(Exception("Usuario no autenticado"))
-
+        val uid = uid() ?: return Result.failure(Exception("Usuario no autenticado"))
         return try {
-            getCartsCollection(uid)
-                .document(restaurantId.toString())
-                .collection("items")
-                .document(item.productId)
-                .update("cantidad", item.cantidad + 1)
-                .await()
-
+            cartsRef(uid).document(restaurantId.toString())
+                .collection("items").document(item.productId)
+                .update("cantidad", item.cantidad + 1).await()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
@@ -114,16 +85,15 @@ class CartRepository(
     }
 
     suspend fun decreaseQuantity(restaurantId: Int, item: CartItem): Result<Unit> {
-        val uid = getUserId() ?: return Result.failure(Exception("Usuario no autenticado"))
-
+        val uid = uid() ?: return Result.failure(Exception("Usuario no autenticado"))
         return try {
-            val cartDoc = getCartsCollection(uid).document(restaurantId.toString())
+            val cartDoc = cartsRef(uid).document(restaurantId.toString())
             val itemDoc = cartDoc.collection("items").document(item.productId)
 
             if (item.cantidad <= 1) {
                 itemDoc.delete().await()
-                val remainingItems = cartDoc.collection("items").get().await()
-                if (remainingItems.isEmpty) {
+                // Si era el último item borramos también el documento del carrito
+                if (cartDoc.collection("items").get().await().isEmpty) {
                     cartDoc.delete().await()
                 }
             } else {
@@ -137,16 +107,14 @@ class CartRepository(
     }
 
     suspend fun removeItem(restaurantId: Int, item: CartItem): Result<Unit> {
-        val uid = getUserId() ?: return Result.failure(Exception("Usuario no autenticado"))
-
+        val uid = uid() ?: return Result.failure(Exception("Usuario no autenticado"))
         return try {
-            val cartDoc = getCartsCollection(uid).document(restaurantId.toString())
+            val cartDoc = cartsRef(uid).document(restaurantId.toString())
             val itemDoc = cartDoc.collection("items").document(item.productId)
 
             itemDoc.delete().await()
-
-            val remainingItems = cartDoc.collection("items").get().await()
-            if (remainingItems.isEmpty) {
+            // Limpiamos el carrito del restaurante si se queda sin items
+            if (cartDoc.collection("items").get().await().isEmpty) {
                 cartDoc.delete().await()
             }
 
@@ -156,31 +124,28 @@ class CartRepository(
         }
     }
 
+    // Vacía todos los carritos del usuario, borrando items y documentos padre
     suspend fun clearCart(): Result<Unit> {
-        val uid = getUserId() ?: return Result.failure(Exception("Usuario no autenticado"))
-
+        val uid = uid() ?: return Result.failure(Exception("Usuario no autenticado"))
         return try {
-            val cartsSnapshot = getCartsCollection(uid).get().await()
-
-            cartsSnapshot.documents.forEach { cartDoc ->
-                val itemsSnapshot = cartDoc.reference.collection("items").get().await()
-                itemsSnapshot.documents.forEach { itemDoc ->
-                    itemDoc.reference.delete().await()
-                }
+            cartsRef(uid).get().await().documents.forEach { cartDoc ->
+                cartDoc.reference.collection("items").get().await()
+                    .documents.forEach { it.reference.delete().await() }
                 cartDoc.reference.delete().await()
             }
-
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
+
+    // Igual que clearCart pero solo para un restaurante concreto
     suspend fun clearCartByRestaurant(restaurantId: Int): Result<Unit> {
-        val uid = getUserId() ?: return Result.failure(Exception("Usuario no autenticado"))
+        val uid = uid() ?: return Result.failure(Exception("Usuario no autenticado"))
         return try {
-            val cartDoc = getCartsCollection(uid).document(restaurantId.toString())
-            val itemsSnapshot = cartDoc.collection("items").get().await()
-            itemsSnapshot.documents.forEach { it.reference.delete().await() }
+            val cartDoc = cartsRef(uid).document(restaurantId.toString())
+            cartDoc.collection("items").get().await()
+                .documents.forEach { it.reference.delete().await() }
             cartDoc.delete().await()
             Result.success(Unit)
         } catch (e: Exception) {

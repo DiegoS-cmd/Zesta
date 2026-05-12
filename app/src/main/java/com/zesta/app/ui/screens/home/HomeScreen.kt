@@ -318,21 +318,9 @@ private fun FullWidthRestaurantCard(
     restaurant: Restaurant,
     onClick: () -> Unit
 ) {
+    val deliveryText = rememberDeliveryText(restaurant)
     val restaurantName = stringResource(restaurant.nameRes)
-    val deliveryText = if (restaurant.hasFreeDelivery) {
-        stringResource(R.string.restaurante_envio_gratis, restaurant.deliveryTimeMinutes)
-    } else {
-        stringResource(
-            R.string.restaurante_envio_pago,
-            restaurant.deliveryFee ?: 0.0,
-            restaurant.deliveryTimeMinutes
-        )
-    }
-    val ratingText = stringResource(
-        R.string.restaurante_valoracion,
-        restaurant.ratingValue,
-        restaurant.ratingCount
-    )
+    val ratingText = rememberRatingText(restaurant)
 
     Column(
         modifier = Modifier
@@ -434,20 +422,8 @@ private fun RestaurantCard(
     onClick: () -> Unit
 ) {
     val restaurantName = stringResource(restaurant.nameRes)
-    val deliveryText = if (restaurant.hasFreeDelivery) {
-        stringResource(R.string.restaurante_envio_gratis, restaurant.deliveryTimeMinutes)
-    } else {
-        stringResource(
-            R.string.restaurante_envio_pago,
-            restaurant.deliveryFee ?: 0.0,
-            restaurant.deliveryTimeMinutes
-        )
-    }
-    val ratingText = stringResource(
-        R.string.restaurante_valoracion,
-        restaurant.ratingValue,
-        restaurant.ratingCount
-    )
+    val deliveryText = rememberDeliveryText(restaurant)
+    val ratingText = rememberRatingText(restaurant)
 
     Column(
         modifier = Modifier
@@ -516,20 +492,8 @@ private fun ExploreRestaurantCard(
     onClick: () -> Unit
 ) {
     val restaurantName = stringResource(restaurant.nameRes)
-    val deliveryText = if (restaurant.hasFreeDelivery) {
-        stringResource(R.string.restaurante_envio_gratis, restaurant.deliveryTimeMinutes)
-    } else {
-        stringResource(
-            R.string.restaurante_envio_pago,
-            restaurant.deliveryFee ?: 0.0,
-            restaurant.deliveryTimeMinutes
-        )
-    }
-    val ratingText = stringResource(
-        R.string.restaurante_valoracion,
-        restaurant.ratingValue,
-        restaurant.ratingCount
-    )
+    val deliveryText = rememberDeliveryText(restaurant)
+    val ratingText = rememberRatingText(restaurant)
 
     Column(
         modifier = Modifier
@@ -657,3 +621,13 @@ private fun CategoryRow(
 
 }
 
+@Composable
+private fun rememberDeliveryText(restaurant: Restaurant): String =
+    if (restaurant.hasFreeDelivery)
+        stringResource(R.string.restaurante_envio_gratis, restaurant.deliveryTimeMinutes)
+    else
+        stringResource(R.string.restaurante_envio_pago, restaurant.deliveryFee ?: 0.0, restaurant.deliveryTimeMinutes)
+
+@Composable
+private fun rememberRatingText(restaurant: Restaurant): String =
+    stringResource(R.string.restaurante_valoracion, restaurant.ratingValue, restaurant.ratingCount)

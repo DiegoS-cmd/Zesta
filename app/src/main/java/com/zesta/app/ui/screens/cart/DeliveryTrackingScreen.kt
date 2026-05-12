@@ -52,8 +52,9 @@ import androidx.compose.ui.unit.dp
 import com.zesta.app.R
 import com.zesta.app.ui.theme.*
 import kotlinx.coroutines.delay
-
+// Duración simulada del pedido completo
 private const val TOTAL_DEMO_SECONDS = 30
+// Segundos asignados a la fase "Preparando" antes de pasar a "En camino"
 private const val PREP_SECONDS = 10
 
 @Composable
@@ -335,7 +336,7 @@ private fun AddressPoint(
         )
 
         Text(
-            text = subtitle.ifBlank { "Dirección no disponible" },
+            text = subtitle.ifBlank { stringResource(R.string.tracking_direccion_no_disponible) },
             style = MaterialTheme.typography.bodySmall,
             color = TextoSecundarioZesta,
             maxLines = 2,

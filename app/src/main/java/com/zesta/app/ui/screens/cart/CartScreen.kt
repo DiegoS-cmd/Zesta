@@ -58,7 +58,6 @@ import com.zesta.app.ui.theme.TextoSecundarioZesta
 import com.zesta.app.navigation.AppRoutes
 import com.zesta.app.viewmodel.AuthViewModel
 import com.zesta.app.viewmodel.CartViewModel
-import com.zesta.app.viewmodel.CartViewModelFactory
 
 @Composable
 fun CartScreen(
@@ -103,7 +102,7 @@ fun CartScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "Cargando carrito...",
+                            text = stringResource(R.string.carrito_cargando),
                             color = TextoSecundarioZesta,
                             style = MaterialTheme.typography.bodyLarge
                         )
@@ -188,6 +187,8 @@ private fun RestaurantCartSummaryCard(
         ) {
             val imageResName = cartGroup.cart.restaurantImageResName
             val context = androidx.compose.ui.platform.LocalContext.current
+            // La imagen se resuelve en tiempo de ejecución igual que en CartDetailScreen:
+            // el restaurante guarda el nombre del drawable en Firestore, no el ID
             val imageResId = remember(imageResName) {
                 if (imageResName.isNotBlank()) {
                     context.resources.getIdentifier(imageResName, "drawable", context.packageName)
@@ -224,7 +225,7 @@ private fun RestaurantCartSummaryCard(
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "$totalItems ${if (totalItems == 1) "artículo" else "artículos"}  •  %.2f €".format(totalPrice),
+                text = "$totalItems ${stringResource(if (totalItems == 1) R.string.carrito_articulo_singular else R.string.carrito_articulo_plural)}  •  ${stringResource(R.string.carrito_precio_formato, totalPrice)}",
                 style = MaterialTheme.typography.bodyMedium,
                 color = TextoSecundarioZesta
             )

@@ -119,6 +119,9 @@
     <string name="pedido_ahorro_importe">- %1$s €</string>
     <string name="pedido_descuento_pct">-%1$d%%</string>
     <string name="pedido_promo_quitar_hint">Pulsa el chip de arriba para quitar</string>
+    <string name="carrito_cargando">Cargando carrito…</string>
+    <string name="carrito_articulo_singular">artículo</string>
+    <string name="carrito_articulo_plural">artículos</string>
 
     <!-- CartDetailScreen — validación de perfil -->
     <string name="carrito_datos_incompletos_titulo">Datos necesarios</string>
@@ -141,7 +144,10 @@
     <string name="carrito_ir_gestionar">Completar datos</string>
     <string name="login_google">Continuar con Google</string>
     <string name="login_o">o</string>
-
+    <string name="carrito_detalle_vaciar">Vaciar</string>
+    <string name="carrito_detalle_vacio">Este carrito está vacío</string>
+    <string name="carrito_detalle_vaciar_confirmacion">¿Seguro que quieres eliminar todos los artículos de este carrito?</string>
+    <string name="carrito_vaciar">Vaciar carrito</string>
 
 
     <!-- Carrito — dialog invitado -->
@@ -354,9 +360,6 @@
     <string name="valoracion_sin_pedido_titulo">Aún no has pedido aquí</string>
     <string name="valoracion_sin_pedido_descripcion">Realiza tu primer pedido en este restaurante para poder dejar una valoración</string>
 
-    <!-- Vaciar carrito -->
-    <string name="carrito_vaciar">Vaciar carrito</string>
-
     <!-- Error en el pedido / vacío -->
     <string name="pedido_error_carrito_vacio">Tu carrito está vacío</string>
     <string name="pedido_error_fallo">No se pudo realizar el pedido</string>
@@ -380,7 +383,7 @@
 
     <!-- Cambio de contraseña -->
     <string name="cambiar_contraseña">Cambiar contraseña</string>
-    <string name="actualizar_contraseña">Contraseña actualiza correctamente</string>
+    <string name="actualizar_contraseña">Contraseña actualizada correctamente</string>
     <string name="nueva_contraseña">Nueva contraseña</string>
     <string name="conf_nueva_contraseña">Confirmar nueva contraseña</string>
     <string name="actual_contraseña">Contraseña actual</string>
@@ -411,6 +414,7 @@
     <string name="empresa_error_correo_vacio">Introduce un correo de contacto</string>
     <string name="empresa_error_correo_invalido">El correo no es válido</string>
 
+
     <!-- DeliveryTrackingScreen -->
     <string name="tracking_marker_restaurante">Restaurante</string>
     <string name="tracking_marker_restaurante_snippet">Aquí se prepara tu pedido</string>
@@ -428,7 +432,30 @@
     <string name="tracking_seguimiento">Seguimiento del pedido</string>
     <string name="tracking_inicio">Volver a inicio</string>
     <string name="tracking_casa">Mi casa</string>
+    <string name="tracking_direccion_no_disponible">Dirección no disponible</string>
 
+    <!-- RestaurantRatingDialog -->
+    <string name="rating_restaurante_editar">Editar valoración</string>
+    <string name="rating_restaurante_valorar">Valorar restaurante</string>
+    <string name="rating_restaurante_guardar">Guardar cambios</string>
+    <string name="rating_restaurante_1">😞 Muy mala experiencia</string>
+    <string name="rating_restaurante_2">😕 Podría mejorar</string>
+    <string name="rating_restaurante_3">😊 Bastante bien</string>
+    <string name="rating_restaurante_4">😄 Muy bueno</string>
+    <string name="rating_restaurante_5">🤩 ¡Excelente!</string>
+
+    <!-- RatingDialog -->
+    <string name="rating_titulo">Valora nuestra app</string>
+    <string name="rating_subtitulo">¿Qué te ha parecido tu experiencia con Zesta?</string>
+    <string name="rating_enviar">Enviar valoración</string>
+    <string name="rating_ahora_no">Ahora no</string>
+    <string name="rating_cancelar">Cancelar</string>
+    <string name="rating_estrellas_content_desc">%1$d estrellas</string>
+    <string name="rating_texto_1">😞 Vaya, lo sentimos mucho</string>
+    <string name="rating_texto_2">😕 Gracias, mejoraremos</string>
+    <string name="rating_texto_3">😊 ¡Gracias por tu opinión!</string>
+    <string name="rating_texto_4">😄 ¡Nos alegra que te guste!</string>
+    <string name="rating_texto_5">🤩 ¡Eres el mejor, gracias!</string>
     <!-- Direccion restaurantes -->
     <string name="direccion_burger">Calle de Alcalá, 120</string>
     <string name="direccion_dominos">Gran Vía, 45</string>

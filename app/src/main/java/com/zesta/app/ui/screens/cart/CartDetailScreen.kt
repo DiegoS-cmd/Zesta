@@ -89,6 +89,8 @@ fun CartDetailScreen(
     val items = cartGroup?.items ?: emptyList()
     val totalPrice = items.sumOf { it.precio * it.cantidad }
     val restaurantName = cartGroup?.cart?.restaurantName ?: ""
+    // Espera a que termine la carga inicial antes de redirigir,
+    // para no hacer onBack() en falso cuando el carrito aún no ha llegado de Firestore
     var initialLoadDone by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState.isLoading) {
@@ -122,15 +124,15 @@ fun CartDetailScreen(
             shape = RoundedCornerShape(24.dp),
             title = {
                 Text(
-                    text = "Vaciar carrito",
-                    color = TextoPrincipalZesta,
+                    text = stringResource(R.string.carrito_vaciar),
+                            color = TextoPrincipalZesta,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.SemiBold
                 )
             },
             text = {
                 Text(
-                    text = "¿Seguro que quieres eliminar todos los artículos de este carrito?",
+                    text = stringResource(R.string.carrito_detalle_vaciar_confirmacion),
                     color = TextoSecundarioZesta,
                     style = MaterialTheme.typography.bodyMedium
                 )
@@ -146,7 +148,7 @@ fun CartDetailScreen(
                     }
                 ) {
                     Text(
-                        text = "Vaciar",
+                        text = stringResource(R.string.carrito_detalle_vaciar),
                         color = NaranjaZesta,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -155,7 +157,7 @@ fun CartDetailScreen(
             dismissButton = {
                 TextButton(onClick = { showClearCartDialog = false }) {
                     Text(
-                        text = "Cancelar",
+                        text = stringResource(R.string.carrito_cancelar),
                         color = TextoSecundarioZesta
                     )
                 }
@@ -208,7 +210,7 @@ fun CartDetailScreen(
                 if (items.isNotEmpty()) {
                     TextButton(onClick = { showClearCartDialog = true }) {
                         Text(
-                            text = "Vaciar",
+                            text = stringResource(R.string.carrito_detalle_vaciar),
                             color = NaranjaZesta,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -226,7 +228,7 @@ fun CartDetailScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Este carrito está vacío",
+                        text = stringResource(R.string.carrito_detalle_vacio),
                         color = TextoSecundarioZesta,
                         style = MaterialTheme.typography.bodyLarge
                     )
@@ -430,6 +432,7 @@ private fun CartDetailItemCard(
     onDecrease: () -> Unit
 ) {
     val context = LocalContext.current
+    // Se almacena en Firestore sin referencia directa al drawable
     val imageResId = remember(item.imageKey) {
         if (item.imageKey.isBlank()) return@remember null
         val id = context.resources.getIdentifier(item.imageKey, "drawable", context.packageName)
@@ -491,6 +494,8 @@ private fun CartDetailItemCard(
                     .clickable { onDecrease() },
                 contentAlignment = Alignment.Center
             ) {
+                // Si cantidad == 1, el botón "-" se convierte en
+                // papelera y elimina el item en lugar de decrementar
                 if (item.cantidad == 1) {
                     Icon(
                         imageVector = Icons.Outlined.Delete,

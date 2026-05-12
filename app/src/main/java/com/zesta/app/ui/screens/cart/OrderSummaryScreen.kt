@@ -725,6 +725,8 @@ private fun RestaurantSummaryHeader(
     restaurantImageResName: String
 ) {
     val context = LocalContext.current
+    // La imagen se resuelve en tiempo de ejecucion igual que en CartScreen y CartDetailScreen:
+    // el restaurante guarda el nombre del drawable en Firestore, no el ID
     val imageResId = remember(restaurantImageResName) {
         if (restaurantImageResName.isBlank()) return@remember 0
         context.resources.getIdentifier(restaurantImageResName, "drawable", context.packageName)

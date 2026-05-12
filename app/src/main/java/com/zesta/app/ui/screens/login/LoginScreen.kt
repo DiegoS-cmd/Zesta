@@ -23,27 +23,8 @@ import com.zesta.app.ui.components.PrimaryGradientButton
 import com.zesta.app.ui.theme.*
 
 /**
- * Pantalla de inicio de sesión de Zesta.
- *
- * Muestra el formulario de email y contraseña, el acceso con Google,
- * el acceso como invitado y los enlaces a registro, recuperación de
- * contraseña y contacto para empresas.
- *
- * Si [errorMessage] contiene la palabra "deshabilitada" se muestra
- * además el botón de reactivación de cuenta.
- *
- * @param email Valor actual del campo email.
- * @param password Valor actual del campo contraseña.
- * @param errorMessage Mensaje de error a mostrar, o null si no hay error.
- * @param onEmailChange Callback al cambiar el campo email.
- * @param onPasswordChange Callback al cambiar el campo contraseña.
- * @param onLoginClick Callback al pulsar "Entrar".
- * @param onGoRegister Callback al pulsar "Registrarse".
- * @param onGoogleSignIn Callback al pulsar el botón de Google.
- * @param onForgotPassword Callback al pulsar "Olvidé mi contraseña".
- * @param onContinueAsGuestClick Callback al pulsar "Continuar como invitado".
- * @param onEresEmpresa Callback al pulsar "¿Eres empresa?".
- * @param onReactivateAccount Callback al pulsar "¿Quieres reactivar tu cuenta?".
+ * Pantalla de login: email/contraseña, Google, invitado y enlaces secundarios.
+ * Si el error contiene "deshabilitada" aparece también el botón de reactivación.
  */
 @Composable
 fun LoginScreen(
@@ -70,7 +51,6 @@ fun LoginScreen(
     ) {
         Spacer(modifier = Modifier.height(36.dp))
 
-        // TÍTULO DE BIENVENIDA
         Text(
             text = stringResource(R.string.inicio_sesion_bienvenida),
             style = MaterialTheme.typography.headlineMedium,
@@ -79,7 +59,6 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(28.dp))
 
-        // LOGO
         Image(
             painter = painterResource(id = R.drawable.logo_zesta),
             contentDescription = stringResource(R.string.inicio_sesion_descripcion_logo),
@@ -89,7 +68,7 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(36.dp))
 
-        // CAMPO EMAIL
+        // Campos de acceso
         OutlinedTextField(
             value = email,
             onValueChange = onEmailChange,
@@ -111,7 +90,6 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // CAMPO CONTRASEÑA
         OutlinedTextField(
             value = password,
             onValueChange = onPasswordChange,
@@ -132,8 +110,7 @@ fun LoginScreen(
             )
         )
 
-        // ERROR Y REACTIVACIÓN DE CUENTA
-        // Si el error contiene "deshabilitada" se muestra el botón de reactivación.
+        // Error: si la cuenta está deshabilitada aparece además el botón de reactivación
         if (!errorMessage.isNullOrBlank()) {
             Spacer(modifier = Modifier.height(12.dp))
             Text(
@@ -153,7 +130,6 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // BOTÓN ENTRAR
         PrimaryGradientButton(
             text = stringResource(R.string.inicio_sesion_entrar),
             onClick = onLoginClick
@@ -161,7 +137,7 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // SEPARADOR "O"
+        // Separador entre email y Google
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -174,7 +150,7 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // BOTÓN GOOGLE SIGN-IN
+        // Botón de Google
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -205,7 +181,6 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // BOTÓN REGISTRARSE
         PrimaryGradientButton(
             text = stringResource(R.string.inicio_sesion_registrarse),
             onClick = onGoRegister
@@ -213,7 +188,7 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(14.dp))
 
-        // ENLACES SECUNDARIOS
+        // Enlaces secundarios
         TextButton(onClick = onForgotPassword) {
             Text(stringResource(R.string.inicio_sesion_olvide_contrasena), style = LinkTextStyle)
         }

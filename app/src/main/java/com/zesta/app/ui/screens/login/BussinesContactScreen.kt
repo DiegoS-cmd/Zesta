@@ -23,12 +23,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.google.firebase.firestore.FirebaseFirestore
 import com.zesta.app.R
+import com.zesta.app.data.repository.ContactRepository
 import com.zesta.app.ui.components.PrimaryGradientButton
 import com.zesta.app.ui.theme.*
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
 @Composable
 fun BusinessContactScreen(onBack: () -> Unit) {
@@ -41,6 +40,7 @@ fun BusinessContactScreen(onBack: () -> Unit) {
     var correoError by remember { mutableStateOf<String?>(null) }
     var mensajeError by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
+    val contactRepository = remember { ContactRepository() }
 
     val strNombreVacio = stringResource(R.string.empresa_error_nombre_vacio)
     val strCorreoVacio = stringResource(R.string.empresa_error_correo_vacio)
@@ -177,7 +177,7 @@ fun BusinessContactScreen(onBack: () -> Unit) {
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // ✅ Correo de contacto
+                // Correo de contacto
                 OutlinedTextField(
                     value = correo,
                     onValueChange = { correo = it; correoError = null },
@@ -244,19 +244,14 @@ fun BusinessContactScreen(onBack: () -> Unit) {
 
                             scope.launch {
                                 isLoading = true
-                                try {
-                                    FirebaseFirestore.getInstance()
-                                        .collection("solicitudes_empresa")
-                                        .add(
-                                            mapOf(
-                                                "nombre" to nombreEmpresa.trim(),
-                                                "correo" to correoTrimmed,
-                                                "mensaje" to mensaje.trim(),
-                                                "timestamp" to com.google.firebase.Timestamp.now()
-                                            )
-                                        ).await()
+                                val result = contactRepository.enviarSolicitudEmpresa(
+                                    nombre = nombreEmpresa.trim(),
+                                    correo = correoTrimmed,
+                                    mensaje = mensaje.trim()
+                                )
+                                if (result.isSuccess) {
                                     enviado = true
-                                } catch (e: Exception) {
+                                } else {
                                     mensajeError = strErrorEnvio
                                 }
                                 isLoading = false

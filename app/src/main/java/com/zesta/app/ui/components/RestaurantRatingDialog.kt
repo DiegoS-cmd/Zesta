@@ -15,7 +15,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import com.zesta.app.R
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -32,6 +34,7 @@ fun RestaurantRatingDialog(
     onSubmit: (Int) -> Unit
 ) {
     var selectedStars by remember { mutableStateOf(initialStars) }
+
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -63,7 +66,8 @@ fun RestaurantRatingDialog(
             }
 
             Text(
-                text = if (initialStars > 0) "Editar valoración" else "Valorar restaurante",
+                text = if (initialStars > 0) stringResource(R.string.rating_restaurante_editar)
+                else stringResource(R.string.rating_restaurante_valorar),
                 style = MaterialTheme.typography.titleLarge,
                 color = TextoPrincipalZesta,
                 fontWeight = FontWeight.Bold,
@@ -106,11 +110,11 @@ fun RestaurantRatingDialog(
             if (selectedStars > 0) {
                 Text(
                     text = when (selectedStars) {
-                        1 -> "😞 Muy mala experiencia"
-                        2 -> "😕 Podría mejorar"
-                        3 -> "😊 Bastante bien"
-                        4 -> "😄 Muy bueno"
-                        5 -> "🤩 ¡Excelente!"
+                        1 -> stringResource(R.string.rating_restaurante_1)
+                        2 -> stringResource(R.string.rating_restaurante_2)
+                        3 -> stringResource(R.string.rating_restaurante_3)
+                        4 -> stringResource(R.string.rating_restaurante_4)
+                        5 -> stringResource(R.string.rating_restaurante_5)
                         else -> ""
                     },
                     style = MaterialTheme.typography.bodySmall,
@@ -145,7 +149,8 @@ fun RestaurantRatingDialog(
                     )
                 } else {
                     Text(
-                        text = if (initialStars > 0) "Guardar cambios" else "Enviar valoración",
+                        text = if (initialStars > 0) stringResource(R.string.rating_restaurante_guardar)
+                        else stringResource(R.string.rating_enviar),
                         color = BlancoZesta,
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.SemiBold
@@ -155,7 +160,7 @@ fun RestaurantRatingDialog(
 
             TextButton(onClick = onDismiss) {
                 Text(
-                    text = "Cancelar",
+                    text = stringResource(R.string.rating_cancelar),
                     color = TextoSecundarioZesta,
                     style = MaterialTheme.typography.bodyMedium
                 )
