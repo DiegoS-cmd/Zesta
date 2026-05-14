@@ -38,6 +38,10 @@ import com.zesta.app.ui.screens.profile.ProfileScreen
 import com.zesta.app.ui.screens.register.RegisterScreen
 import com.zesta.app.ui.screens.restaurant.RestaurantDetailScreen
 import com.zesta.app.ui.screens.search.SearchScreen
+import com.zesta.app.ui.screens.settings.AboutScreen
+import com.zesta.app.ui.screens.settings.AccessibilityScreen
+import com.zesta.app.ui.screens.settings.HelpScreen
+import com.zesta.app.ui.screens.settings.PrivacyScreen
 import com.zesta.app.ui.theme.FondoZesta
 import com.zesta.app.viewmodel.AuthViewModel
 import com.zesta.app.viewmodel.CartViewModel
@@ -311,17 +315,30 @@ fun AppNavGraph() {
                 onCartClick = { navController.navigate(AppRoutes.Cart.route) },
                 onFavoritesClick = { navController.navigate(AppRoutes.Favorites.route) },
                 onOrderHistoryClick = { navController.navigate(AppRoutes.OrderHistory.route) },
-                onHelpClick = { },           // TODO
-                onPrivacyClick = { },        // TODO
-                onAccessibilityClick = { },  // TODO
+                onHelpClick = { navController.navigate(AppRoutes.Help.route) },
+                onPrivacyClick = { navController.navigate(AppRoutes.Privacy.route) },
+                onAccessibilityClick = { navController.navigate(AppRoutes.Accessibility.route) },
                 onManageAccountClick = { navController.navigate(AppRoutes.ManageAccount.route) },
-                onAboutClick = { },          // TODO
+                onAboutClick = { navController.navigate(AppRoutes.About.route) },
                 onLoginClick = { navController.navigate(AppRoutes.Login.route) },
                 onRegisterClick = { navController.navigate(AppRoutes.Register.route) }
             )
         }
 
-        // Al cerrar sesión o eliminar cuenta se limpia todo el backstack
+        composable(AppRoutes.Help.route) {
+            HelpScreen(onBack = { navController.popBackStack() })
+        }
+        composable(AppRoutes.Privacy.route) {
+            PrivacyScreen(onBack = { navController.popBackStack() })
+        }
+        composable(AppRoutes.Accessibility.route) {
+            AccessibilityScreen(onBack = { navController.popBackStack() })
+        }
+        composable(AppRoutes.About.route) {
+            AboutScreen(onBack = { navController.popBackStack() })
+        }
+
+        // Al cerrar sesión o eliminar cuenta se limpia todo
         composable(AppRoutes.ManageAccount.route) {
             ManageAccountScreen(
                 authViewModel = authViewModel,
@@ -362,7 +379,7 @@ fun AppNavGraph() {
             )
         }
 
-        // TODO: conectar con pedidos reales de Firestore
+        // conectar con pedidos reales de Firestore
         composable(AppRoutes.OrderHistory.route) {
             OrderHistoryScreen(onBack = { navController.popBackStack() })
         }
@@ -398,5 +415,8 @@ fun AppNavGraph() {
                 }
             )
         }
+
+
+
     }
 }

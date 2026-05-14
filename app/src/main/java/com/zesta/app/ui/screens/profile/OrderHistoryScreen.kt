@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -37,12 +38,14 @@ import com.google.firebase.firestore.Query
 import com.zesta.app.data.model.CartItem
 import com.zesta.app.data.model.Order
 import com.zesta.app.data.repository.RatingRepository
+import com.zesta.app.R
 import com.zesta.app.ui.theme.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.*
 
+// Pantalla de historial: carga los pedidos del usuario desde Firestore al entrar
 @Composable
 fun OrderHistoryScreen(onBack: () -> Unit) {
     var orders by remember { mutableStateOf<List<Order>>(emptyList()) }
@@ -63,6 +66,7 @@ fun OrderHistoryScreen(onBack: () -> Unit) {
                 orders = snapshot.documents.mapNotNull { doc ->
                     try {
                         val data = doc.data ?: return@mapNotNull null
+                        // El timestamp puede venir como Timestamp o como Long según cómo se guardó
                         val ts = when (val raw = data["timestamp"]) {
                             is Timestamp -> raw
                             is Long -> Timestamp(raw / 1000, 0)
@@ -118,7 +122,7 @@ fun OrderHistoryScreen(onBack: () -> Unit) {
         ) {
             Spacer(modifier = Modifier.height(20.dp))
 
-            // ── Header
+            // TopBar con botón de volver
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -134,14 +138,14 @@ fun OrderHistoryScreen(onBack: () -> Unit) {
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = "Volver",
+                        contentDescription = stringResource(R.string.accesibilidad_volver),
                         tint = NegroZesta,
                         modifier = Modifier.size(26.dp)
                     )
                 }
                 Spacer(modifier = Modifier.width(14.dp))
                 Text(
-                    text = "Historial de pedidos",
+                    text = stringResource(R.string.historial_titulo),
                     style = MaterialTheme.typography.titleLarge,
                     color = TextoPrincipalZesta,
                     fontWeight = FontWeight.Normal
@@ -150,7 +154,7 @@ fun OrderHistoryScreen(onBack: () -> Unit) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // ── Contenido
+            // Tres estados: cargando, lista vacía o lista con pedidos
             when {
                 isLoading -> {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -170,13 +174,13 @@ fun OrderHistoryScreen(onBack: () -> Unit) {
                                 modifier = Modifier.size(52.dp)
                             )
                             Text(
-                                text = "Aún no tienes pedidos",
+                                text = stringResource(R.string.historial_vacio_titulo),
                                 style = MaterialTheme.typography.titleMedium,
                                 color = TextoPrincipalZesta,
                                 fontWeight = FontWeight.SemiBold
                             )
                             Text(
-                                text = "Cuando realices tu primer pedido aparecerá aquí",
+                                text = stringResource(R.string.historial_vacio_descripcion),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = TextoSecundarioZesta,
                                 textAlign = TextAlign.Center
@@ -197,8 +201,7 @@ fun OrderHistoryScreen(onBack: () -> Unit) {
     }
 }
 
-// ── Tarjeta del pedido
-
+// Tarjeta de un pedido: muestra items, desglose de precios, descuentos y valoración
 @Composable
 private fun OrderHistoryCard(order: Order) {
     val locale = Locale("es", "ES")
@@ -211,17 +214,29 @@ private fun OrderHistoryCard(order: Order) {
     val scope = rememberCoroutineScope()
     var ratingLoading by remember { mutableStateOf(false) }
 
+    // Strings para usar dentro de lambdas
+    val strVerMenos = stringResource(R.string.historial_ver_menos)
+    val strSubtotal = stringResource(R.string.historial_subtotal)
+    val strGastosEnvio = stringResource(R.string.historial_gastos_envio)
+    val strEnvioGratis = stringResource(R.string.historial_envio_gratis)
+    val strTarifaServicio = stringResource(R.string.historial_tarifa_servicio)
+    val strOfertasEspeciales = stringResource(R.string.historial_ofertas_especiales)
+    val strCodigoPromo = stringResource(R.string.historial_codigo_promo)
+    val strTotal = stringResource(R.string.historial_total)
+    val strValorar = stringResource(R.string.historial_valorar)
+
     LaunchedEffect(order.orderId) {
         userRating = ratingRepository.getUserRating(order.restaurantId)
     }
-    // Subtotal real = suma de precio unitario × cantidad (sin promos)
+
+    // Subtotal real  (sin promos)
     val subtotalSinPromo = order.items.sumOf { it.precio * it.cantidad }
 
     // Ahorro por promos de producto = diferencia entre subtotal sin promo y el guardado
     val ahorroPromos = subtotalSinPromo - order.subtotal
 
-    // Descuento por código promo ya viene en order.discount
-    val hasPromoDescuento = ahorroPromos > 0.01  // margen para evitar errores de float
+    // Margen de 0.01 para evitar falsos positivos por errores de algun float
+    val hasPromoDescuento = ahorroPromos > 0.01
     val hasCodigoPromo = order.discount > 0.0
     val hasDiscount = hasPromoDescuento || hasCodigoPromo
 
@@ -235,7 +250,7 @@ private fun OrderHistoryCard(order: Order) {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(0.dp)
     ) {
-        // ── Cabecera
+        // Cabecera: nombre del restaurante y fecha
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -260,7 +275,7 @@ private fun OrderHistoryCard(order: Order) {
         HorizontalDivider(color = BordeCirculoZesta)
         Spacer(modifier = Modifier.height(10.dp))
 
-        // ── Items (expandibles)
+        // Mostramos los 2 primeros items siempre; el resto se expande
         val itemsPreview = order.items.take(2)
         val itemsRest = order.items.drop(2)
 
@@ -294,7 +309,8 @@ private fun OrderHistoryCard(order: Order) {
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = if (expanded) "Ver menos" else "+${itemsRest.size} artículo(s) más",
+                    text = if (expanded) strVerMenos
+                    else stringResource(R.string.historial_ver_mas, itemsRest.size),
                     style = MaterialTheme.typography.bodySmall,
                     color = NaranjaZesta,
                     fontWeight = FontWeight.Medium
@@ -306,36 +322,32 @@ private fun OrderHistoryCard(order: Order) {
         HorizontalDivider(color = BordeCirculoZesta)
         Spacer(modifier = Modifier.height(10.dp))
 
-        // ── Desglose
-
-        // Subtotal SIN descuentos
+        // Desglose de precios
         PriceRow(
-            label = "Subtotal",
+            label = strSubtotal,
             value = String.format(locale, "%.2f €", subtotalSinPromo),
             labelColor = TextoSecundarioZesta,
             valueColor = TextoSecundarioZesta
         )
         Spacer(modifier = Modifier.height(4.dp))
 
-        // Gastos de envío
         PriceRow(
-            label = "Gastos de envío",
-            value = if (order.deliveryFee == 0.0) "Gratis"
+            label = strGastosEnvio,
+            value = if (order.deliveryFee == 0.0) strEnvioGratis
             else String.format(locale, "%.2f €", order.deliveryFee),
             labelColor = TextoSecundarioZesta,
             valueColor = if (order.deliveryFee == 0.0) VerdeExitoZesta else TextoSecundarioZesta
         )
         Spacer(modifier = Modifier.height(4.dp))
 
-        // Tarifa de servicio
         PriceRow(
-            label = "Tarifa de servicio",
+            label = strTarifaServicio,
             value = String.format(locale, "%.2f €", order.serviceFee),
             labelColor = TextoSecundarioZesta,
             valueColor = TextoSecundarioZesta
         )
 
-        // ── Ofertas especiales
+        // Descuento por ofertas de producto
         if (hasPromoDescuento) {
             Spacer(modifier = Modifier.height(10.dp))
             Row(
@@ -357,7 +369,7 @@ private fun OrderHistoryCard(order: Order) {
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "Ofertas especiales",
+                        text = strOfertasEspeciales,
                         style = MaterialTheme.typography.labelMedium,
                         color = NaranjaZesta,
                         fontWeight = FontWeight.SemiBold
@@ -372,7 +384,7 @@ private fun OrderHistoryCard(order: Order) {
             }
         }
 
-        // ── Código promocional
+        // Descuento por código promocional
         if (hasCodigoPromo) {
             Spacer(modifier = Modifier.height(8.dp))
             Row(
@@ -395,7 +407,7 @@ private fun OrderHistoryCard(order: Order) {
                     Spacer(modifier = Modifier.width(6.dp))
                     Column {
                         Text(
-                            text = "Código promocional",
+                            text = strCodigoPromo,
                             style = MaterialTheme.typography.labelMedium,
                             color = AzulInicioGradienteZesta,
                             fontWeight = FontWeight.SemiBold
@@ -422,14 +434,14 @@ private fun OrderHistoryCard(order: Order) {
         HorizontalDivider(color = BordeCirculoZesta)
         Spacer(modifier = Modifier.height(10.dp))
 
-        // ── Total
+        // Total: si hubo descuentos se muestra el precio original tachado
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Total",
+                text = strTotal,
                 style = MaterialTheme.typography.titleSmall,
                 color = TextoPrincipalZesta,
                 fontWeight = FontWeight.Bold
@@ -455,11 +467,11 @@ private fun OrderHistoryCard(order: Order) {
             }
         }
 
-        // ── Valorar (fuera del Row del total)
         Spacer(modifier = Modifier.height(10.dp))
         HorizontalDivider(color = BordeCirculoZesta)
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Botón de valoración: naranja si ya valoró, gris si no
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End
@@ -481,22 +493,21 @@ private fun OrderHistoryCard(order: Order) {
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Icon(
-                    imageVector = if (userRating != null) Icons.Filled.Star
-                    else Icons.Outlined.StarOutline,
+                    imageVector = if (userRating != null) Icons.Filled.Star else Icons.Outlined.StarOutline,
                     contentDescription = null,
                     tint = NaranjaZesta,
                     modifier = Modifier.size(15.dp)
                 )
                 Text(
-                    text = if (userRating != null) "Tu valoración: $userRating★"
-                    else "Valorar restaurante",
+                    text = if (userRating != null)
+                        stringResource(R.string.historial_tu_valoracion, userRating!!)
+                    else strValorar,
                     style = MaterialTheme.typography.bodySmall,
                     color = NaranjaZesta,
                     fontWeight = FontWeight.SemiBold
                 )
             }
         }
-
     }
 
     if (showRatingDialog) {
@@ -516,9 +527,9 @@ private fun OrderHistoryCard(order: Order) {
             }
         )
     }
-}  // cierre OrderHistoryCard
+}
 
-
+// Fila de un producto del pedido: burbuja con cantidad, nombre y precio total del item
 @Composable
 private fun OrderItemRow(item: CartItem, locale: Locale) {
     Row(
@@ -530,7 +541,6 @@ private fun OrderItemRow(item: CartItem, locale: Locale) {
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.weight(1f)
         ) {
-            // Burbuja de cantidad
             Box(
                 modifier = Modifier
                     .size(22.dp)
@@ -563,6 +573,7 @@ private fun OrderItemRow(item: CartItem, locale: Locale) {
     }
 }
 
+// Fila genérica de precio: etiqueta a la izquierda, valor a la derecha
 @Composable
 private fun PriceRow(
     label: String,
@@ -574,16 +585,7 @@ private fun PriceRow(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodySmall,
-            color = labelColor
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodySmall,
-            color = valueColor,
-            fontWeight = FontWeight.Medium
-        )
+        Text(text = label, style = MaterialTheme.typography.bodySmall, color = labelColor)
+        Text(text = value, style = MaterialTheme.typography.bodySmall, color = valueColor, fontWeight = FontWeight.Medium)
     }
 }

@@ -11,7 +11,10 @@ sealed class AppRoutes(val route: String) {
     object ManageAccount : AppRoutes("manage_account")
     object Favorites : AppRoutes("favorites")
     object OrderHistory : AppRoutes("order_history")
-
+    object Help : AppRoutes("help")
+    object Privacy : AppRoutes("privacy")
+    object Accessibility : AppRoutes("accessibility")
+    object About : AppRoutes("about")
     object CartDetail : AppRoutes("cart_detail/{restaurantId}") {
         fun createRoute(restaurantId: Int) = "cart_detail/$restaurantId"
     }

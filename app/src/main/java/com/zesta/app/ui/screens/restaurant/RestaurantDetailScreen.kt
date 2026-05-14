@@ -89,6 +89,7 @@ import com.zesta.app.viewmodel.CartViewModelFactory
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
+// Pantalla de detalle de restaurante: productos, carrito y valoraciones
 @Composable
 fun RestaurantDetailScreen(
     restaurantId: Int,
@@ -98,11 +99,7 @@ fun RestaurantDetailScreen(
     authViewModel: AuthViewModel
 ) {
     val context = LocalContext.current
-
-    val cartViewModel: CartViewModel = viewModel(
-        factory = CartViewModelFactory(repository = CartRepository())
-    )
-
+    val cartViewModel: CartViewModel = viewModel(factory = CartViewModelFactory(repository = CartRepository()))
     val uiState by cartViewModel.uiState.collectAsState()
 
     val restaurant = RestaurantRepository.getRestaurantById(restaurantId)
@@ -118,20 +115,16 @@ fun RestaurantDetailScreen(
     val scope = rememberCoroutineScope()
     var hasOrderedHere by remember { mutableStateOf(false) }
 
-    LaunchedEffect(restaurant.id,authState.isGuest) {
+    // Carga la valoración del usuario y si ha pedido en este restaurante
+    LaunchedEffect(restaurant.id, authState.isGuest) {
         if (!authState.isGuest) {
             userRating = ratingRepository.getUserRating(restaurant.id)
             val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
             if (uid != null) {
                 try {
                     val snap = com.google.firebase.firestore.FirebaseFirestore.getInstance()
-                        .collection("users")
-                        .document(uid)
-                        .collection("orders")
-                        .whereEqualTo("restaurantId", restaurant.id)
-                        .limit(1)
-                        .get()
-                        .await()
+                        .collection("users").document(uid).collection("orders")
+                        .whereEqualTo("restaurantId", restaurant.id).limit(1).get().await()
                     hasOrderedHere = !snap.isEmpty
                 } catch (_: Exception) { }
             }
@@ -142,15 +135,9 @@ fun RestaurantDetailScreen(
     val restaurantImageName = context.resources.getResourceEntryName(restaurant.imageRes)
     val currentRestaurantCart = uiState.carts.firstOrNull { it.cart.restaurantId == restaurant.id }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(FondoZesta)
-    ) {
+    Box(modifier = Modifier.fillMaxSize().background(FondoZesta)) {
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp),
+            modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
             contentPadding = PaddingValues(top = 16.dp, bottom = 100.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
@@ -183,13 +170,11 @@ fun RestaurantDetailScreen(
                 )
             }
 
+            // Dos primeros productos como tarjetas destacadas
             item {
                 Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                     restaurant.products.take(2).forEach { product ->
-                        val cartItem = currentRestaurantCart
-                            ?.items
-                            ?.firstOrNull { it.productId == product.id.toString() }
-
+                        val cartItem = currentRestaurantCart?.items?.firstOrNull { it.productId == product.id.toString() }
                         ProductPromoCard(
                             product = product,
                             quantity = cartItem?.cantidad ?: 0,
@@ -200,10 +185,7 @@ fun RestaurantDetailScreen(
                                     restaurantId = restaurant.id,
                                     restaurantName = restaurantName,
                                     restaurantImageResName = restaurantImageName,
-                                    item = product.toCartItem(
-                                        restaurantId = restaurant.id,
-                                        productName = context.getString(product.nameRes)
-                                    )
+                                    item = product.toCartItem(restaurant.id, context.getString(product.nameRes))
                                 )
                             },
                             onDecrease = {
@@ -225,14 +207,9 @@ fun RestaurantDetailScreen(
                 )
             }
 
-            items(
-                items = restaurant.products.drop(2),
-                key = { product -> product.id }
-            ) { product ->
-                val cartItem = currentRestaurantCart
-                    ?.items
-                    ?.firstOrNull { it.productId == product.id.toString() }
-
+            // Resto del menú a partir del tercer producto
+            items(items = restaurant.products.drop(2), key = { it.id }) { product ->
+                val cartItem = currentRestaurantCart?.items?.firstOrNull { it.productId == product.id.toString() }
                 MenuProductCard(
                     product = product,
                     quantity = cartItem?.cantidad ?: 0,
@@ -242,10 +219,7 @@ fun RestaurantDetailScreen(
                             restaurantId = restaurant.id,
                             restaurantName = restaurantName,
                             restaurantImageResName = restaurantImageName,
-                            item = product.toCartItem(
-                                restaurantId = restaurant.id,
-                                productName = context.getString(product.nameRes)
-                            )
+                            item = product.toCartItem(restaurant.id, context.getString(product.nameRes))
                         )
                     },
                     onDecrease = {
@@ -267,16 +241,14 @@ fun RestaurantDetailScreen(
         )
     }
 
-    // ── Dialogs
+    // Diálogo para invitados o usuario sin pedido previo
     guestDialogType?.let { tipo ->
         GuestActionDialog(
             tipo = tipo,
             onDismiss = { guestDialogType = null },
             onConfirm = {
                 guestDialogType = null
-                if (tipo != GuestDialogType.VALORACION_SIN_PEDIDO) {
-                    onNavigateToLogin()
-                }
+                if (tipo != GuestDialogType.VALORACION_SIN_PEDIDO) onNavigateToLogin()
             }
         )
     }
@@ -300,17 +272,11 @@ fun RestaurantDetailScreen(
     }
 }
 
-private fun Product.toCartItem(restaurantId: Int, productName: String): CartItem {
-    return CartItem(
-        productId = id.toString(),
-        restaurantId = restaurantId,
-        nombre = productName,
-        precio = price,
-        cantidad = 1,
-        imageKey = imageKey
-    )
-}
+// Convierte un Product en CartItem listo para añadir al carrito
+private fun Product.toCartItem(restaurantId: Int, productName: String): CartItem =
+    CartItem(productId = id.toString(), restaurantId = restaurantId, nombre = productName, precio = price, cantidad = 1, imageKey = imageKey)
 
+// Badge de promoción (2x1, -20%, -10%) sobre la imagen del producto
 @Composable
 private fun PromoBadge(promoType: PromoType) {
     if (promoType == PromoType.NONE) return
@@ -321,20 +287,13 @@ private fun PromoBadge(promoType: PromoType) {
         PromoType.NONE -> return
     }
     Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(6.dp))
-            .background(NaranjaZesta)
-            .padding(horizontal = 6.dp, vertical = 2.dp)
+        modifier = Modifier.clip(RoundedCornerShape(6.dp)).background(NaranjaZesta).padding(horizontal = 6.dp, vertical = 2.dp)
     ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = BlancoZesta,
-            fontWeight = FontWeight.Bold
-        )
+        Text(text = label, style = MaterialTheme.typography.labelSmall, color = BlancoZesta, fontWeight = FontWeight.Bold)
     }
 }
 
+// Tarjeta vertical para los 2 productos destacados
 @Composable
 private fun ProductPromoCard(
     product: Product,
@@ -352,32 +311,18 @@ private fun ProductPromoCard(
     }
     val hayDescuento = precioMostrado < precioOriginal
 
-    Column(
-        modifier = modifier
-            .clip(RoundedCornerShape(18.dp))
-            .background(FondoPlaceholderZesta)
-            .padding(10.dp)
-    ) {
+    Column(modifier = modifier.clip(RoundedCornerShape(18.dp)).background(FondoPlaceholderZesta).padding(10.dp)) {
         Box {
             Image(
                 painter = painterResource(product.imageRes),
                 contentDescription = productName,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(95.dp)
-                    .clip(RoundedCornerShape(16.dp)),
+                modifier = Modifier.fillMaxWidth().height(95.dp).clip(RoundedCornerShape(16.dp)),
                 contentScale = ContentScale.Crop
             )
             if (product.promoType != PromoType.NONE) {
-                Box(modifier = Modifier.padding(6.dp)) {
-                    PromoBadge(promoType = product.promoType)
-                }
+                Box(modifier = Modifier.padding(6.dp)) { PromoBadge(promoType = product.promoType) }
             }
-            Box(
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .offset(x = 10.dp, y = 10.dp)
-            ) {
+            Box(modifier = Modifier.align(Alignment.CenterEnd).offset(x = 10.dp, y = 10.dp)) {
                 QuantitySelector(quantity = quantity, onAdd = onAddToCart, onDecrease = onDecrease, size = 34)
             }
         }
@@ -385,26 +330,16 @@ private fun ProductPromoCard(
         Text(text = productName, style = MaterialTheme.typography.bodyLarge, color = TextoPrincipalZesta)
         if (hayDescuento) {
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = stringResource(R.string.producto_precio, precioOriginal),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = TextoSecundarioZesta,
-                    textDecoration = TextDecoration.LineThrough
-                )
-                Text(
-                    text = stringResource(R.string.producto_precio, precioMostrado),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = NaranjaZesta,
-                    fontWeight = FontWeight.SemiBold
-                )
+                Text(text = stringResource(R.string.producto_precio, precioOriginal), style = MaterialTheme.typography.bodySmall, color = TextoSecundarioZesta, textDecoration = TextDecoration.LineThrough)
+                Text(text = stringResource(R.string.producto_precio, precioMostrado), style = MaterialTheme.typography.bodyLarge, color = NaranjaZesta, fontWeight = FontWeight.SemiBold)
             }
         } else {
             Text(text = stringResource(R.string.producto_precio, precioOriginal), style = MaterialTheme.typography.bodyLarge, color = TextoPrincipalZesta)
         }
-
     }
 }
 
+// Tarjeta horizontal para el resto del menú
 @Composable
 private fun MenuProductCard(
     product: Product,
@@ -413,7 +348,6 @@ private fun MenuProductCard(
     onDecrease: () -> Unit
 ) {
     val productName = stringResource(product.nameRes)
-    val productDescription = stringResource(product.descriptionRes)
     val precioOriginal = product.price
     val precioMostrado = when (product.promoType) {
         PromoType.DESCUENTO_20 -> precioOriginal * 0.80
@@ -423,11 +357,7 @@ private fun MenuProductCard(
     val hayDescuento = precioMostrado < precioOriginal
 
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(18.dp))
-            .background(FondoPlaceholderZesta)
-            .padding(12.dp),
+        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(FondoPlaceholderZesta).padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
@@ -451,10 +381,9 @@ private fun MenuProductCard(
             } else {
                 Text(text = stringResource(R.string.producto_precio, precioOriginal), style = MaterialTheme.typography.bodyLarge, color = TextoPrincipalZesta)
             }
-            Spacer(modifier = Modifier.height(4.dp))
             if (product.promoType == PromoType.DOS_POR_UNO) {
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(text = "Llévate 2 y paga solo 1", style = MaterialTheme.typography.bodySmall, color = NaranjaZesta, fontWeight = FontWeight.Medium)
+                Text(text = stringResource(R.string.producto_promo_2x1), style = MaterialTheme.typography.bodySmall, color = NaranjaZesta, fontWeight = FontWeight.Medium)
             }
         }
         Spacer(modifier = Modifier.width(10.dp))
@@ -462,6 +391,7 @@ private fun MenuProductCard(
     }
 }
 
+// TopBar con botón de volver, valoración y favorito
 @Composable
 private fun RestaurantTopBar(
     onBack: () -> Unit,
@@ -470,112 +400,56 @@ private fun RestaurantTopBar(
     onToggleFavorito: () -> Unit,
     onRatingClick: () -> Unit
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        CircleIconButton(
-            icon = Icons.AutoMirrored.Outlined.ArrowBack,
-            contentDescription = stringResource(R.string.accesibilidad_volver),
-            onClick = onBack
-        )
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+        CircleIconButton(icon = Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.accesibilidad_volver), onClick = onBack)
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Box(
-                modifier = Modifier
-                    .size(46.dp)
-                    .clip(CircleShape)
+                modifier = Modifier.size(46.dp).clip(CircleShape)
                     .background(if (userRating != null) FondoSeleccionNaranjaZesta else FondoCirculoZesta)
                     .border(1.dp, if (userRating != null) NaranjaZesta else BordeCirculoZesta, CircleShape)
                     .clickable { onRatingClick() },
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = if (userRating != null) Icons.Filled.Star else Icons.Outlined.StarOutline,
-                    contentDescription = "Valorar restaurante",
-                    tint = if (userRating != null) NaranjaZesta else NegroZesta,
-                    modifier = Modifier.size(24.dp)
-                )
+                Icon(imageVector = if (userRating != null) Icons.Filled.Star else Icons.Outlined.StarOutline, contentDescription = stringResource(R.string.historial_valorar), tint = if (userRating != null) NaranjaZesta else NegroZesta, modifier = Modifier.size(24.dp))
             }
             Box(
-                modifier = Modifier
-                    .size(46.dp)
-                    .clip(CircleShape)
+                modifier = Modifier.size(46.dp).clip(CircleShape)
                     .background(if (isFavorito) FondoSeleccionNaranjaZesta else FondoCirculoZesta)
                     .border(1.dp, if (isFavorito) NaranjaZesta else BordeCirculoZesta, CircleShape)
                     .clickable { onToggleFavorito() },
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = if (isFavorito) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
-                    contentDescription = stringResource(R.string.accesibilidad_favorito_accion),
-                    tint = if (isFavorito) NaranjaZesta else NegroZesta,
-                    modifier = Modifier.size(26.dp)
-                )
+                Icon(imageVector = if (isFavorito) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder, contentDescription = stringResource(R.string.accesibilidad_favorito_accion), tint = if (isFavorito) NaranjaZesta else NegroZesta, modifier = Modifier.size(26.dp))
             }
         }
     }
 }
 
+// Cabecera con imagen, logo, nombre, valoración y dirección del restaurante
 @Composable
 private fun RestaurantHeader(restaurant: Restaurant) {
     val restaurantName = stringResource(restaurant.nameRes)
     val ratingText = stringResource(R.string.restaurante_valoracion, restaurant.ratingValue, restaurant.ratingCount)
     val addressText = stringResource(restaurant.addressRes)
 
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Image(
-            painter = painterResource(restaurant.imageRes),
-            contentDescription = restaurantName,
-            modifier = Modifier
-                .size(160.dp)
-                .clip(RoundedCornerShape(24.dp)),
-            contentScale = ContentScale.Fit
-        )
+    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+        Image(painter = painterResource(restaurant.imageRes), contentDescription = restaurantName, modifier = Modifier.size(160.dp).clip(RoundedCornerShape(24.dp)), contentScale = ContentScale.Fit)
         Spacer(modifier = Modifier.height(8.dp))
-        Image(
-            painter = painterResource(restaurant.imageRes),
-            contentDescription = restaurantName,
-            modifier = Modifier
-                .size(52.dp)
-                .clip(CircleShape)
-                .border(2.dp, BordeIconoZesta, CircleShape),
-            contentScale = ContentScale.Crop
-        )
+        Image(painter = painterResource(restaurant.imageRes), contentDescription = restaurantName, modifier = Modifier.size(52.dp).clip(CircleShape).border(2.dp, BordeIconoZesta, CircleShape), contentScale = ContentScale.Crop)
         Spacer(modifier = Modifier.height(10.dp))
-        Text(
-            text = restaurantName,
-            style = MaterialTheme.typography.titleLarge,
-            color = TextoPrincipalZesta,
-            fontWeight = FontWeight.Normal
-        )
+        Text(text = restaurantName, style = MaterialTheme.typography.titleLarge, color = TextoPrincipalZesta, fontWeight = FontWeight.Normal)
         Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = ratingText,
-            style = MaterialTheme.typography.bodyMedium,
-            color = TextoResenaZesta
-        )
+        Text(text = ratingText, style = MaterialTheme.typography.bodyMedium, color = TextoResenaZesta)
         Spacer(modifier = Modifier.height(8.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                imageVector = Icons.Outlined.LocationOn,
-                contentDescription = stringResource(R.string.restaurante_ubicacion),
-                tint = ColorUbicacionZesta,
-                modifier = Modifier.size(30.dp)
-            )
+            Icon(imageVector = Icons.Outlined.LocationOn, contentDescription = stringResource(R.string.restaurante_ubicacion), tint = ColorUbicacionZesta, modifier = Modifier.size(30.dp))
             Spacer(modifier = Modifier.width(6.dp))
-            Text(
-                text = addressText,
-                style = MaterialTheme.typography.bodyLarge,
-                color = TextoPrincipalZesta
-            )
+            Text(text = addressText, style = MaterialTheme.typography.bodyLarge, color = TextoPrincipalZesta)
         }
     }
 }
 
+// Selector de cantidad: botón + simple si qty=0, fila −/cantidad/+ si qty>0
 @Composable
 private fun QuantitySelector(quantity: Int, onAdd: () -> Unit, onDecrease: () -> Unit, size: Int = 34) {
     if (quantity == 0) {
@@ -592,11 +466,8 @@ private fun QuantitySelector(quantity: Int, onAdd: () -> Unit, onDecrease: () ->
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Box(modifier = Modifier.size(24.dp).clip(CircleShape).clickable { onDecrease() }, contentAlignment = Alignment.Center) {
-                if (quantity == 1) {
-                    Icon(imageVector = Icons.Outlined.Delete, contentDescription = null, tint = NegroZesta, modifier = Modifier.size(18.dp))
-                } else {
-                    Text(text = "-", color = NegroZesta, style = MaterialTheme.typography.bodyLarge)
-                }
+                if (quantity == 1) Icon(imageVector = Icons.Outlined.Delete, contentDescription = null, tint = NegroZesta, modifier = Modifier.size(18.dp))
+                else Text(text = "-", color = NegroZesta, style = MaterialTheme.typography.bodyLarge)
             }
             Text(text = quantity.toString(), color = NegroZesta, style = MaterialTheme.typography.bodyMedium)
             Box(modifier = Modifier.size(24.dp).clip(CircleShape).clickable { onAdd() }, contentAlignment = Alignment.Center) {
@@ -606,16 +477,14 @@ private fun QuantitySelector(quantity: Int, onAdd: () -> Unit, onDecrease: () ->
     }
 }
 
+// Botón flotante para ir al carrito
 @Composable
 private fun ViewCartButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
     Box(
-        modifier = modifier
-            .height(52.dp)
-            .clip(RoundedCornerShape(30.dp))
+        modifier = modifier.height(52.dp).clip(RoundedCornerShape(30.dp))
             .background(brush = Brush.horizontalGradient(colors = listOf(InicioGradiente, AzulFinGradienteZesta)))
             .border(2.dp, BordeDoradoZesta, RoundedCornerShape(30.dp))
-            .clickable { onClick() }
-            .padding(horizontal = 26.dp),
+            .clickable { onClick() }.padding(horizontal = 26.dp),
         contentAlignment = Alignment.Center
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -626,6 +495,7 @@ private fun ViewCartButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
     }
 }
 
+// Botón circular genérico con icono
 @Composable
 private fun CircleIconButton(icon: ImageVector, contentDescription: String, onClick: () -> Unit) {
     Box(
@@ -636,12 +506,9 @@ private fun CircleIconButton(icon: ImageVector, contentDescription: String, onCl
     }
 }
 
+// Diálogo para invitados o usuario sin pedido previo en el restaurante
 @Composable
-private fun GuestActionDialog(
-    tipo: GuestDialogType,
-    onDismiss: () -> Unit,
-    onConfirm: () -> Unit
-) {
+private fun GuestActionDialog(tipo: GuestDialogType, onDismiss: () -> Unit, onConfirm: () -> Unit) {
     val titulo = when (tipo) {
         GuestDialogType.FAVORITO -> stringResource(R.string.favoritos_invitado_titulo)
         GuestDialogType.CARRITO -> stringResource(R.string.carrito_invitado_titulo)
@@ -675,23 +542,17 @@ private fun GuestActionDialog(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Box(
-                    modifier = Modifier.size(64.dp).clip(CircleShape).background(FondoSeleccionNaranjaZesta),
-                    contentAlignment = Alignment.Center
-                ) {
+                Box(modifier = Modifier.size(64.dp).clip(CircleShape).background(FondoSeleccionNaranjaZesta), contentAlignment = Alignment.Center) {
                     Icon(imageVector = icono, contentDescription = null, tint = NaranjaZesta, modifier = Modifier.size(32.dp))
                 }
                 Text(text = titulo, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold, color = TextoPrincipalZesta, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                 Text(text = descripcion, style = MaterialTheme.typography.bodyMedium, color = TextoSecundarioZesta, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                 Spacer(modifier = Modifier.height(4.dp))
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(28.dp))
+                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(28.dp))
                         .background(brush = Brush.horizontalGradient(colors = listOf(AzulInicioGradienteZesta, AzulFinGradienteZesta)))
                         .border(1.dp, BordeBotonZesta, RoundedCornerShape(28.dp))
-                        .clickable { onConfirm() }
-                        .padding(vertical = 14.dp),
+                        .clickable { onConfirm() }.padding(vertical = 14.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(text = botonTexto, color = BlancoZesta, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)

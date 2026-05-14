@@ -38,6 +38,7 @@ data class SearchCategoryItemUi(
     @DrawableRes val imageRes: Int
 )
 
+// Pantalla de búsqueda: filtra restaurantes por nombre o categoría
 @Composable
 fun SearchScreen(
     onHomeClick: () -> Unit,
@@ -66,11 +67,8 @@ fun SearchScreen(
         else {
             val q = query.trim()
             RestaurantRepository.getAllRestaurants().filter { restaurant ->
-                val nameMatch = context.getString(restaurant.nameRes)
-                    .contains(q, ignoreCase = true)
-                val categoryMatch = restaurant.categories.any { cat ->
-                    cat.contains(q, ignoreCase = true)
-                }
+                val nameMatch = context.getString(restaurant.nameRes).contains(q, ignoreCase = true)
+                val categoryMatch = restaurant.categories.any { it.contains(q, ignoreCase = true) }
                 nameMatch || categoryMatch
             }
         }
@@ -79,107 +77,58 @@ fun SearchScreen(
     // Guarda en recientes al escribir (solo cuando hay texto y no está ya)
     LaunchedEffect(query) {
         if (query.isBlank()) return@LaunchedEffect
-        recentSearches = (listOf(query) + recentSearches)
-            .distinct()
-            .take(3)
+        recentSearches = (listOf(query) + recentSearches).distinct().take(3)
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(FondoZesta)
-    ) {
+    Box(modifier = Modifier.fillMaxSize().background(FondoZesta)) {
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 20.dp),
+            modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp),
             contentPadding = PaddingValues(top = 20.dp, bottom = 118.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
-                SearchField(
-                    query = query,
-                    onQueryChange = { query = it },
-                    onClear = { query = "" }  // ← botón X
-                )
+                SearchField(query = query, onQueryChange = { query = it }, onClear = { query = "" })
             }
 
             if (query.isNotBlank()) {
                 if (searchResults.isEmpty()) {
                     item {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 32.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = stringResource(R.string.categoria_sin_resultados),
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = TextoResenaZesta
-                            )
+                        Box(modifier = Modifier.fillMaxWidth().padding(top = 32.dp), contentAlignment = Alignment.Center) {
+                            Text(text = stringResource(R.string.categoria_sin_resultados), style = MaterialTheme.typography.bodyLarge, color = TextoResenaZesta)
                         }
                     }
                 } else {
                     item {
-                        Text(
-                            text = stringResource(R.string.busqueda_resultados, searchResults.size),
-                            style = MaterialTheme.typography.titleLarge,
-                            color = TextoPrincipalZesta,
-                            fontWeight = FontWeight.Normal
-                        )
+                        Text(text = stringResource(R.string.busqueda_resultados, searchResults.size), style = MaterialTheme.typography.titleLarge, color = TextoPrincipalZesta, fontWeight = FontWeight.Normal)
                     }
                     items(searchResults, key = { it.id }) { restaurant ->
-                        SearchRestaurantCard(
-                            restaurant = restaurant,
-                            onClick = { onRestaurantClick(restaurant.id) }
-                        )
+                        SearchRestaurantCard(restaurant = restaurant, onClick = { onRestaurantClick(restaurant.id) })
                     }
                 }
             } else {
                 // Recientes — solo si hay alguno guardado
                 if (recentSearches.isNotEmpty()) {
                     item {
-                        Text(
-                            text = stringResource(R.string.busqueda_titulo_recientes),
-                            style = MaterialTheme.typography.titleLarge,
-                            color = TextoPrincipalZesta,
-                            fontWeight = FontWeight.Normal
-                        )
+                        Text(text = stringResource(R.string.busqueda_titulo_recientes), style = MaterialTheme.typography.titleLarge, color = TextoPrincipalZesta, fontWeight = FontWeight.Normal)
                     }
                     item {
-                        RecentSearchRow(
-                            searches = recentSearches,
-                            onChipClick = { query = it }
-                        )
+                        RecentSearchRow(searches = recentSearches, onChipClick = { query = it })
                     }
                 }
 
                 item {
-                    Text(
-                        text = stringResource(R.string.busqueda_titulo_categorias_principales),
-                        style = MaterialTheme.typography.titleLarge,
-                        color = TextoPrincipalZesta,
-                        fontWeight = FontWeight.Normal
-                    )
+                    Text(text = stringResource(R.string.busqueda_titulo_categorias_principales), style = MaterialTheme.typography.titleLarge, color = TextoPrincipalZesta, fontWeight = FontWeight.Normal)
                 }
                 items(categories) { category ->
                     val categoryName = stringResource(category.titleRes)
-                    SearchCategoryRow(
-                        title = categoryName,
-                        imageRes = category.imageRes,
-                        onClick = { query = categoryName }
-                    )
+                    SearchCategoryRow(title = categoryName, imageRes = category.imageRes, onClick = { query = categoryName })
                 }
             }
         }
 
         ZestaBottomNavBar(
             selectedRoute = AppRoutes.Search.route,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .navigationBarsPadding()
-                .padding(horizontal = 12.dp, vertical = 14.dp),
+            modifier = Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(horizontal = 12.dp, vertical = 14.dp),
             onHomeClick = onHomeClick,
             onSearchClick = { },
             onCartClick = onCartClick,
@@ -188,128 +137,52 @@ fun SearchScreen(
     }
 }
 
-
-// Tarjeta de resultado
-
+// Tarjeta de resultado de búsqueda con imagen, promo, nombre y envío
 @Composable
-private fun SearchRestaurantCard(
-    restaurant: Restaurant,
-    onClick: () -> Unit
-) {
+private fun SearchRestaurantCard(restaurant: Restaurant, onClick: () -> Unit) {
     val restaurantName = stringResource(restaurant.nameRes)
-    val deliveryText = if (restaurant.hasFreeDelivery) {
-        stringResource(R.string.restaurante_envio_gratis, restaurant.deliveryTimeMinutes)
-    } else {
-        stringResource(
-            R.string.restaurante_envio_pago,
-            restaurant.deliveryFee ?: 0.0,
-            restaurant.deliveryTimeMinutes
-        )
-    }
-    val ratingText = stringResource(
-        R.string.restaurante_valoracion,
-        restaurant.ratingValue,
-        restaurant.ratingCount
-    )
+    val deliveryText = rememberDeliveryText(restaurant)
+    val ratingText = rememberRatingText(restaurant)
 
-    androidx.compose.foundation.layout.Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-    ) {
+    Column(modifier = Modifier.fillMaxWidth().clickable { onClick() }) {
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(150.dp)
-                .clip(RoundedCornerShape(18.dp))
-                .background(FondoTarjetaRestauranteZesta)
-                .padding(8.dp)
+            modifier = Modifier.fillMaxWidth().height(150.dp).clip(RoundedCornerShape(18.dp)).background(FondoTarjetaRestauranteZesta).padding(8.dp)
         ) {
             Image(
                 painter = painterResource(restaurant.imageRes),
                 contentDescription = restaurantName,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(RoundedCornerShape(15.dp)),
+                modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(15.dp)),
                 contentScale = ContentScale.Crop
             )
-
             restaurant.promoTextRes?.let { promoRes ->
                 Box(
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .padding(top = 6.dp, start = 6.dp, end = 6.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(FondoOfertaZesta)
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                    modifier = Modifier.align(Alignment.TopCenter).padding(top = 6.dp, start = 6.dp, end = 6.dp).clip(RoundedCornerShape(8.dp)).background(FondoOfertaZesta).padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
-                    Text(
-                        text = stringResource(promoRes),
-                        color = BlancoZesta,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+                    Text(text = stringResource(promoRes), color = BlancoZesta, style = MaterialTheme.typography.bodyMedium)
                 }
             }
         }
-
         Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = restaurantName,
-            style = MaterialTheme.typography.bodyLarge,
-            color = TextoPrincipalZesta,
-            fontWeight = FontWeight.Normal
-        )
-        Text(
-            text = deliveryText,
-            style = MaterialTheme.typography.bodyMedium,
-            color = TextoPrincipalZesta
-        )
-        Text(
-            text = ratingText,
-            style = MaterialTheme.typography.bodyMedium,
-            color = TextoResenaZesta
-        )
+        Text(text = restaurantName, style = MaterialTheme.typography.bodyLarge, color = TextoPrincipalZesta, fontWeight = FontWeight.Normal)
+        Text(text = deliveryText, style = MaterialTheme.typography.bodyMedium, color = TextoPrincipalZesta)
+        Text(text = ratingText, style = MaterialTheme.typography.bodyMedium, color = TextoResenaZesta)
     }
 }
 
-
+// Campo de búsqueda con icono lupa y botón X para limpiar
 @Composable
-private fun SearchField(
-    query: String,
-    onQueryChange: (String) -> Unit,
-    onClear: () -> Unit
-) {
+private fun SearchField(query: String, onQueryChange: (String) -> Unit, onClear: () -> Unit) {
     OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
         modifier = Modifier.fillMaxWidth(),
         singleLine = true,
         shape = RoundedCornerShape(30.dp),
-        placeholder = {
-            Text(
-                text = stringResource(R.string.busqueda_placeholder),
-                color = TextoSecundarioZesta
-            )
-        },
-        leadingIcon = {
-            Icon(
-                imageVector = Icons.Outlined.Search,
-                contentDescription = stringResource(R.string.accesibilidad_ir_buscar),
-                tint = NegroZesta
-            )
-        },
-        // Botón X — solo aparece cuando hay texto
+        placeholder = { Text(text = stringResource(R.string.busqueda_placeholder), color = TextoSecundarioZesta) },
+        leadingIcon = { Icon(imageVector = Icons.Outlined.Search, contentDescription = stringResource(R.string.accesibilidad_ir_buscar), tint = NegroZesta) },
         trailingIcon = {
             if (query.isNotBlank()) {
-                Icon(
-                    imageVector = Icons.Outlined.Close,
-                    contentDescription = stringResource(R.string.accesibilidad_limpiar_busqueda),
-                    tint = NegroZesta,
-                    modifier = Modifier
-                        .size(20.dp)
-                        .clickable { onClear() }
-                )
+                Icon(imageVector = Icons.Outlined.Close, contentDescription = stringResource(R.string.accesibilidad_limpiar_busqueda), tint = NegroZesta, modifier = Modifier.size(20.dp).clickable { onClear() })
             }
         },
         colors = OutlinedTextFieldDefaults.colors(
@@ -322,11 +195,9 @@ private fun SearchField(
     )
 }
 
+// Fila de chips con las últimas búsquedas
 @Composable
-private fun RecentSearchRow(
-    searches: List<String>,
-    onChipClick: (String) -> Unit
-) {
+private fun RecentSearchRow(searches: List<String>, onChipClick: (String) -> Unit) {
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         searches.forEach { text ->
             SearchChip(text = text, onClick = { onChipClick(text) })
@@ -334,52 +205,43 @@ private fun RecentSearchRow(
     }
 }
 
-
+// Chip clickable para búsqueda reciente
 @Composable
 private fun SearchChip(text: String, onClick: () -> Unit) {
     Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(24.dp))
-            .background(FondoTarjetaRestauranteZesta)
-            .clickable { onClick() }
-            .padding(horizontal = 20.dp, vertical = 12.dp),
+        modifier = Modifier.clip(RoundedCornerShape(24.dp)).background(FondoTarjetaRestauranteZesta).clickable { onClick() }.padding(horizontal = 20.dp, vertical = 12.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.bodyLarge,
-            color = TextoPrincipalZesta
-        )
+        Text(text = text, style = MaterialTheme.typography.bodyLarge, color = TextoPrincipalZesta)
     }
 }
 
+// Fila de categoría con imagen circular y nombre
 @Composable
-private fun SearchCategoryRow(
-    title: String,
-    @DrawableRes imageRes: Int,
-    onClick: () -> Unit
-) {
+private fun SearchCategoryRow(title: String, @DrawableRes imageRes: Int, onClick: () -> Unit) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(vertical = 4.dp),
+        modifier = Modifier.fillMaxWidth().clickable { onClick() }.padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
             painter = painterResource(id = imageRes),
             contentDescription = stringResource(R.string.accesibilidad_imagen_categoria, title),
-            modifier = Modifier
-                .size(62.dp)
-                .clip(CircleShape)
-                .border(2.dp, BordeCategoriaZesta, CircleShape),
+            modifier = Modifier.size(62.dp).clip(CircleShape).border(2.dp, BordeCategoriaZesta, CircleShape),
             contentScale = ContentScale.Crop
         )
         Spacer(modifier = Modifier.width(18.dp))
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            color = TextoPrincipalZesta
-        )
+        Text(text = title, style = MaterialTheme.typography.titleMedium, color = TextoPrincipalZesta)
     }
 }
+
+// reutilizables para texto de envío y valoración
+@Composable
+private fun rememberDeliveryText(restaurant: Restaurant): String =
+    if (restaurant.hasFreeDelivery)
+        stringResource(R.string.restaurante_envio_gratis, restaurant.deliveryTimeMinutes)
+    else
+        stringResource(R.string.restaurante_envio_pago, restaurant.deliveryFee ?: 0.0, restaurant.deliveryTimeMinutes)
+
+@Composable
+private fun rememberRatingText(restaurant: Restaurant): String =
+    stringResource(R.string.restaurante_valoracion, restaurant.ratingValue, restaurant.ratingCount)

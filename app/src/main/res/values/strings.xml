@@ -115,6 +115,7 @@
     <string name="promo_label_2x1">2x1 · </string>
     <string name="promo_label_20">-20% · </string>
     <string name="promo_label_10">-10% · </string>
+    <string name="producto_promo_2x1">Llévate 2 y paga solo 1</string>
     <string name="pedido_ahorro_promo">%1$sAhorras %2$s €</string>
     <string name="pedido_ahorro_importe">- %1$s €</string>
     <string name="pedido_descuento_pct">-%1$d%%</string>
@@ -177,6 +178,24 @@
     <string name="favoritos_vacio_titulo">Aún no tienes favoritos</string>
     <string name="favoritos_vacio_descripcion">Pulsa el corazón en cualquier restaurante para guardarlo aquí</string>
     <string name="gestionar_cuenta_foto_eliminar">Eliminar foto</string>
+
+    <!-- Historial de pedidos-->
+
+    <string name="historial_titulo">Historial de pedidos</string>
+    <string name="historial_vacio_titulo">Aún no tienes pedidos</string>
+    <string name="historial_vacio_descripcion">Cuando realices tu primer pedido aparecerá aquí</string>
+    <string name="historial_ver_menos">Ver menos</string>
+    <string name="historial_ver_mas">+%d artículo(s) más</string>
+    <string name="historial_subtotal">Subtotal</string>
+    <string name="historial_gastos_envio">Gastos de envío</string>
+    <string name="historial_envio_gratis">Gratis</string>
+    <string name="historial_tarifa_servicio">Tarifa de servicio</string>
+    <string name="historial_ofertas_especiales">Ofertas especiales</string>
+    <string name="historial_codigo_promo">Código promocional</string>
+    <string name="historial_total">Total</string>
+    <string name="historial_tu_valoracion">Tu valoración: %d★</string>
+    <string name="historial_valorar">Valorar restaurante</string>
+    <string name="historial_formato_precio">%.2f €</string>
 
     <!-- Gestionar cuenta -->
     <string name="gestionar_cuenta_descripcion_invitado">Has entrado como invitado. Desde aquí puedes iniciar sesión o crear una cuenta.</string>
@@ -497,4 +516,75 @@
     <string name="valoracion_app_4">Muy buena experiencia</string>
     <string name="valoracion_app_5">¡Excelente!</string>
 
+    <!-- Común -->
+    <string name="cd_back">Volver</string>
+
+    <!-- HelpScreen -->
+    <string name="help_title">Ayuda</string>
+    <string name="help_subtitle">Encuentra respuesta a las dudas más habituales o escríbenos directamente.</string>
+    <string name="help_section_faq">Preguntas frecuentes</string>
+    <string name="help_section_contact">¿No encuentras lo que buscas?</string>
+    <string name="help_contact_body">Escríbenos y te respondemos en menos de 24 horas.</string>
+    <string name="help_contact_email">soporte@zesta.app</string>
+
+    <string name="help_faq_1_q">¿Cómo hago mi primer pedido?</string>
+    <string name="help_faq_1_a">Elige un restaurante, añade productos al carrito y pulsa \"Hacer pedido\". Necesitas tener dirección y teléfono guardados en tu perfil.</string>
+    <string name="help_faq_2_q">¿Puedo cancelar un pedido?</string>
+    <string name="help_faq_2_a">Puedes cancelarlo en los primeros 2 minutos. Pasado ese tiempo el restaurante ya lo habrá visto y no es posible cancelar desde la app.</string>
+    <string name="help_faq_3_q">¿Cómo funciona el envío gratis?</string>
+    <string name="help_faq_3_a">Algunos restaurantes lo ofrecen sin coste. Cuando sea así verás la etiqueta \"Envío gratis\" en su tarjeta.</string>
+    <string name="help_faq_4_q">¿Cómo cambio mi dirección de entrega?</string>
+    <string name="help_faq_4_a">Entra en tu perfil, toca \"Gestionar direcciones\" y selecciona o añade la que quieras. También puedes cambiarlo antes de confirmar el pedido.</string>
+    <string name="help_faq_5_q">Tengo un problema con mi pedido, ¿qué hago?</string>
+    <string name="help_faq_5_a">Escríbenos al correo de soporte indicando tu número de pedido. Lo revisamos lo antes posible.</string>
+    <string name="help_faq_6_q">¿Puedo usar la app sin cuenta?</string>
+    <string name="help_faq_6_a">Sí, en modo invitado puedes explorar restaurantes y ver sus cartas. Para pedir y guardar favoritos necesitas registrarte.</string>
+
+    <!-- PrivacyScreen -->
+    <string name="privacy_title">Política de privacidad</string>
+    <string name="privacy_last_updated">Última actualización: abril de 2026</string>
+    <string name="privacy_s1_title">1. Datos que recopilamos</string>
+    <string name="privacy_s1_body">Recopilamos los datos que nos proporcionas al registrarte (nombre, email, teléfono, dirección) y los necesarios para gestionar tus pedidos. También recogemos datos de uso anónimos para mejorar la experiencia.</string>
+    <string name="privacy_s2_title">2. Cómo usamos tus datos</string>
+    <string name="privacy_s2_body">Usamos tus datos para gestionar tu cuenta, procesar pedidos y enviarte confirmaciones. No los usamos para publicidad de terceros sin tu consentimiento.</string>
+    <string name="privacy_s3_title">3. Compartición de datos</string>
+    <string name="privacy_s3_body">Solo compartimos los datos necesarios con los restaurantes que preparan tus pedidos y con nuestros proveedores de infraestructura (Firebase/Google). No vendemos tus datos a terceros.</string>
+    <string name="privacy_s4_title">4. Tus derechos (RGPD)</string>
+    <string name="privacy_s4_body">Tienes derecho a acceder, rectificar y eliminar tus datos en cualquier momento desde tu perfil o contactando con nosotros. También puedes deshabilitar tu cuenta desde Ajustes.</string>
+    <string name="privacy_s5_title">5. Seguridad</string>
+    <string name="privacy_s5_body">Los datos se almacenan en Firebase con cifrado en tránsito (TLS) y en reposo. Las contraseñas nunca se guardan en texto plano.</string>
+    <string name="privacy_s6_title">6. Contacto</string>
+    <string name="privacy_s6_body">Para cualquier consulta sobre privacidad escríbenos a:</string>
+    <string name="privacy_dpo_email">privacidad@zesta.app</string>
+
+    <!-- AccessibilityScreen -->
+    <string name="accessibility_title">Accesibilidad</string>
+    <string name="accessibility_sec_text">Texto</string>
+    <string name="accessibility_large_text_title">Texto grande</string>
+    <string name="accessibility_large_text_desc">Aumenta el tamaño de letra en toda la app</string>
+    <string name="accessibility_sec_visual">Visual</string>
+    <string name="accessibility_high_contrast_title">Alto contraste</string>
+    <string name="accessibility_high_contrast_desc">Aumenta el contraste de colores para mejorar la visibilidad</string>
+    <string name="accessibility_reduce_motion_title">Reducir animaciones</string>
+    <string name="accessibility_reduce_motion_desc">Minimiza los movimientos y transiciones de pantalla</string>
+    <string name="accessibility_sec_audio">Audio y lector de pantalla</string>
+    <string name="accessibility_audio_desc_title">Descripciones de audio</string>
+    <string name="accessibility_audio_desc_desc">Activa etiquetas adicionales para lectores de pantalla como TalkBack</string>
+    <string name="accessibility_system_note">Algunas opciones como el tamaño de letra del sistema o TalkBack se gestionan desde los Ajustes de Android.</string>
+
+    <!-- AboutScreen -->
+    <string name="about_title">Acerca de</string>
+    <string name="about_version">v%1$s (%2$d)</string>
+    <string name="about_description">Zesta conecta los mejores restaurantes de tu ciudad con tu puerta en minutos.</string>
+    <string name="about_made_by_label">Desarrollado por</string>
+    <string name="about_made_by_value">Equipo Zesta</string>
+    <string name="about_contact_label">Contacto</string>
+    <string name="about_contact_value">info@zesta.app</string>
+    <string name="about_platform_label">Plataforma</string>
+    <string name="about_platform_value">Android</string>
+    <string name="about_license_label">Licencia</string>
+    <string name="about_license_value">Uso privado</string>
+    <string name="about_built_with">Construido con</string>
+    <string name="about_copyright">© 2026 Zesta. Todos los derechos reservados.</string>
+    <string name="about_app_name">Zesta</string>
 </resources>

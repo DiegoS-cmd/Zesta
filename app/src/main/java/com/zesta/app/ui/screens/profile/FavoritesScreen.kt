@@ -31,6 +31,7 @@ import com.zesta.app.data.repository.RestaurantRepository
 import com.zesta.app.ui.theme.*
 import com.zesta.app.viewmodel.AuthViewModel
 
+// Pantalla de favoritos: filtra los restaurantes que el usuario ha marcado
 @Composable
 fun FavoritesScreen(
     authViewModel: AuthViewModel,
@@ -39,6 +40,7 @@ fun FavoritesScreen(
 ) {
     val authState by authViewModel.uiState.collectAsState()
     val favoritos = authState.favoritos
+    // Solo mostramos los restaurantes cuyo id está en la lista de favoritos del usuario
     val favoritoRestaurants = RestaurantRepository.getAllRestaurants()
         .filter { favoritos.contains(it.id) }
 
@@ -51,7 +53,7 @@ fun FavoritesScreen(
         ) {
             Spacer(modifier = Modifier.height(20.dp))
 
-            // TopBar
+            // TopBar con botón de volver y título
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -84,7 +86,7 @@ fun FavoritesScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             if (favoritoRestaurants.isEmpty()) {
-                // Estado vacío
+                // Estado vacío: icono + mensaje explicativo
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -117,6 +119,7 @@ fun FavoritesScreen(
                     }
                 }
             } else {
+                // Lista de restaurantes favoritos
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(14.dp),
                     contentPadding = PaddingValues(bottom = 24.dp)
@@ -134,6 +137,7 @@ fun FavoritesScreen(
     }
 }
 
+// Tarjeta individual de restaurante favorito con botón para quitarlo
 @Composable
 private fun FavoriteRestaurantCard(
     restaurant: Restaurant,
@@ -189,7 +193,7 @@ private fun FavoriteRestaurantCard(
             )
         }
         Spacer(modifier = Modifier.width(8.dp))
-        // Botón quitar favorito
+        // Botón para quitar el restaurante de favoritos
         Box(
             modifier = Modifier
                 .size(36.dp)

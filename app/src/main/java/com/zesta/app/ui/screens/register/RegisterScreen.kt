@@ -37,28 +37,7 @@ import com.zesta.app.ui.theme.LinkTextStyle
 import com.zesta.app.ui.theme.PlaceholderShape
 import com.zesta.app.ui.theme.TextoPrincipalZesta
 
-/**
- * Pantalla de registro de nuevo usuario.
- *
- * Incluye validación local campo a campo antes de llamar al ViewModel.
- * Los campos obligatorios son nombre, email y contraseña.
- * El teléfono es opcional pero si se rellena debe ser un número español válido.
- * La dirección es opcional y no tiene validación de formato.
- *
- * @param fullName Valor actual del campo nombre completo.
- * @param email Valor actual del campo email.
- * @param password Valor actual del campo contraseña.
- * @param phone Valor actual del campo teléfono.
- * @param address Valor actual del campo dirección.
- * @param errorMessage Error general del ViewModel (email ya registrado, error de red, etc.), o null.
- * @param onFullNameChange Callback al cambiar el nombre.
- * @param onEmailChange Callback al cambiar el email.
- * @param onPasswordChange Callback al cambiar la contraseña.
- * @param onPhoneChange Callback al cambiar el teléfono.
- * @param onAddressChange Callback al cambiar la dirección.
- * @param onRegisterClick Callback al pulsar "Crear cuenta" si la validación local pasa.
- * @param onBack Callback al pulsar "Ya tengo cuenta".
- */
+// Pantalla de registro: valida los campos localmente antes de llamar al ViewModel
 @Composable
 fun RegisterScreen(
     fullName: String,
@@ -75,13 +54,12 @@ fun RegisterScreen(
     onRegisterClick: () -> Unit,
     onBack: () -> Unit
 ) {
-    // Errores locales de validación por campo
     var fullNameError by remember { mutableStateOf<String?>(null) }
     var emailError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
     var phoneError by remember { mutableStateOf<String?>(null) }
 
-    // Strings de error cargados fuera de lambdas no-composables
+    // Strings de error para poder meter en las lambdas
     val errNombreObligatorio = stringResource(R.string.registro_error_nombre_obligatorio)
     val errNombreMinimo = stringResource(R.string.registro_error_nombre_minimo)
     val errEmailObligatorio = stringResource(R.string.registro_error_email_obligatorio)
@@ -90,7 +68,6 @@ fun RegisterScreen(
     val errPasswordMinimo = stringResource(R.string.registro_error_password_minimo)
     val errTelefonoFormato = stringResource(R.string.registro_error_telefono_formato)
 
-    // Colores reutilizados en todos los campos
     val fieldColors = OutlinedTextFieldDefaults.colors(
         focusedContainerColor = FondoPlaceholderZesta,
         unfocusedContainerColor = FondoPlaceholderZesta,
@@ -113,7 +90,6 @@ fun RegisterScreen(
     ) {
         Spacer(modifier = Modifier.height(20.dp))
 
-        // LOGO
         Image(
             painter = painterResource(id = R.drawable.logo_zesta),
             contentDescription = stringResource(R.string.inicio_sesion_descripcion_logo),
@@ -123,17 +99,12 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // NOMBRE COMPLETO (obligatorio, mínimo 3 caracteres)
+        // Nombre — obligatorio, mínimo 3 caracteres
         OutlinedTextField(
             value = fullName,
-            onValueChange = {
-                onFullNameChange(it)
-                fullNameError = null
-            },
+            onValueChange = { onFullNameChange(it); fullNameError = null },
             modifier = Modifier.fillMaxWidth(),
-            placeholder = {
-                Text(stringResource(R.string.registro_nombre_completo), style = MaterialTheme.typography.bodyMedium)
-            },
+            placeholder = { Text(stringResource(R.string.registro_nombre_completo), style = MaterialTheme.typography.bodyMedium) },
             shape = PlaceholderShape,
             singleLine = true,
             isError = fullNameError != null,
@@ -143,17 +114,12 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(18.dp))
 
-        // EMAIL (obligatorio, formato válido)
+        // Email — obligatorio, formato válido
         OutlinedTextField(
             value = email,
-            onValueChange = {
-                onEmailChange(it)
-                emailError = null
-            },
+            onValueChange = { onEmailChange(it); emailError = null },
             modifier = Modifier.fillMaxWidth(),
-            placeholder = {
-                Text(stringResource(R.string.registro_email), style = MaterialTheme.typography.bodyMedium)
-            },
+            placeholder = { Text(stringResource(R.string.registro_email), style = MaterialTheme.typography.bodyMedium) },
             shape = PlaceholderShape,
             singleLine = true,
             isError = emailError != null,
@@ -163,17 +129,12 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(18.dp))
 
-        // CONTRASEÑA (obligatoria, mínimo 6 caracteres)
+        // Contraseña — obligatoria, mínimo 6 caracteres
         OutlinedTextField(
             value = password,
-            onValueChange = {
-                onPasswordChange(it)
-                passwordError = null
-            },
+            onValueChange = { onPasswordChange(it); passwordError = null },
             modifier = Modifier.fillMaxWidth(),
-            placeholder = {
-                Text(stringResource(R.string.registro_contrasena), style = MaterialTheme.typography.bodyMedium)
-            },
+            placeholder = { Text(stringResource(R.string.registro_contrasena), style = MaterialTheme.typography.bodyMedium) },
             shape = PlaceholderShape,
             singleLine = true,
             visualTransformation = PasswordVisualTransformation(),
@@ -184,17 +145,12 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(18.dp))
 
-        // TELÉFONO (opcional, si se rellena debe ser número español: 9 dígitos, empieza por 6/7/8/9)
+        // Teléfono — opcional; si se rellena debe ser número español válido
         OutlinedTextField(
             value = phone,
-            onValueChange = {
-                onPhoneChange(it)
-                phoneError = null
-            },
+            onValueChange = { onPhoneChange(it); phoneError = null },
             modifier = Modifier.fillMaxWidth(),
-            placeholder = {
-                Text(stringResource(R.string.registro_telefono), style = MaterialTheme.typography.bodyMedium)
-            },
+            placeholder = { Text(stringResource(R.string.registro_telefono), style = MaterialTheme.typography.bodyMedium) },
             shape = PlaceholderShape,
             singleLine = true,
             isError = phoneError != null,
@@ -204,69 +160,41 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(18.dp))
 
-        // DIRECCIÓN (opcional, sin validación de formato)
+        // Dirección — opcional, sin validación
         OutlinedTextField(
             value = address,
             onValueChange = onAddressChange,
             modifier = Modifier.fillMaxWidth(),
-            placeholder = {
-                Text(stringResource(R.string.registro_direccion), style = MaterialTheme.typography.bodyMedium)
-            },
+            placeholder = { Text(stringResource(R.string.registro_direccion), style = MaterialTheme.typography.bodyMedium) },
             shape = PlaceholderShape,
             singleLine = true,
             colors = fieldColors
         )
 
-        // ERROR GENERAL DEL VIEWMODEL
-        // Se muestra solo cuando el error viene del servidor (email ya registrado,
-        // error de red, etc.), no de la validación local.
+        // Error del servidor (email ya registrado, error de red, etc.)
         if (!errorMessage.isNullOrBlank()) {
             Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = errorMessage,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodyMedium
-            )
+            Text(text = errorMessage, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
         }
 
         Spacer(modifier = Modifier.height(26.dp))
 
-        // BOTÓN CREAR CUENTA
-        // Ejecuta la validación local antes de llamar a onRegisterClick.
-        // Solo llama al ViewModel si todos los campos obligatorios son válidos.
+        // Valida localmente antes de llamar al ViewModel
         PrimaryGradientButton(
             text = stringResource(R.string.registro_crear_cuenta),
             onClick = {
                 var valid = true
 
-                if (fullName.isBlank()) {
-                    fullNameError = errNombreObligatorio
-                    valid = false
-                } else if (fullName.trim().length < 3) {
-                    fullNameError = errNombreMinimo
-                    valid = false
-                }
+                if (fullName.isBlank()) { fullNameError = errNombreObligatorio; valid = false }
+                else if (fullName.trim().length < 3) { fullNameError = errNombreMinimo; valid = false }
 
-                if (email.isBlank()) {
-                    emailError = errEmailObligatorio
-                    valid = false
-                } else if (!isValidEmail(email.trim())) {
-                    emailError = errEmailFormato
-                    valid = false
-                }
+                if (email.isBlank()) { emailError = errEmailObligatorio; valid = false }
+                else if (!isValidEmail(email.trim())) { emailError = errEmailFormato; valid = false }
 
-                if (password.isBlank()) {
-                    passwordError = errPasswordObligatoria
-                    valid = false
-                } else if (password.length < 6) {
-                    passwordError = errPasswordMinimo
-                    valid = false
-                }
+                if (password.isBlank()) { passwordError = errPasswordObligatoria; valid = false }
+                else if (password.length < 6) { passwordError = errPasswordMinimo; valid = false }
 
-                if (phone.isNotBlank() && !isValidSpanishPhone(phone)) {
-                    phoneError = errTelefonoFormato
-                    valid = false
-                }
+                if (phone.isNotBlank() && !isValidSpanishPhone(phone)) { phoneError = errTelefonoFormato; valid = false }
 
                 if (valid) onRegisterClick()
             }
@@ -274,36 +202,18 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // ENLACE "YA TENGO CUENTA"
         TextButton(onClick = onBack) {
-            Text(
-                text = stringResource(R.string.registro_ya_tengo_cuenta),
-                style = LinkTextStyle,
-                fontSize = 16.sp
-            )
+            Text(text = stringResource(R.string.registro_ya_tengo_cuenta), style = LinkTextStyle, fontSize = 16.sp)
         }
 
         Spacer(modifier = Modifier.height(20.dp))
     }
 }
 
-/**
- * Valida que el email tenga formato correcto.
- * - Parte local mínimo 2 caracteres: letras, números, puntos, guiones y porcentajes.
- * - Dominio mínimo 2 caracteres.
- * - TLD entre 2 y 6 caracteres.
- */
-private fun isValidEmail(email: String): Boolean {
-    val regex = Regex("^[a-zA-Z0-9._%-]{2,}@[a-zA-Z0-9.-]{2,}\\.[a-zA-Z]{2,6}$")
-    return regex.matches(email)
-}
+// Email válido: parte nombre ≥2 chars, dominio ≥2 chars, parte despues de punto 2-6 chars
+private fun isValidEmail(email: String): Boolean =
+    Regex("^[a-zA-Z0-9._%-]{2,}@[a-zA-Z0-9.-]{2,}\\.[a-zA-Z]{2,6}$").matches(email)
 
-/**
- * Valida que el teléfono sea un número español válido:
- * - Exactamente 9 dígitos.
- * - Empieza por 6, 7, 8 o 9.
- */
-private fun isValidSpanishPhone(phone: String): Boolean {
-    val regex = Regex("^[6789]\\d{8}$")
-    return regex.matches(phone.trim())
-}
+// Teléfono español válido: 9 dígitos, empieza por 6/7/8/9
+private fun isValidSpanishPhone(phone: String): Boolean =
+    Regex("^[6789]\\d{8}$").matches(phone.trim())

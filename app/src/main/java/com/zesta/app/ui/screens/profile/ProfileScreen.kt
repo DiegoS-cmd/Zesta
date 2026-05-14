@@ -42,6 +42,7 @@ import android.graphics.BitmapFactory
 import android.util.Base64
 import androidx.compose.ui.graphics.asImageBitmap
 
+// Pantalla principal del perfil: avatar, accesos rápidos y opciones de configuración
 @Composable
 fun ProfileScreen(
     userName: String = "",
@@ -70,6 +71,7 @@ fun ProfileScreen(
         else -> userName
     }
 
+    // URI en caché para la foto tomada con cámara
     val cameraImageUri = remember {
         val file = File(context.cacheDir, "images/profile_photo_${System.currentTimeMillis()}.jpg")
             .also { it.parentFile?.mkdirs() }
@@ -143,6 +145,7 @@ fun ProfileScreen(
         )
     }
 
+    // Diálogo para elegir foto de perfil
     if (showImageSourceDialog) {
         AlertDialog(
             onDismissRequest = { showImageSourceDialog = false },
@@ -158,7 +161,6 @@ fun ProfileScreen(
             },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-
                     DialogOption(
                         icon = { Icon(Icons.Outlined.CameraAlt, null, tint = NaranjaZesta, modifier = Modifier.size(20.dp)) },
                         text = stringResource(R.string.gestionar_cuenta_foto_camara),
@@ -171,7 +173,6 @@ fun ProfileScreen(
                             else cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
                         }
                     )
-
                     DialogOption(
                         icon = { Icon(Icons.Outlined.PhotoLibrary, null, tint = NaranjaZesta, modifier = Modifier.size(20.dp)) },
                         text = stringResource(R.string.gestionar_cuenta_foto_galeria),
@@ -180,8 +181,7 @@ fun ProfileScreen(
                             galleryLauncher.launch("image/*")
                         }
                     )
-
-                    // Solo se muestra si hay foto
+                    // Solo visible si ya hay foto de perfil
                     if (!profileImageUrl.isNullOrBlank()) {
                         DialogOption(
                             icon = { Icon(Icons.Outlined.Delete, null, tint = NaranjaZesta, modifier = Modifier.size(20.dp)) },
@@ -207,6 +207,7 @@ fun ProfileScreen(
     }
 }
 
+// Opción dentro del diálogo: icono + texto en fila clickable
 @Composable
 private fun DialogOption(
     icon: @Composable () -> Unit,
@@ -234,6 +235,7 @@ private fun DialogOption(
     }
 }
 
+// Cabecera del perfil: título, avatar, nombre, accesos rápidos y botones de invitado
 @Composable
 private fun ProfileHeader(
     displayName: String,
@@ -293,6 +295,7 @@ private fun ProfileHeader(
             )
         }
 
+        // Si es invitado se muestran los botones de login y registro
         if (isGuest) {
             Spacer(modifier = Modifier.height(16.dp))
             Text(
@@ -321,6 +324,7 @@ private fun ProfileHeader(
     }
 }
 
+// Avatar: muestra la foto de perfil o el logo de Zesta por defecto
 @Composable
 private fun ProfileAvatar(
     profileImageUrl: String?,
@@ -364,6 +368,8 @@ private fun ProfileAvatar(
         }
     }
 }
+
+// Tarjeta de acceso rápido: favoritos e historial
 @Composable
 private fun ProfileQuickActionCard(text: String, onClick: () -> Unit) {
     Box(
@@ -387,6 +393,7 @@ private fun ProfileQuickActionCard(text: String, onClick: () -> Unit) {
     }
 }
 
+// Sección de opciones del perfil: ayuda, privacidad, accesibilidad, cuenta y acerca de
 @Composable
 private fun ProfileOptionsSection(
     onHelpClick: () -> Unit,
@@ -414,6 +421,7 @@ private fun ProfileOptionsSection(
     }
 }
 
+// Ítem individual de opción del perfil
 @Composable
 private fun ProfileOptionItem(text: String, onClick: () -> Unit) {
     Text(
