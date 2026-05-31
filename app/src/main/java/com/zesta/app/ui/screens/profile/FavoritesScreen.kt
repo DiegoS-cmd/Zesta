@@ -32,6 +32,14 @@ import com.zesta.app.ui.theme.*
 import com.zesta.app.viewmodel.AuthViewModel
 
 // Pantalla de favoritos: filtra los restaurantes que el usuario ha marcado
+/**
+ * Pantalla que muestra la lista de restaurantes marcados como favoritos por el usuario.
+ * Si la lista está vacía, muestra un estado informativo con un icono y texto descriptivo.
+ *
+ * @param authViewModel ViewModel encargado de gestionar el estado de autenticación y los favoritos del usuario.
+ * @param onBack Función de callback que se ejecuta al presionar el botón de regresar.
+ * @param onRestaurantClick Función de callback que recibe el ID del restaurante seleccionado para navegar a su detalle.
+ */
 @Composable
 fun FavoritesScreen(
     authViewModel: AuthViewModel,
@@ -138,6 +146,14 @@ fun FavoritesScreen(
 }
 
 // Tarjeta individual de restaurante favorito con botón para quitarlo
+/**
+ * Tarjeta que representa visualmente a un restaurante favorito dentro de la lista.
+ * Muestra la imagen, nombre, información de envío, valoración y un botón para removerlo.
+ *
+ * @param restaurant El objeto con los datos del restaurante a renderizar.
+ * @param onClick Función de callback que se ejecuta al pulsar sobre cualquier parte de la tarjeta.
+ * @param onRemove Función de callback que se ejecuta al pulsar el botón de eliminar de favoritos.
+ */
 @Composable
 private fun FavoriteRestaurantCard(
     restaurant: Restaurant,
