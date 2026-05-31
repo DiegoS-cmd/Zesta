@@ -826,19 +826,6 @@ private fun ChangePasswordSection() {
     }
 }
 
-/**
- * Convierte una [Uri] de imagen (galería o cámara) a una cadena Base64.
- *
- * El proceso es:
- * 1. Abre el stream del contenido asociado a la URI.
- * 2. Decodifica el stream a [Bitmap].
- * 3. Escala la imagen a 300×300 px para reducir el tamaño almacenado en Firestore.
- * 4. Comprime a JPEG con calidad 70 y codifica en Base64 sin saltos de línea ([Base64.NO_WRAP]).
- *
- * @param context Contexto necesario para acceder al [ContentResolver].
- * @param uri     URI de la imagen seleccionada o capturada.
- * @return        String Base64 de la imagen, o `null` si ocurre algún error.
- */
 fun uriToBase64(context: Context, uri: Uri): String? {
     return try {
         val inputStream = context.contentResolver.openInputStream(uri) ?: return null
