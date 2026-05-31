@@ -42,7 +42,26 @@ import android.graphics.BitmapFactory
 import android.util.Base64
 import androidx.compose.ui.graphics.asImageBitmap
 
-// Pantalla principal del perfil: avatar, accesos rápidos y opciones de configuración
+/**
+ * Pantalla principal del perfil de usuario.
+ * Gestiona la visualización del avatar, opciones de cuenta y navegación a secciones relacionadas.
+ *
+ * @param userName Nombre del usuario a mostrar.
+ * @param isGuest Indica si el usuario es un invitado (no registrado).
+ * @param onHomeClick Callback para la navegación al inicio.
+ * @param onSearchClick Callback para la navegación a la búsqueda.
+ * @param onCartClick Callback para la navegación al carrito.
+ * @param onFavoritesClick Callback para ver favoritos.
+ * @param onOrderHistoryClick Callback para ver historial de pedidos.
+ * @param onHelpClick Callback para abrir la sección de ayuda.
+ * @param onPrivacyClick Callback para abrir políticas de privacidad.
+ * @param onAccessibilityClick Callback para configuraciones de accesibilidad.
+ * @param onManageAccountClick Callback para gestionar datos de la cuenta.
+ * @param onAboutClick Callback para ver información acerca de la app.
+ * @param onLoginClick Callback para iniciar sesión.
+ * @param onRegisterClick Callback para registrarse.
+ * @param authViewModel ViewModel que gestiona la autenticación y estado del perfil.
+ */
 @Composable
 fun ProfileScreen(
     userName: String = "",
@@ -145,7 +164,7 @@ fun ProfileScreen(
         )
     }
 
-    // Diálogo para elegir foto de perfil
+    // Diálogo para elegir origen de la imagen de perfil (Cámara/Galería/Eliminar)
     if (showImageSourceDialog) {
         AlertDialog(
             onDismissRequest = { showImageSourceDialog = false },
@@ -207,7 +226,13 @@ fun ProfileScreen(
     }
 }
 
-// Opción dentro del diálogo: icono + texto en fila clickable
+/**
+ * Representa una opción dentro del diálogo de selección de imagen.
+ *
+ * @param icon Composable con el icono de la opción.
+ * @param text Texto descriptivo de la opción.
+ * @param onClick Acción a ejecutar al presionar.
+ */
 @Composable
 private fun DialogOption(
     icon: @Composable () -> Unit,
@@ -235,7 +260,9 @@ private fun DialogOption(
     }
 }
 
-// Cabecera del perfil: título, avatar, nombre, accesos rápidos y botones de invitado
+/**
+ * Cabecera de la pantalla de perfil. Incluye avatar, nombre y botones de acción rápida.
+ */
 @Composable
 private fun ProfileHeader(
     displayName: String,
@@ -324,7 +351,10 @@ private fun ProfileHeader(
     }
 }
 
-// Avatar: muestra la foto de perfil o el logo de Zesta por defecto
+/**
+ * Muestra la imagen de perfil del usuario o un logo predeterminado.
+ * Decodifica la imagen desde Base64.
+ */
 @Composable
 private fun ProfileAvatar(
     profileImageUrl: String?,
@@ -369,7 +399,9 @@ private fun ProfileAvatar(
     }
 }
 
-// Tarjeta de acceso rápido: favoritos e historial
+/**
+ * Tarjeta cuadrada que actúa como botón de acceso rápido.
+ */
 @Composable
 private fun ProfileQuickActionCard(text: String, onClick: () -> Unit) {
     Box(
@@ -393,7 +425,9 @@ private fun ProfileQuickActionCard(text: String, onClick: () -> Unit) {
     }
 }
 
-// Sección de opciones del perfil: ayuda, privacidad, accesibilidad, cuenta y acerca de
+/**
+ * Sección que lista las opciones de configuración y navegación del perfil.
+ */
 @Composable
 private fun ProfileOptionsSection(
     onHelpClick: () -> Unit,
@@ -421,7 +455,9 @@ private fun ProfileOptionsSection(
     }
 }
 
-// Ítem individual de opción del perfil
+/**
+ * Representa un ítem dentro de la lista de opciones de perfil.
+ */
 @Composable
 private fun ProfileOptionItem(text: String, onClick: () -> Unit) {
     Text(
