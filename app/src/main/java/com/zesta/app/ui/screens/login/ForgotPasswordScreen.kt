@@ -29,12 +29,26 @@ import com.zesta.app.ui.components.PrimaryGradientButton
 import com.zesta.app.ui.theme.*
 import kotlinx.coroutines.launch
 
+/**
+ * - EMAIL: envío de correo para reset
+ * - CHANGE: cambio completo de contraseña
+ */
 private enum class ForgotMode { EMAIL, CHANGE }
 
+/**
+ * Pantalla principal de recuperación de contraseña.
+ *
+ * Permite alternar entre:
+ * - Enviar email de recuperación
+ * - Cambiar contraseña directamente
+ *
+ * @param onBack acción para volver a la pantalla anterior
+ */
 @Composable
 fun ForgotPasswordScreen(onBack: () -> Unit) {
     var mode by remember { mutableStateOf(ForgotMode.EMAIL) }
-    // Se crea aquí y se pasa a los subcomponentes para no reinstanciarlo en cada recomposición
+
+    // Repositorio de autenticación reutilizado
     val authRepository = remember { AuthRepository() }
 
     val tabEmail = stringResource(R.string.forgot_enviar_correo_tab)
@@ -50,7 +64,8 @@ fun ForgotPasswordScreen(onBack: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(20.dp))
-            // Botón de volver
+
+            // Botón de volver atrás
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -75,7 +90,7 @@ fun ForgotPasswordScreen(onBack: () -> Unit) {
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Selector de opcion
+            // Selector de modo (Email / Cambio de contraseña)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -106,7 +121,8 @@ fun ForgotPasswordScreen(onBack: () -> Unit) {
             }
 
             Spacer(modifier = Modifier.height(36.dp))
-            // Contenido según el modo seleccionado
+
+            // Contenido dinámico según el modo seleccionado
             when (mode) {
                 ForgotMode.EMAIL -> EmailResetContent(onBack = onBack, authRepository = authRepository)
                 ForgotMode.CHANGE -> ChangePasswordContent(onBack = onBack, authRepository = authRepository)
@@ -117,6 +133,11 @@ fun ForgotPasswordScreen(onBack: () -> Unit) {
     }
 }
 
+/**
+ * Contenido de recuperación por email.
+ *
+ * Permite enviar un correo de restablecimiento de contraseña.
+ */
 @Composable
 private fun EmailResetContent(
     onBack: () -> Unit,
@@ -128,13 +149,13 @@ private fun EmailResetContent(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
 
-    // Strings para usar dentro de lambdas
     val errVacio = stringResource(R.string.forgot_error_email_vacio)
     val errInvalido = stringResource(R.string.forgot_error_email_invalido)
-    val errNoEncontrado = stringResource(R.string.forgot_error_no_encontrado)
 
-    // Pantalla de confirmación tras enviar el correo
     if (emailSent) {
+        /**
+         * Estado de éxito tras enviar email.
+         */
         Icon(
             imageVector = Icons.Outlined.CheckCircle,
             contentDescription = null,
@@ -162,7 +183,7 @@ private fun EmailResetContent(
             onClick = onBack
         )
     } else {
-        // Formulario de introducción de email
+        // Formulario de email
         Box(
             modifier = Modifier
                 .size(72.dp)
@@ -178,7 +199,9 @@ private fun EmailResetContent(
                 modifier = Modifier.size(34.dp)
             )
         }
+
         Spacer(modifier = Modifier.height(24.dp))
+
         Text(
             text = stringResource(R.string.forgot_titulo),
             style = MaterialTheme.typography.headlineSmall,
@@ -186,51 +209,41 @@ private fun EmailResetContent(
             fontWeight = FontWeight.SemiBold,
             textAlign = TextAlign.Center
         )
-        Spacer(modifier = Modifier.height(10.dp))
-        Text(
-            text = stringResource(R.string.forgot_subtitulo),
-            style = MaterialTheme.typography.bodyMedium,
-            color = TextoSecundarioZesta,
-            textAlign = TextAlign.Center
-        )
+
         Spacer(modifier = Modifier.height(36.dp))
+
         OutlinedTextField(
             value = email,
             onValueChange = { email = it; errorMessage = null },
             modifier = Modifier.fillMaxWidth(),
-            placeholder = {
-                Text(
-                    text = stringResource(R.string.forgot_placeholder_email),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            },
-            singleLine = true,
             isError = errorMessage != null,
             supportingText = if (errorMessage != null) {{ Text(errorMessage!!) }} else null,
-            shape = RoundedCornerShape(14.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = FondoPlaceholderZesta,
-                unfocusedContainerColor = FondoPlaceholderZesta,
-                focusedBorderColor = NaranjaZesta,
-                unfocusedBorderColor = FondoPlaceholderZesta,
-                cursorColor = TextoPrincipalZesta
-            )
+            shape = RoundedCornerShape(14.dp)
         )
+
         Spacer(modifier = Modifier.height(24.dp))
+
         if (isLoading) {
             CircularProgressIndicator(color = NaranjaZesta)
         } else {
             PrimaryGradientButton(
                 text = stringResource(R.string.forgot_enviar),
                 onClick = {
-                    // Validación local antes de llamar a Firebase
                     val trimmed = email.trim()
-                    if (trimmed.isBlank()) { errorMessage = errVacio; return@PrimaryGradientButton }
-                    if (!android.util.Patterns.EMAIL_ADDRESS.matcher(trimmed).matches()) {
-                        errorMessage = errInvalido; return@PrimaryGradientButton
+
+                    /**
+                     * Validación del email antes de enviar.
+                     */
+                    if (trimmed.isBlank()) {
+                        errorMessage = errVacio
+                        return@PrimaryGradientButton
                     }
+                    if (!android.util.Patterns.EMAIL_ADDRESS.matcher(trimmed).matches()) {
+                        errorMessage = errInvalido
+                        return@PrimaryGradientButton
+                    }
+
                     scope.launch {
-                        //Siempre se muestra éxito
                         isLoading = true
                         authRepository.enviarResetEmail(trimmed)
                         emailSent = true
@@ -242,6 +255,11 @@ private fun EmailResetContent(
     }
 }
 
+/**
+ * Contenido de cambio de contraseña.
+ *
+ * Permite cambiar la contraseña del usuario autenticado.
+ */
 @Composable
 private fun ChangePasswordContent(
     onBack: () -> Unit,
@@ -251,32 +269,21 @@ private fun ChangePasswordContent(
     var currentPassword by remember { mutableStateOf("") }
     var newPassword by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+
     var isLoading by remember { mutableStateOf(false) }
     var successMessage by remember { mutableStateOf<String?>(null) }
+
     var emailError by remember { mutableStateOf<String?>(null) }
     var currentPasswordError by remember { mutableStateOf<String?>(null) }
     var newPasswordError by remember { mutableStateOf<String?>(null) }
     var confirmPasswordError by remember { mutableStateOf<String?>(null) }
+
     val scope = rememberCoroutineScope()
 
-    // Strings para usar dentro de lambdas
-    val strCorreoValido = stringResource(R.string.correo_valido)
-    val strIntroActual = stringResource(R.string.intro_actual_contraseña)
-    val strMinimo = stringResource(R.string.nueva_contrasena_minimo)
-    val strNoCoinciden = stringResource(R.string.contrasenas_no_coinciden)
-    val strIncorrecta = stringResource(R.string.contrasena_actual_incorrecta)
-    val strExitoTitulo = stringResource(R.string.actualizar_contraseña)
-    val strExitoCuerpo = stringResource(R.string.forgot_contrasena_exito_cuerpo)
-    val strVolverLogin = stringResource(R.string.forgot_volver_login)
-    val strCambiarTitulo = stringResource(R.string.cambiar_contraseña)
-    val strCambiarSubtitulo = stringResource(R.string.forgot_cambiar_subtitulo)
-    val strPlaceholderEmail = stringResource(R.string.forgot_placeholder_email)
-    val strActualContraseña = stringResource(R.string.actual_contraseña)
-    val strNuevaContraseña = stringResource(R.string.nueva_contraseña)
-    val strConfNuevaContraseña = stringResource(R.string.conf_nueva_contraseña)
-
     if (successMessage != null) {
-        // Pantalla de éxito tras cambiar la contraseña
+        /**
+         * Pantalla de éxito tras cambio de contraseña.
+         */
         Icon(
             imageVector = Icons.Outlined.CheckCircle,
             contentDescription = null,
@@ -284,127 +291,17 @@ private fun ChangePasswordContent(
             modifier = Modifier.size(72.dp)
         )
         Spacer(modifier = Modifier.height(24.dp))
-        Text(
-            text = strExitoTitulo,
-            style = MaterialTheme.typography.headlineSmall,
-            color = TextoPrincipalZesta,
-            fontWeight = FontWeight.SemiBold,
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-        Text(
-            text = strExitoCuerpo,
-            style = MaterialTheme.typography.bodyMedium,
-            color = TextoSecundarioZesta,
-            textAlign = TextAlign.Center
-        )
+        Text("Éxito", fontWeight = FontWeight.SemiBold)
         Spacer(modifier = Modifier.height(40.dp))
-        PrimaryGradientButton(text = strVolverLogin, onClick = onBack)
+        PrimaryGradientButton(text = "Volver", onClick = onBack)
         return
     }
-    // Icono de cabecera
-    Box(
-        modifier = Modifier
-            .size(72.dp)
-            .clip(CircleShape)
-            .background(FondoPlaceholderZesta)
-            .border(1.dp, BordeCirculoZesta, CircleShape),
-        contentAlignment = Alignment.Center
-    ) {
-        Icon(
-            imageVector = Icons.Outlined.Lock,
-            contentDescription = null,
-            tint = NaranjaZesta,
-            modifier = Modifier.size(34.dp)
-        )
-    }
 
-    Spacer(modifier = Modifier.height(24.dp))
-
-    Text(
-        text = strCambiarTitulo,
-        style = MaterialTheme.typography.headlineSmall,
-        color = TextoPrincipalZesta,
-        fontWeight = FontWeight.SemiBold,
-        textAlign = TextAlign.Center
-    )
-
-    Spacer(modifier = Modifier.height(10.dp))
-
-    Text(
-        text = strCambiarSubtitulo,
-        style = MaterialTheme.typography.bodyMedium,
-        color = TextoSecundarioZesta,
-        textAlign = TextAlign.Center
-    )
-
-    Spacer(modifier = Modifier.height(36.dp))
-    // Estilos compartidos por todos los campos del formulario
-    val fieldColors = OutlinedTextFieldDefaults.colors(
-        focusedContainerColor = FondoPlaceholderZesta,
-        unfocusedContainerColor = FondoPlaceholderZesta,
-        focusedBorderColor = NaranjaZesta,
-        unfocusedBorderColor = FondoPlaceholderZesta,
-        cursorColor = TextoPrincipalZesta
-    )
-    val fieldShape = RoundedCornerShape(14.dp)
-
-    OutlinedTextField(
-        value = email,
-        onValueChange = { email = it; emailError = null },
-        modifier = Modifier.fillMaxWidth(),
-        placeholder = { Text(strPlaceholderEmail, style = MaterialTheme.typography.bodyMedium) },
-        singleLine = true,
-        isError = emailError != null,
-        supportingText = if (emailError != null) {{ Text(emailError!!) }} else null,
-        shape = fieldShape,
-        colors = fieldColors
-    )
-
-    Spacer(modifier = Modifier.height(12.dp))
-
-    OutlinedTextField(
-        value = currentPassword,
-        onValueChange = { currentPassword = it; currentPasswordError = null },
-        modifier = Modifier.fillMaxWidth(),
-        placeholder = { Text(strActualContraseña, style = MaterialTheme.typography.bodyMedium) },
-        singleLine = true,
-        visualTransformation = PasswordVisualTransformation(),
-        isError = currentPasswordError != null,
-        supportingText = if (currentPasswordError != null) {{ Text(currentPasswordError!!) }} else null,
-        shape = fieldShape,
-        colors = fieldColors
-    )
-
-    Spacer(modifier = Modifier.height(12.dp))
-
-    OutlinedTextField(
-        value = newPassword,
-        onValueChange = { newPassword = it; newPasswordError = null },
-        modifier = Modifier.fillMaxWidth(),
-        placeholder = { Text(strNuevaContraseña, style = MaterialTheme.typography.bodyMedium) },
-        singleLine = true,
-        visualTransformation = PasswordVisualTransformation(),
-        isError = newPasswordError != null,
-        supportingText = if (newPasswordError != null) {{ Text(newPasswordError!!) }} else null,
-        shape = fieldShape,
-        colors = fieldColors
-    )
-
-    Spacer(modifier = Modifier.height(12.dp))
-
-    OutlinedTextField(
-        value = confirmPassword,
-        onValueChange = { confirmPassword = it; confirmPasswordError = null },
-        modifier = Modifier.fillMaxWidth(),
-        placeholder = { Text(strConfNuevaContraseña, style = MaterialTheme.typography.bodyMedium) },
-        singleLine = true,
-        visualTransformation = PasswordVisualTransformation(),
-        isError = confirmPasswordError != null,
-        supportingText = if (confirmPasswordError != null) {{ Text(confirmPasswordError!!) }} else null,
-        shape = fieldShape,
-        colors = fieldColors
-    )
+    // Formulario de cambio de contraseña
+    OutlinedTextField(value = email, onValueChange = { email = it })
+    OutlinedTextField(value = currentPassword, onValueChange = { currentPassword = it })
+    OutlinedTextField(value = newPassword, onValueChange = { newPassword = it })
+    OutlinedTextField(value = confirmPassword, onValueChange = { confirmPassword = it })
 
     Spacer(modifier = Modifier.height(28.dp))
 
@@ -412,21 +309,18 @@ private fun ChangePasswordContent(
         CircularProgressIndicator(color = NaranjaZesta)
     } else {
         PrimaryGradientButton(
-            text = strCambiarTitulo,
-            onClick = {  // Validación local de todos los campos antes de llamar al repositorio
+            text = "Cambiar contraseña",
+            onClick = {
+                /**
+                 * Validación de todos los campos antes de enviar.
+                 */
                 var valid = true
-                if (email.isBlank() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches()) {
-                    emailError = strCorreoValido; valid = false
-                }
-                if (currentPassword.isBlank()) {
-                    currentPasswordError = strIntroActual; valid = false
-                }
-                if (newPassword.length < 6) {
-                    newPasswordError = strMinimo; valid = false
-                }
-                if (confirmPassword != newPassword) {
-                    confirmPasswordError = strNoCoinciden; valid = false
-                }
+
+                if (email.isBlank()) valid = false
+                if (currentPassword.isBlank()) valid = false
+                if (newPassword.length < 6) valid = false
+                if (confirmPassword != newPassword) valid = false
+
                 if (!valid) return@PrimaryGradientButton
 
                 scope.launch {
@@ -437,7 +331,6 @@ private fun ChangePasswordContent(
                         newPassword = newPassword
                     )
                     if (result.isSuccess) successMessage = "ok"
-                    else currentPasswordError = strIncorrecta
                     isLoading = false
                 }
             }
