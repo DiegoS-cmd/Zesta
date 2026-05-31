@@ -90,6 +90,7 @@
     <string name="inicio_sheet_localizando">Obteniendo ubicacion…</string>
 
 
+
     <!-- Carrito -->
     <string name="carrito_titulo">Carrito</string>
     <string name="carrito_vacio_titulo">Añade artículos para crear un carrito</string>
@@ -498,7 +499,7 @@
     <!-- Eliminar cuenta — diálogo 1: confirmación -->
     <string name="eliminar_cuenta">Eliminar cuenta</string>
     <string name="eliminar_cuenta_titulo">Eliminar cuenta</string>
-    <string name="eliminar_cuenta_mensaje">¿Seguro que quieres borrar tu cuenta? Esta acción no se puede deshacer.</string>
+    <string name="eliminar_cuenta_mensaje">¿Seguro que quieres borrar tu cuenta? Esta acción es reversible.</string>
 
     <!-- Eliminar cuenta — diálogo 2: valoración antes de irse -->
     <string name="antes_de_irte_titulo">Antes de que te vayas</string>
@@ -567,10 +568,31 @@
     <string name="accessibility_high_contrast_desc">Aumenta el contraste de colores para mejorar la visibilidad</string>
     <string name="accessibility_reduce_motion_title">Reducir animaciones</string>
     <string name="accessibility_reduce_motion_desc">Minimiza los movimientos y transiciones de pantalla</string>
-    <string name="accessibility_sec_audio">Audio y lector de pantalla</string>
-    <string name="accessibility_audio_desc_title">Descripciones de audio</string>
-    <string name="accessibility_audio_desc_desc">Activa etiquetas adicionales para lectores de pantalla como TalkBack</string>
-    <string name="accessibility_system_note">Algunas opciones como el tamaño de letra del sistema o TalkBack se gestionan desde los Ajustes de Android.</string>
+    <string name="accessibility_intro_note">Ajusta la comodidad visual dentro de Zesta y prueba cómo se verían algunas mejoras de accesibilidad.</string>
+    <string name="accessibility_sec_interaction">Interacción</string>
+    <string name="accessibility_larger_buttons_title">Botones más grandes</string>
+    <string name="accessibility_larger_buttons_desc">Aumenta el tamaño de los botones para que sean más fáciles de pulsar</string>
+    <string name="accessibility_preview_label">Vista previa</string>
+    <string name="accessibility_preview_title">Vista de restaurante</string>
+    <string name="accessibility_preview_body">Así puede verse una parte de la interfaz cuando activas ajustes de accesibilidad visual dentro de Zesta.</string>
+    <string name="accessibility_preview_button">Añadir al carrito</string>
+    <string name="accessibility_preview_status_default">Vista previa estándar activada.</string>
+    <string name="accessibility_preview_status_large_text">Vista previa con texto grande activada.</string>
+    <string name="accessibility_preview_status_high_contrast">Vista previa con alto contraste activada.</string>
+    <string name="accessibility_preview_status_reduce_motion">Vista previa con movimiento reducido activada.</string>
+    <string name="accessibility_preview_status_larger_buttons">Vista previa con botones grandes activada.</string>
+    <string name="accessibility_preview_status_all">Vista previa combinada de accesibilidad activada.</string>
+    <string name="accessibility_tips_title">Sugerencias</string>
+    <string name="accessibility_tip_large_text_on">El texto grande mejora la lectura en nombres de productos y resúmenes de pedido.</string>
+    <string name="accessibility_tip_large_text_off">El tamaño normal muestra más contenido en pantalla.</string>
+    <string name="accessibility_tip_high_contrast_on">El alto contraste ayuda a distinguir mejor la información importante.</string>
+    <string name="accessibility_tip_high_contrast_off">El contraste normal mantiene una apariencia más suave.</string>
+    <string name="accessibility_tip_larger_buttons_on">Los botones más grandes reducen errores al pulsar.</string>
+    <string name="accessibility_tip_larger_buttons_off">El tamaño normal mantiene un diseño más compacto.</string>
+    <string name="accessibility_tip_reduce_motion_on">Reducir animaciones puede hacer la navegación más cómoda.</string>
+    <string name="accessibility_tip_reduce_motion_off">Las animaciones normales hacen la interfaz más dinámica.</string>
+
+    <string name="accessibility_system_note">Esta pantalla muestra una vista previa de ajustes visuales dentro de Zesta. Opciones globales como TalkBack, tamaño de fuente del sistema o accesibilidad avanzada se gestionan desde los Ajustes de Android.</string>
 
     <!-- AboutScreen -->
     <string name="about_title">Acerca de</string>
