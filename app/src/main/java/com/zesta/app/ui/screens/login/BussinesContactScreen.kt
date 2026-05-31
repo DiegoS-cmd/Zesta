@@ -29,6 +29,19 @@ import com.zesta.app.ui.components.PrimaryGradientButton
 import com.zesta.app.ui.theme.*
 import kotlinx.coroutines.launch
 
+/**
+ * Pantalla de contacto para empresas.
+ *
+ * Permite a una empresa enviar una solicitud de contacto rellenando:
+ * - Nombre de la empresa
+ * - Correo electrónico
+ * - Mensaje
+ *
+ * La pantalla valida los campos antes de enviar la solicitud
+ * y muestra un estado de éxito cuando el envío es correcto.
+ *
+ * @param onBack acción para volver a la pantalla anterior
+ */
 @Composable
 fun BusinessContactScreen(onBack: () -> Unit) {
     var nombreEmpresa by remember { mutableStateOf("") }
@@ -39,6 +52,7 @@ fun BusinessContactScreen(onBack: () -> Unit) {
     var nombreError by remember { mutableStateOf<String?>(null) }
     var correoError by remember { mutableStateOf<String?>(null) }
     var mensajeError by remember { mutableStateOf<String?>(null) }
+
     val scope = rememberCoroutineScope()
     val contactRepository = remember { ContactRepository() }
 
@@ -157,7 +171,9 @@ fun BusinessContactScreen(onBack: () -> Unit) {
 
                 Spacer(modifier = Modifier.height(36.dp))
 
-                // Nombre empresa
+                /**
+                 * Campo de texto para el nombre de la empresa.
+                 */
                 OutlinedTextField(
                     value = nombreEmpresa,
                     onValueChange = { nombreEmpresa = it; nombreError = null },
@@ -177,7 +193,9 @@ fun BusinessContactScreen(onBack: () -> Unit) {
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Correo de contacto
+                /**
+                 * Campo de texto para el correo electrónico.
+                 */
                 OutlinedTextField(
                     value = correo,
                     onValueChange = { correo = it; correoError = null },
@@ -198,7 +216,9 @@ fun BusinessContactScreen(onBack: () -> Unit) {
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Mensaje
+                /**
+                 * Campo de texto para el mensaje de la empresa.
+                 */
                 OutlinedTextField(
                     value = mensaje,
                     onValueChange = { mensaje = it; mensajeError = null },
@@ -228,18 +248,32 @@ fun BusinessContactScreen(onBack: () -> Unit) {
                         text = stringResource(R.string.empresa_enviar),
                         onClick = {
                             var valid = true
+
+                            /**
+                             * Validación del nombre de empresa.
+                             */
                             if (nombreEmpresa.isBlank()) {
                                 nombreError = strNombreVacio; valid = false
                             }
+
                             val correoTrimmed = correo.trim()
+
+                            /**
+                             * Validación del correo electrónico.
+                             */
                             if (correoTrimmed.isBlank()) {
                                 correoError = strCorreoVacio; valid = false
                             } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(correoTrimmed).matches()) {
                                 correoError = strCorreoInvalido; valid = false
                             }
+
+                            /**
+                             * Validación del mensaje.
+                             */
                             if (mensaje.isBlank()) {
                                 mensajeError = strMensajeVacio; valid = false
                             }
+
                             if (!valid) return@PrimaryGradientButton
 
                             scope.launch {
