@@ -37,7 +37,24 @@ import com.zesta.app.ui.theme.LinkTextStyle
 import com.zesta.app.ui.theme.PlaceholderShape
 import com.zesta.app.ui.theme.TextoPrincipalZesta
 
-// Pantalla de registro: valida los campos localmente antes de llamar al ViewModel
+/**
+ * Pantalla de registro de usuario.
+ * Realiza validaciones locales de los campos de entrada antes de proceder con el registro.
+ *
+ * @param fullName Nombre completo del usuario.
+ * @param email Dirección de correo electrónico.
+ * @param password Contraseña del usuario.
+ * @param phone Número de teléfono (opcional).
+ * @param address Dirección física (opcional).
+ * @param errorMessage Mensaje de error proveniente del servidor, si existe.
+ * @param onFullNameChange Callback cuando cambia el nombre.
+ * @param onEmailChange Callback cuando cambia el email.
+ * @param onPasswordChange Callback cuando cambia la contraseña.
+ * @param onPhoneChange Callback cuando cambia el teléfono.
+ * @param onAddressChange Callback cuando cambia la dirección.
+ * @param onRegisterClick Callback ejecutado si todas las validaciones locales pasan.
+ * @param onBack Callback para navegar de regreso a la pantalla anterior.
+ */
 @Composable
 fun RegisterScreen(
     fullName: String,
@@ -210,10 +227,22 @@ fun RegisterScreen(
     }
 }
 
-// Email válido: parte nombre ≥2 chars, dominio ≥2 chars, parte despues de punto 2-6 chars
+/**
+ * Valida si un email tiene un formato correcto.
+ * Regla: nombre ≥2 chars, dominio ≥2 chars, extensión 2-6 chars.
+ *
+ * @param email El email a validar.
+ * @return True si es válido, false en caso contrario.
+ */
 private fun isValidEmail(email: String): Boolean =
     Regex("^[a-zA-Z0-9._%-]{2,}@[a-zA-Z0-9.-]{2,}\\.[a-zA-Z]{2,6}$").matches(email)
 
-// Teléfono español válido: 9 dígitos, empieza por 6/7/8/9
+/**
+ * Valida si un número de teléfono es un formato español válido.
+ * Regla: 9 dígitos, comenzando por 6, 7, 8 o 9.
+ *
+ * @param phone El número de teléfono a validar.
+ * @return True si es válido, false en caso contrario.
+ */
 private fun isValidSpanishPhone(phone: String): Boolean =
     Regex("^[6789]\\d{8}$").matches(phone.trim())
