@@ -45,7 +45,16 @@ import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.*
 
-// Pantalla de historial: carga los pedidos del usuario desde Firestore al entrar
+/**
+ * Pantalla principal del historial de pedidos del usuario.
+ * * Se encarga de obtener el identificador único del usuario autenticado a través de Firebase Auth
+ * y realizar una consulta a Cloud Firestore para recuperar la subcolección de pedidos (`orders`),
+ * ordenados cronológicamente de forma descendente. Maneja tres estados visuales diferenciados:
+ * de carga ([CircularProgressIndicator]), historial vacío con un diseño ilustrativo o la lista
+ * de pedidos desplegada mediante un [LazyColumn].
+ *
+ * @param onBack Callback o acción lambda que se ejecuta al pulsar el botón de navegación hacia atrás.
+ */
 @Composable
 fun OrderHistoryScreen(onBack: () -> Unit) {
     var orders by remember { mutableStateOf<List<Order>>(emptyList()) }
@@ -201,7 +210,16 @@ fun OrderHistoryScreen(onBack: () -> Unit) {
     }
 }
 
-// Tarjeta de un pedido: muestra items, desglose de precios, descuentos y valoración
+/**
+ * Tarjeta contenedora para la información detallada de un pedido específico.
+ * * Presenta el nombre del establecimiento, fecha del pedido, desglose minucioso de costes
+ * (precios base, tarifas de envío o servicio), secciones dedicadas si se aplicaron códigos de
+ * promoción u ofertas automáticas de productos (calculando el ahorro real y mostrando el precio original
+ * tachado). Además, incluye una lista colapsable/expandible para los productos si superan los 2 elementos
+ * e integra la lógica y diálogo para valorar al restaurante a través de [RatingRepository].
+ *
+ * @param order Objeto de datos [Order] con toda la información estructural del pedido seleccionado.
+ */
 @Composable
 private fun OrderHistoryCard(order: Order) {
     val locale = Locale("es", "ES")
@@ -529,7 +547,15 @@ private fun OrderHistoryCard(order: Order) {
     }
 }
 
-// Fila de un producto del pedido: burbuja con cantidad, nombre y precio total del item
+/**
+ * Fila representativa para un artículo individual adjunto a un pedido.
+ * * Renderiza una pequeña esfera de color naranja translúcido que resalta la cantidad comprada,
+ * seguida del nombre descriptivo del producto y el importe total del ítem (precio unitario multiplicado
+ * por su respectiva cantidad) formateado de acuerdo a la moneda de la región española (€).
+ *
+ * @param item Modelo de datos [CartItem] que encapsula los detalles del producto comprado.
+ * @param locale Configuración regional activa ([Locale]) para estandarizar la máscara numérica del precio.
+ */
 @Composable
 private fun OrderItemRow(item: CartItem, locale: Locale) {
     Row(
@@ -573,7 +599,16 @@ private fun OrderItemRow(item: CartItem, locale: Locale) {
     }
 }
 
-// Fila genérica de precio: etiqueta a la izquierda, valor a la derecha
+/**
+ * Fila genérica reutilizable para la impresión bidireccional de conceptos económicos.
+ * * Organiza en una disposición horizontal un concepto o etiqueta alineada a la izquierda del contenedor,
+ * emparejándola simétricamente con su valor correspondiente posicionado en el extremo derecho.
+ *
+ * @param label Texto informativo o título de la tasa/coste (ej: "Subtotal", "Tarifa de servicio").
+ * @param value Cadena de caracteres que representa el valor o coste final formateado.
+ * @param labelColor Color de fuente aplicado al texto descriptivo del concepto.
+ * @param valueColor Color de fuente aplicado a la cadena del valor numérico o estado resultante.
+ */
 @Composable
 private fun PriceRow(
     label: String,
