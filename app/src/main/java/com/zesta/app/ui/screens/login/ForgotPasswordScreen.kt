@@ -29,26 +29,19 @@ import com.zesta.app.ui.components.PrimaryGradientButton
 import com.zesta.app.ui.theme.*
 import kotlinx.coroutines.launch
 
-/**
- * - EMAIL: envío de correo para reset
- * - CHANGE: cambio completo de contraseña
- */
+// Los dos tabs de arriba: mandar correo o cambiar la contraseña ya logueado
 private enum class ForgotMode { EMAIL, CHANGE }
 
 /**
- * Pantalla principal de recuperación de contraseña.
- *
- * Permite alternar entre:
- * - Enviar email de recuperación
- * - Cambiar contraseña directamente
- *
- * @param onBack acción para volver a la pantalla anterior
+ * Pantalla de olvidé mi contraseña.
+ * Arriba hay un selector para elegir si quieres que te llegue un email
+ * o si prefieres cambiarla directamente con la actual.
  */
 @Composable
 fun ForgotPasswordScreen(onBack: () -> Unit) {
     var mode by remember { mutableStateOf(ForgotMode.EMAIL) }
 
-    // Repositorio de autenticación reutilizado
+    // Lo instancio aquí una vez y lo paso a los dos contenidos
     val authRepository = remember { AuthRepository() }
 
     val tabEmail = stringResource(R.string.forgot_enviar_correo_tab)
@@ -65,7 +58,7 @@ fun ForgotPasswordScreen(onBack: () -> Unit) {
         ) {
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Botón de volver atrás
+            // Flecha para volver al login
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -90,7 +83,7 @@ fun ForgotPasswordScreen(onBack: () -> Unit) {
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Selector de modo (Email / Cambio de contraseña)
+            // Tabs tipo pill — el seleccionado se ve en blanco
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -122,7 +115,7 @@ fun ForgotPasswordScreen(onBack: () -> Unit) {
 
             Spacer(modifier = Modifier.height(36.dp))
 
-            // Contenido dinámico según el modo seleccionado
+            // Según el tab activo muestro un formulario u otro
             when (mode) {
                 ForgotMode.EMAIL -> EmailResetContent(onBack = onBack, authRepository = authRepository)
                 ForgotMode.CHANGE -> ChangePasswordContent(onBack = onBack, authRepository = authRepository)
@@ -133,11 +126,7 @@ fun ForgotPasswordScreen(onBack: () -> Unit) {
     }
 }
 
-/**
- * Contenido de recuperación por email.
- *
- * Permite enviar un correo de restablecimiento de contraseña.
- */
+// Formulario del tab "Enviar correo" — pides email y Firebase manda el reset
 @Composable
 private fun EmailResetContent(
     onBack: () -> Unit,
@@ -153,9 +142,7 @@ private fun EmailResetContent(
     val errInvalido = stringResource(R.string.forgot_error_email_invalido)
 
     if (emailSent) {
-        /**
-         * Estado de éxito tras enviar email.
-         */
+        // Ya se mandó — en vez del formulario enseño confirmación
         Icon(
             imageVector = Icons.Outlined.CheckCircle,
             contentDescription = null,
@@ -183,7 +170,7 @@ private fun EmailResetContent(
             onClick = onBack
         )
     } else {
-        // Formulario de email
+        // Vista normal: icono, título y campo de email
         Box(
             modifier = Modifier
                 .size(72.dp)
@@ -231,9 +218,7 @@ private fun EmailResetContent(
                 onClick = {
                     val trimmed = email.trim()
 
-                    /**
-                     * Validación del email antes de enviar.
-                     */
+                    // Antes de llamar a Firebase compruebo que el email tenga pinta de válido
                     if (trimmed.isBlank()) {
                         errorMessage = errVacio
                         return@PrimaryGradientButton
@@ -255,11 +240,7 @@ private fun EmailResetContent(
     }
 }
 
-/**
- * Contenido de cambio de contraseña.
- *
- * Permite cambiar la contraseña del usuario autenticado.
- */
+// Segundo tab: cambias la contraseña poniendo la actual y la nueva
 @Composable
 private fun ChangePasswordContent(
     onBack: () -> Unit,
@@ -281,9 +262,7 @@ private fun ChangePasswordContent(
     val scope = rememberCoroutineScope()
 
     if (successMessage != null) {
-        /**
-         * Pantalla de éxito tras cambio de contraseña.
-         */
+        // Todo ok, pantalla sencilla de éxito
         Icon(
             imageVector = Icons.Outlined.CheckCircle,
             contentDescription = null,
@@ -297,7 +276,7 @@ private fun ChangePasswordContent(
         return
     }
 
-    // Formulario de cambio de contraseña
+    // Cuatro campos: email, contraseña actual, nueva y confirmación
     OutlinedTextField(value = email, onValueChange = { email = it })
     OutlinedTextField(value = currentPassword, onValueChange = { currentPassword = it })
     OutlinedTextField(value = newPassword, onValueChange = { newPassword = it })
@@ -311,9 +290,7 @@ private fun ChangePasswordContent(
         PrimaryGradientButton(
             text = "Cambiar contraseña",
             onClick = {
-                /**
-                 * Validación de todos los campos antes de enviar.
-                 */
+                // Reviso que no falte nada y que las dos contraseñas nuevas coincidan
                 var valid = true
 
                 if (email.isBlank()) valid = false

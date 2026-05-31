@@ -52,11 +52,15 @@ import androidx.compose.ui.unit.dp
 import com.zesta.app.R
 import com.zesta.app.ui.theme.*
 import kotlinx.coroutines.delay
-// Duración simulada del pedido completo
+// Demo: el pedido entero dura 30 seg en pantalla
 private const val TOTAL_DEMO_SECONDS = 30
-// Segundos asignados a la fase "Preparando" antes de pasar a "En camino"
+// Los primeros 10 seg cuenta como "preparando"
 private const val PREP_SECONDS = 10
 
+/**
+ * Seguimiento del pedido simulado.
+ * Cuenta atrás, barra de progreso y las tres fases hasta que "llega".
+ */
 @Composable
 fun DeliveryTrackingScreen(
     restaurantName: String,
@@ -71,6 +75,7 @@ fun DeliveryTrackingScreen(
     val totalSegundos = TOTAL_DEMO_SECONDS
 
     val fase by remember(segundosRestantes) {
+        // 0 = preparando, 1 = en camino, 2 = entregado
         derivedStateOf {
             when {
                 segundosRestantes > (totalSegundos - PREP_SECONDS) -> 0
@@ -91,6 +96,7 @@ fun DeliveryTrackingScreen(
     )
 
     LaunchedEffect(Unit) {
+        // Cada segundo bajo el contador hasta llegar a cero
         while (segundosRestantes > 0) {
             delay(1000L)
             segundosRestantes--
@@ -105,6 +111,7 @@ fun DeliveryTrackingScreen(
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         if (fase < 2) {
+            // Mientras no ha llegado: tiempo, mapa de direcciones y fases
             Column(
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
@@ -165,9 +172,11 @@ fun DeliveryTrackingScreen(
                 }
             }
         } else {
+            // Fase entregado — tras unos segundos salta a la pantalla de éxito
             EntregadoHeader(onFinished = onFinished)
         }
 
+        // Siempre visible abajo por si quieres volver al inicio antes de tiempo
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -192,6 +201,7 @@ fun DeliveryTrackingScreen(
     }
 }
 
+// Cuenta atrás grande y el texto según en qué fase vamos
 @Composable
 private fun HeaderTracking(
     restaurantName: String,
@@ -240,6 +250,7 @@ private fun HeaderTracking(
     }
 }
 
+// Tarjeta con restaurante a la izquierda, tu casa a la derecha y la barra en medio
 @Composable
 private fun TrackingAddressesCard(
     restaurantName: String,
@@ -297,6 +308,7 @@ private fun TrackingAddressesCard(
     }
 }
 
+// Punto del mapa — icono redondo, título y calle debajo
 @Composable
 private fun AddressPoint(
     title: String,
@@ -346,6 +358,7 @@ private fun AddressPoint(
     }
 }
 
+// Cada paso del tracking (preparando, en camino, entregado) con animación de pulso si está activo
 @Composable
 private fun FaseItem(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
@@ -411,6 +424,7 @@ private fun FaseItem(
 @Composable
 private fun EntregadoHeader(onFinished: () -> Unit) {
     LaunchedEffect(Unit) {
+        // Espero un poco y paso solo a OrderSuccess
         delay(2500L)
         onFinished()
     }

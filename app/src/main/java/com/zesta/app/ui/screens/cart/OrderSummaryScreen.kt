@@ -65,6 +65,10 @@ import com.zesta.app.viewmodel.CartViewModel
 import kotlinx.coroutines.launch
 import java.util.Locale
 
+/**
+ * Resumen antes de confirmar el pedido.
+ * Ves productos, dirección, códigos promo y el desglose de precios.
+ */
 @Composable
 fun OrderSummaryScreen(
     restaurantId: Int,
@@ -118,6 +122,7 @@ fun OrderSummaryScreen(
     var showPromoDialog by remember { mutableStateOf(false) }
     var isPlacingOrder by remember { mutableStateOf(false) }
     var showAddressDialog by remember { mutableStateOf(false) }
+    // Estado del código promo y si estamos mandando el pedido a Firestore
 
     val discountAmount = subtotal * discount
     val total = subtotal + deliveryFee + serviceFee - discountAmount
@@ -127,6 +132,7 @@ fun OrderSummaryScreen(
 
 
     if (showPromoDialog) {
+        // Modal para escribir un código a mano
         PromoCodeDialog(
             onDismiss = { showPromoDialog = false },
             onApply = { code ->
@@ -146,6 +152,7 @@ fun OrderSummaryScreen(
     }
 
     if (showAddressDialog) {
+        // Te avisa si no tienes dirección puesta en el perfil
         AlertDialog(
             onDismissRequest = { showAddressDialog = false },
             containerColor = BlancoZesta,
@@ -273,6 +280,7 @@ fun OrderSummaryScreen(
                         val precioNormal = cartItem.precio * cartItem.cantidad
                         val precioFinal = calcularPrecioConPromo(cartItem, promoType)
                         val ahorro = precioNormal - precioFinal
+                        // Si el producto tiene promo (2x1, -20%...) lo reflejo en el precio tachado
 
                         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                             Row(
@@ -320,7 +328,7 @@ fun OrderSummaryScreen(
                         }
                     }
 
-                    // ── Dirección
+                    // Dirección de entrega sacada del perfil del usuario
                     item {
                         Spacer(modifier = Modifier.height(4.dp))
                         Column(
@@ -345,7 +353,7 @@ fun OrderSummaryScreen(
                         }
                     }
 
-                    // ── Códigos promocionales
+                    // Bloque de códigos promo — puedes elegir uno de la lista o escribir el tuyo
                     item {
                         Spacer(modifier = Modifier.height(4.dp))
                         Column(
@@ -501,7 +509,7 @@ fun OrderSummaryScreen(
                         }
                     }
 
-                    // ── Resumen de precios
+                    // Subtotal, envío, servicio, descuentos y total final
                     item {
                         val subtotalSinPromo = items.sumOf { it.precio * it.cantidad }
                         val ahorroPromos = subtotalSinPromo - subtotal
@@ -634,7 +642,7 @@ fun OrderSummaryScreen(
                 }
             }
 
-            // ── Botón confirmar
+            // Confirmar pedido — gris si falta algo, spinner mientras se guarda
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -657,6 +665,7 @@ fun OrderSummaryScreen(
                             else -> {
                                 scope.launch {
                                     isPlacingOrder = true
+                                    // Monto el objeto Order y lo mando al repositorio
                                     val order = Order(
                                         restaurantId = restaurantId,
                                         restaurantName = restaurantName,
@@ -672,6 +681,7 @@ fun OrderSummaryScreen(
                                     )
                                     val result = orderRepository.placeOrder(order)
                                     if (result.isSuccess) {
+                                        // Limpio el carrito de este restaurante y paso al tracking
                                         cartViewModel.clearCartByRestaurant(restaurantId)
 
                                         val totalMinutes = 30
@@ -719,14 +729,14 @@ fun OrderSummaryScreen(
     }
 }
 
+// Cabecera con nombre e imagen del restaurante del pedido
 @Composable
 private fun RestaurantSummaryHeader(
     restaurantName: String,
     restaurantImageResName: String
 ) {
     val context = LocalContext.current
-    // La imagen se resuelve en tiempo de ejecucion igual que en CartScreen y CartDetailScreen:
-    // el restaurante guarda el nombre del drawable en Firestore, no el ID
+    // Mismo truco que en el resto de pantallas del carrito para la foto
     val imageResId = remember(restaurantImageResName) {
         if (restaurantImageResName.isBlank()) return@remember 0
         context.resources.getIdentifier(restaurantImageResName, "drawable", context.packageName)
@@ -768,6 +778,7 @@ private fun RestaurantSummaryHeader(
     }
 }
 
+// Fila label + precio que se repite en el desglose
 @Composable
 private fun PriceRow(label: String, value: String, valueColor: Color = TextoPrincipalZesta) {
     Row(
@@ -779,6 +790,7 @@ private fun PriceRow(label: String, value: String, valueColor: Color = TextoPrin
     }
 }
 
+// Calcula cuánto cuesta un item según si lleva 2x1, -10%, -20% o nada
 fun calcularPrecioConPromo(item: CartItem, promoType: PromoType): Double {
     return when (promoType) {
         PromoType.DOS_POR_UNO -> {
@@ -791,6 +803,7 @@ fun calcularPrecioConPromo(item: CartItem, promoType: PromoType): Double {
     }
 }
 
+// Diálogo para meter el código promo a mano
 @Composable
 private fun PromoCodeDialog(
     onDismiss: () -> Unit,

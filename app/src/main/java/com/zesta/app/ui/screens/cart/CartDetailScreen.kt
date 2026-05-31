@@ -67,6 +67,10 @@ import com.zesta.app.viewmodel.AuthViewModel
 import com.zesta.app.viewmodel.CartViewModel
 import com.zesta.app.viewmodel.CartViewModelFactory
 
+/**
+ * Detalle del carrito de un restaurante concreto.
+ * Aquí subes/bajas cantidades, vacías el carrito o pasas al resumen del pedido.
+ */
 @Composable
 fun CartDetailScreen(
     restaurantId: Int,
@@ -80,7 +84,7 @@ fun CartDetailScreen(
     var showIncompleteDialog by remember { mutableStateOf(false) }
     var incompleteDialogIsGuest by remember { mutableStateOf(false) }
     var showClearCartDialog by remember { mutableStateOf(false) }
-
+    // Los dos diálogos de arriba: perfil incompleto o confirmar vaciar carrito
 
     val uiState by cartViewModel.uiState.collectAsState()
     val authState by authViewModel.uiState.collectAsState()
@@ -89,8 +93,7 @@ fun CartDetailScreen(
     val items = cartGroup?.items ?: emptyList()
     val totalPrice = items.sumOf { it.precio * it.cantidad }
     val restaurantName = cartGroup?.cart?.restaurantName ?: ""
-    // Espera a que termine la carga inicial antes de redirigir,
-    // para no hacer onBack() en falso cuando el carrito aún no ha llegado de Firestore
+    // Espero a que acabe la carga — si no, podría volver atrás antes de que llegue el carrito de Firestore
     var initialLoadDone by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState.isLoading) {
@@ -100,12 +103,14 @@ fun CartDetailScreen(
     }
 
     LaunchedEffect(uiState.carts, initialLoadDone) {
+        // Si ya cargó y no hay carrito de este restaurante, salgo
         if (initialLoadDone && cartGroup == null) {
             onBack()
         }
     }
 
     if (showIncompleteDialog) {
+        // Invitado o usuario sin dirección/teléfono completo
         ProfileIncompleteDialog(
             isGuest = incompleteDialogIsGuest,
             onDismiss = { showIncompleteDialog = false },
@@ -118,6 +123,7 @@ fun CartDetailScreen(
     }
 
     if (showClearCartDialog) {
+        // Pregunta antes de borrar todo el carrito de este local
         AlertDialog(
             onDismissRequest = { showClearCartDialog = false },
             containerColor = BlancoZesta,
@@ -208,6 +214,7 @@ fun CartDetailScreen(
                 )
 
                 if (items.isNotEmpty()) {
+                    // Solo enseño vaciar si hay algo dentro
                     TextButton(onClick = { showClearCartDialog = true }) {
                         Text(
                             text = stringResource(R.string.carrito_detalle_vaciar),
@@ -294,6 +301,7 @@ fun CartDetailScreen(
                     )
                     .border(2.dp, BordeBotonZesta, RoundedCornerShape(28.dp))
                     .clickable(enabled = items.isNotEmpty()) {
+                        // Antes de pagar miro si es invitado o le falta algo al perfil
                         when {
                             authState.isGuest -> {
                                 incompleteDialogIsGuest = true
@@ -327,6 +335,7 @@ fun CartDetailScreen(
     }
 }
 
+// Aviso si intentas pagar sin estar logueado bien o con datos incompletos
 @Composable
 private fun ProfileIncompleteDialog(
     isGuest: Boolean,
@@ -425,6 +434,7 @@ private fun ProfileIncompleteDialog(
     )
 }
 
+// Cada producto del carrito con +/- y la foto si la tenemos guardada
 @Composable
 private fun CartDetailItemCard(
     item: CartItem,
@@ -432,7 +442,7 @@ private fun CartDetailItemCard(
     onDecrease: () -> Unit
 ) {
     val context = LocalContext.current
-    // Se almacena en Firestore sin referencia directa al drawable
+    // Igual que en CartScreen: la imagen viene como string desde Firestore
     val imageResId = remember(item.imageKey) {
         if (item.imageKey.isBlank()) return@remember null
         val id = context.resources.getIdentifier(item.imageKey, "drawable", context.packageName)
@@ -494,8 +504,7 @@ private fun CartDetailItemCard(
                     .clickable { onDecrease() },
                 contentAlignment = Alignment.Center
             ) {
-                // Si cantidad == 1, el botón "-" se convierte en
-                // papelera y elimina el item en lugar de decrementar
+                // Con 1 unidad el "-" pasa a ser papelera y quita el producto
                 if (item.cantidad == 1) {
                     Icon(
                         imageVector = Icons.Outlined.Delete,

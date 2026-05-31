@@ -59,6 +59,10 @@ import com.zesta.app.navigation.AppRoutes
 import com.zesta.app.viewmodel.AuthViewModel
 import com.zesta.app.viewmodel.CartViewModel
 
+/**
+ * Pantalla principal del carrito.
+ * Si tienes cosas de varios restaurantes salen agrupadas; si está vacío te manda a comprar.
+ */
 @Composable
 fun CartScreen(
     onHomeClick: () -> Unit,
@@ -71,6 +75,7 @@ fun CartScreen(
     authViewModel: AuthViewModel
 ) {
     val uiState by cartViewModel.uiState.collectAsState()
+    // Al entrar recargo el carrito por si cambió en otra pantalla
     LaunchedEffect(Unit) {
         cartViewModel.loadCart()
     }
@@ -95,6 +100,7 @@ fun CartScreen(
 
             when {
                 uiState.isLoading -> {
+                    // Mientras llega Firestore
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -110,6 +116,7 @@ fun CartScreen(
                 }
 
                 uiState.carts.isEmpty() -> {
+                    // Nada en el carrito — ilustración y botón para ir al home
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -121,6 +128,7 @@ fun CartScreen(
                 }
 
                 else -> {
+                    // Una tarjeta por restaurante; al pulsar vas al detalle de ese carrito
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -138,6 +146,7 @@ fun CartScreen(
                         }
 
                         item {
+                            // Espacio extra para que no tape la bottom bar
                             Spacer(modifier = Modifier.height(100.dp))
                         }
                     }
@@ -159,6 +168,7 @@ fun CartScreen(
     }
 }
 
+// Resumen rápido: foto del local, cuántos items y precio total
 @Composable
 private fun RestaurantCartSummaryCard(
     cartGroup: RestaurantCartWithItems,
@@ -187,8 +197,7 @@ private fun RestaurantCartSummaryCard(
         ) {
             val imageResName = cartGroup.cart.restaurantImageResName
             val context = androidx.compose.ui.platform.LocalContext.current
-            // La imagen se resuelve en tiempo de ejecución igual que en CartDetailScreen:
-            // el restaurante guarda el nombre del drawable en Firestore, no el ID
+            // En Firestore guardamos el nombre del drawable, no el id — lo busco a mano
             val imageResId = remember(imageResName) {
                 if (imageResName.isNotBlank()) {
                     context.resources.getIdentifier(imageResName, "drawable", context.packageName)
@@ -205,6 +214,7 @@ private fun RestaurantCartSummaryCard(
                     contentScale = ContentScale.Crop
                 )
             } else {
+                // Si no encuentro la imagen pongo el icono del carrito
                 Icon(
                     imageVector = Icons.Outlined.ShoppingCart,
                     contentDescription = null,
@@ -240,6 +250,7 @@ private fun RestaurantCartSummaryCard(
     }
 }
 
+// Vista cuando no hay nada — te anima a ir a mirar restaurantes
 @Composable
 private fun EmptyCartContent(onStartShoppingClick: () -> Unit) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -279,6 +290,7 @@ private fun EmptyCartContent(onStartShoppingClick: () -> Unit) {
     }
 }
 
+// Botón azul con gradiente que usamos en el carrito vacío
 @Composable
 private fun BlueActionButton(text: String, onClick: () -> Unit) {
     Box(

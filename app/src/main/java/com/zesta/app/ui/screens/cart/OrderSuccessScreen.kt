@@ -22,6 +22,10 @@ import com.zesta.app.ui.theme.*
 import com.zesta.app.ui.components.RatingDialog
 import com.zesta.app.R
 
+/**
+ * Pantalla de "pedido confirmado" con el tick verde.
+ * A veces sale también el diálogo para valorar la app.
+ */
 @Composable
 fun OrderSuccessScreen(
     showRatingDialog: Boolean = false,
@@ -29,7 +33,7 @@ fun OrderSuccessScreen(
 ) {
     var showDialog by remember { mutableStateOf(showRatingDialog) }
 
-    // Animación de entrada del check al llegar a la pantalla de éxito
+    // El check hace un pequeño bounce al entrar — queda más vivo
     val scale = remember { Animatable(0f) }
     LaunchedEffect(Unit) {
         scale.animateTo(
@@ -81,7 +85,7 @@ fun OrderSuccessScreen(
         }
     }
 
-    // ── Dialog de valoración
+    // Valoración opcional — al cerrar o enviar te manda al home
     if (showDialog) {
         RatingDialog(
             onDismiss = {

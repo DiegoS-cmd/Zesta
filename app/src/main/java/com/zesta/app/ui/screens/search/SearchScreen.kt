@@ -33,12 +33,16 @@ import com.zesta.app.ui.components.ZestaBottomNavBar
 import com.zesta.app.ui.theme.*
 import com.zesta.app.viewmodel.AuthViewModel
 
+// Modelo sencillo para pintar cada categoría con su imagen
 data class SearchCategoryItemUi(
     @StringRes val titleRes: Int,
     @DrawableRes val imageRes: Int
 )
 
-// Pantalla de búsqueda: filtra restaurantes por nombre o categoría
+/**
+ * Pantalla de búsqueda del bottom nav.
+ * Escribes en la barra y filtra restaurantes; si está vacía ves recientes y categorías.
+ */
 @Composable
 fun SearchScreen(
     onHomeClick: () -> Unit,
@@ -50,9 +54,10 @@ fun SearchScreen(
     val context = LocalContext.current
     var query by remember { mutableStateOf("") }
 
-    // Historial dinámico — máximo 3 últimas búsquedas
+    // Guardo las últimas 3 búsquedas para enseñarlas como chips
     var recentSearches by remember { mutableStateOf<List<String>>(emptyList()) }
 
+    // Lista fija de categorías con su drawable — al pulsar rellena el buscador
     val categories = listOf(
         SearchCategoryItemUi(R.string.categoria_desayuno, R.drawable.desayuno),
         SearchCategoryItemUi(R.string.categoria_pizzas, R.drawable.pizzas),
@@ -62,6 +67,7 @@ fun SearchScreen(
         SearchCategoryItemUi(R.string.categoria_mexicana, R.drawable.mexicana)
     )
 
+    // Cada vez que cambia el texto filtro por nombre o por categoría del restaurante
     val searchResults: List<Restaurant> = remember(query) {
         if (query.isBlank()) emptyList()
         else {
@@ -74,7 +80,7 @@ fun SearchScreen(
         }
     }
 
-    // Guarda en recientes al escribir (solo cuando hay texto y no está ya)
+    // Cuando escribes algo lo meto al principio del historial (sin repetir, max 3)
     LaunchedEffect(query) {
         if (query.isBlank()) return@LaunchedEffect
         recentSearches = (listOf(query) + recentSearches).distinct().take(3)
@@ -91,6 +97,7 @@ fun SearchScreen(
             }
 
             if (query.isNotBlank()) {
+                // Hay texto — muestro resultados o el mensaje de "sin resultados"
                 if (searchResults.isEmpty()) {
                     item {
                         Box(modifier = Modifier.fillMaxWidth().padding(top = 32.dp), contentAlignment = Alignment.Center) {
@@ -106,7 +113,7 @@ fun SearchScreen(
                     }
                 }
             } else {
-                // Recientes — solo si hay alguno guardado
+                // Buscador vacío — recientes arriba y categorías debajo
                 if (recentSearches.isNotEmpty()) {
                     item {
                         Text(text = stringResource(R.string.busqueda_titulo_recientes), style = MaterialTheme.typography.titleLarge, color = TextoPrincipalZesta, fontWeight = FontWeight.Normal)
@@ -126,6 +133,7 @@ fun SearchScreen(
             }
         }
 
+        // Barra inferior fija — en search el botón de buscar no hace nada porque ya estás aquí
         ZestaBottomNavBar(
             selectedRoute = AppRoutes.Search.route,
             modifier = Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(horizontal = 12.dp, vertical = 14.dp),
@@ -137,7 +145,7 @@ fun SearchScreen(
     }
 }
 
-// Tarjeta de resultado de búsqueda con imagen, promo, nombre y envío
+// Tarjeta de un restaurante en los resultados — foto, promo si tiene, envío y nota
 @Composable
 private fun SearchRestaurantCard(restaurant: Restaurant, onClick: () -> Unit) {
     val restaurantName = stringResource(restaurant.nameRes)
@@ -155,6 +163,7 @@ private fun SearchRestaurantCard(restaurant: Restaurant, onClick: () -> Unit) {
                 contentScale = ContentScale.Crop
             )
             restaurant.promoTextRes?.let { promoRes ->
+                // Badge de oferta encima de la foto
                 Box(
                     modifier = Modifier.align(Alignment.TopCenter).padding(top = 6.dp, start = 6.dp, end = 6.dp).clip(RoundedCornerShape(8.dp)).background(FondoOfertaZesta).padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
@@ -169,7 +178,7 @@ private fun SearchRestaurantCard(restaurant: Restaurant, onClick: () -> Unit) {
     }
 }
 
-// Campo de búsqueda con icono lupa y botón X para limpiar
+// Barra redondeada con lupa; la X solo sale si hay texto escrito
 @Composable
 private fun SearchField(query: String, onQueryChange: (String) -> Unit, onClear: () -> Unit) {
     OutlinedTextField(
@@ -195,7 +204,7 @@ private fun SearchField(query: String, onQueryChange: (String) -> Unit, onClear:
     )
 }
 
-// Fila de chips con las últimas búsquedas
+// Fila horizontal con los chips de búsquedas recientes
 @Composable
 private fun RecentSearchRow(searches: List<String>, onChipClick: (String) -> Unit) {
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -205,7 +214,7 @@ private fun RecentSearchRow(searches: List<String>, onChipClick: (String) -> Uni
     }
 }
 
-// Chip clickable para búsqueda reciente
+// Un chip suelto — al tocarlo rellena la barra con ese texto
 @Composable
 private fun SearchChip(text: String, onClick: () -> Unit) {
     Box(
@@ -216,7 +225,7 @@ private fun SearchChip(text: String, onClick: () -> Unit) {
     }
 }
 
-// Fila de categoría con imagen circular y nombre
+// Cada categoría con foto redonda; al pulsar busca por ese nombre
 @Composable
 private fun SearchCategoryRow(title: String, @DrawableRes imageRes: Int, onClick: () -> Unit) {
     Row(
@@ -234,7 +243,7 @@ private fun SearchCategoryRow(title: String, @DrawableRes imageRes: Int, onClick
     }
 }
 
-// reutilizables para texto de envío y valoración
+// Texto de envío — gratis o con precio según el restaurante
 @Composable
 private fun rememberDeliveryText(restaurant: Restaurant): String =
     if (restaurant.hasFreeDelivery)
@@ -242,6 +251,7 @@ private fun rememberDeliveryText(restaurant: Restaurant): String =
     else
         stringResource(R.string.restaurante_envio_pago, restaurant.deliveryFee ?: 0.0, restaurant.deliveryTimeMinutes)
 
+// Nota media y número de valoraciones
 @Composable
 private fun rememberRatingText(restaurant: Restaurant): String =
     stringResource(R.string.restaurante_valoracion, restaurant.ratingValue, restaurant.ratingCount)
